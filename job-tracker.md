@@ -39,3 +39,10 @@ Unverified, from search snippets. Work mode matters: your earlier rule was fully
 | (unnamed) | Azure Data Engineer (Data Lake Ownership) | not seen | unknown | gulftalent.com/uae/jobs/azure-data-engineer-data-lake-ownership-602082 | REVIEW |
 | Keyrock | Senior Data Engineer, Abu Dhabi | AED 15–23k/mo | unknown | search snippet | REJECT — min below target |
 Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days-per-month rule.
+
+## Verification after network change 2026-10-07
+- Mutt Data (Lever): open, but "Remote - Latam" only, India not allowed -> REJECT.
+- Care Access (Greenhouse 4112890009): posting URL redirects to the company board (likely closed); board lists US/Poland/Brazil only, no India -> REJECT.
+- Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
+- Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
+- Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
