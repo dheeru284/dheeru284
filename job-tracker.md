@@ -25,3 +25,17 @@ Search snippets only (job sites are blocked, nothing opened or applied to). UAE 
 - Al-Futtaim Group — Data Engineer, Azure/Databricks (Dubai)
 - Senior Data Engineer, Databricks/Fabric (Abu Dhabi, posted 7 Jul 2026)
 Salary context: UAE data engineer averages about AED 12.7–13.4k/month, roughly ₹3.0–3.2 lakh at about ₹24/AED (assumed rate, not live). Your ₹3.5 lakh/month floor is about AED 14.5–15k, so many UAE roles would be borderline anyway.
+
+## UAE ~AED 25k/month search 2026-10-07 — NOT applied (job sites blocked; user approval needed)
+
+Unverified, from search snippets. Work mode matters: your earlier rule was fully remote or <=4 office days/month.
+
+| Company | Role | Salary | Work mode | Source | Status |
+|---|---|---|---|---|---|
+| (unnamed) | Senior Data Engineer, Azure Data Platform & Analytics, Dubai | AED 28–38k/mo | unknown | freehire.me / GulfTalent-type listing | REVIEW — salary fits, mode unknown |
+| (unnamed) | Lead Data Engineering – Platform Ops | AED 35–50k/mo | unknown | freehire.me | REVIEW — may exceed experience scope (lead/ops) |
+| EXL | Lead Data Engineer – Azure + Fabric | not seen | unknown | dreamworkhq.com/job/d179aae1-986a-4f43-b161-210b717494bb | REVIEW — strong stack fit, 8+ yrs; location unclear |
+| Eutopia Solutions | Data Engineering Lead (Dubai) | not seen | unknown | freehire.me | REVIEW |
+| (unnamed) | Azure Data Engineer (Data Lake Ownership) | not seen | unknown | gulftalent.com/uae/jobs/azure-data-engineer-data-lake-ownership-602082 | REVIEW |
+| Keyrock | Senior Data Engineer, Abu Dhabi | AED 15–23k/mo | unknown | search snippet | REJECT — min below target |
+Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days-per-month rule.
