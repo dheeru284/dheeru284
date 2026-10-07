@@ -15,3 +15,13 @@ Resume facts used: ~10 yrs; Azure Databricks, Spark/PySpark, ADF, Synapse, Fabri
 | Jobgether | Data Engineer (Azure/Databricks) | jobs.lever.co/jobgether/b33f80b5-6d9b-4601-926d-f2fdaab84cfb | REVIEW (unverified) | Aggregator/intermediary; find the real employer. |
 | Weekday (client) | Senior Data Engineer, Fabric + Databricks | Weekday | REJECT | Listed ₹20–40 lakh/yr; minimum is below ₹42 lakh. |
 | External Global | Sr. Databricks Engineer | dreamworkhq.com | REJECT | USA-only remote, $106–140k, requires Databricks Pro cert. |
+
+## UAE check 2026-10-07 — no remote-from-India roles found
+
+Search snippets only (job sites are blocked, nothing opened or applied to). UAE roles found are on-site/hybrid in Dubai/Abu Dhabi, which needs relocation, so REJECT for remote-from-India:
+- Cognizant — Senior Databricks Engineer (Dubai/Abu Dhabi)
+- BigTapp/Claids — Senior Data Engineer, Azure Databricks, banking (Dubai); also needs banking domain experience
+- IDC Technologies — Senior Azure Data Engineer, 7–10 yrs (UAE)
+- Al-Futtaim Group — Data Engineer, Azure/Databricks (Dubai)
+- Senior Data Engineer, Databricks/Fabric (Abu Dhabi, posted 7 Jul 2026)
+Salary context: UAE data engineer averages about AED 12.7–13.4k/month, roughly ₹3.0–3.2 lakh at about ₹24/AED (assumed rate, not live). Your ₹3.5 lakh/month floor is about AED 14.5–15k, so many UAE roles would be borderline anyway.
