@@ -234,7 +234,8 @@ def test_coupon_membership_emi_handling(session):
     o3 = pricing.record_observation(session, rp, emi, ts=t0 + timedelta(hours=14), settings=s)
     assert o3.is_payable is False
     day_rows = session.scalars(select(DailyPrice)).all()
-    assert day_rows[0].min_price == 800.0  # EMI-only price excluded from roll-up
+    assert min(r.min_price for r in day_rows) == 800.0  # EMI-only price (100) excluded from roll-up
+    assert all(r.min_price != 100.0 for r in day_rows)
 
 
 def test_foreign_currency_normalised(session, monkeypatch):
