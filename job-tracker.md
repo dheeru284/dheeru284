@@ -46,3 +46,17 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-08 — no applications submitted
+Network: apply.workable.com, remotive.com, boards-api.greenhouse.io, api.lever.co, remoteok.com not reachable (DNS/proxy); a Lever posting URL returned 404. Only search snippets available, so nothing could be verified or applied to. No salary shown for any role below.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Weekday AI | Senior Data Engineer (Fabric/Databricks), India remote, posted 2026-10-01 | apply.workable.com/weekday-1/jobs/view/092975708B | REVIEW | Same Weekday client family as the earlier ₹20–40L listing; salary likely below ₹42L. Unverified. |
+| Jobgether (partner co.) | Databricks Engineer – Senior/Lead, India remote | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REVIEW | Lever URL 404 on fetch; intermediary; salary unknown. |
+| Jobgether | Data Engineer – Senior (contract, India) | jobs.lever.co/jobgether/48d2a20c-166f-47a5-953e-ba89db644b04 | REVIEW | Contract; salary unknown. |
+| DATAMAXIS | Senior Data Engineer, India | remotive.com/remote/jobs/software-development/senior-data-engineer-4214664 | REVIEW | Databricks/PySpark; salary unknown. |
+| BrightClaim | Senior Data Engineer (Azure ADF/Databricks) | remotive.com/remote/jobs/data/senior-data-engineer-5223168 | REVIEW | Good stack fit; India eligibility and salary unconfirmed. |
+| Billigence | Sr Data Engineer, 6-mo contract | remotive.com | REVIEW | Posted ~3 weeks ago; contract. |
+| N-IX | Senior Data Engineer (#2173) | careers.n-ix.com | REJECT | Requires Databricks certification (not on resume). |
+| EPAM | Senior Data Software Engineer | careers.epam.com | REJECT | No longer available. |
