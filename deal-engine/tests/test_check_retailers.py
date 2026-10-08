@@ -23,3 +23,11 @@ def test_probe_reports_works_blocked_and_unconfigured(server, tmp_path):
     assert probe("probe_blocked", s)["verdict"].startswith("BLOCKED")
     assert probe("probe_none", s)["verdict"].startswith("UNTESTED")
     assert probe("amazon", s)["verdict"].startswith("UNCONFIGURED")
+
+
+def test_slack_flag_posts_summary(server, monkeypatch):
+    from scripts import check_retailers as cr
+    monkeypatch.setattr(cr, "get_settings", lambda: Settings(_env_file=None, slack_webhook_url=f"http://{server.domain}/slack"))
+    cr._post_slack([{"retailer": "x", "verdict": "WORKS", "pages": [
+        {"status": "OK", "url": "https://x/p/1", "title": "Thing", "currency": "INR", "price": 99}]}])
+    assert "Thing" in server.slack[0]["text"] and "1/1 usable" in server.slack[0]["text"]
