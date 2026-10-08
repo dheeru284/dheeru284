@@ -16,7 +16,7 @@ from tests.test_e2e_pipeline import backfill, crawl_all, world  # noqa: F401  (f
 
 
 @pytest.fixture
-def client(engine, session):
+def client(engine, session, monkeypatch):
     from app.api.main import app
 
     Session = sessionmaker(bind=engine, expire_on_commit=False, autoflush=False)
@@ -28,9 +28,13 @@ def client(engine, session):
         finally:
             s.close()
 
+    monkeypatch.setenv("FIRST_PARTY_RETAILERS", "shop_a,shop_b,shop_c")
+    from app.config import settings as _s
+    _s.get_settings.cache_clear()
     app.dependency_overrides[get_db] = override
     yield TestClient(app)
     app.dependency_overrides.clear()
+    _s.get_settings.cache_clear()
 
 
 def build_deal(world, session):  # noqa: F811

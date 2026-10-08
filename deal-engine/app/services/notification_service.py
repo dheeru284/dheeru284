@@ -20,7 +20,8 @@ log = get_logger(__name__)
 
 def _offer(o: OfferInfo) -> dict[str, Any]:
     return {"retailer_key": o.retailer_key, "retailer_name": o.retailer_name, "price": o.price, "url": o.url,
-            "match_confidence": o.match_confidence}
+            "match_confidence": o.match_confidence,
+            "seller": o.seller, "official": o.official}
 
 
 def build_payload(inp: DealInputs, d: DealDecision, settings: Settings) -> dict[str, Any]:

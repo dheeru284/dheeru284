@@ -1,6 +1,7 @@
 import os
 
 # Must be set before any app module reads settings.
+os.environ["DEALENGINE_NO_DOTENV"] = "1"  # tests must never read a developer's real .env
 os.environ["REDIS_URL"] = "redis://localhost:6399/0"  # unreachable -> in-memory fallbacks, no cross-test pollution
 os.environ.setdefault("TEST_DATABASE_URL", "sqlite:////tmp/dealengine_test.db")
 os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]

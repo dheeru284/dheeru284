@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 
 from dotenv import load_dotenv
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv()
+if not os.environ.get("DEALENGINE_NO_DOTENV"):
+    load_dotenv()
 
 HISTORY_QUALITY_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
 
@@ -18,7 +20,7 @@ def _alias(*names: str) -> AliasChoices:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
+    model_config = SettingsConfigDict(env_file=None if os.environ.get("DEALENGINE_NO_DOTENV") else ".env", extra="ignore", populate_by_name=True)
 
     app_env: str = "development"
     log_level: str = "INFO"
@@ -45,6 +47,13 @@ class Settings(BaseSettings):
     min_match_confidence_for_deals: float = 80.0
     price_freshness_hours: int = 48
     allow_imported_history: bool = True
+    # Seller trust. Marketplaces (many third-party sellers) only count if the seller is trusted; first-party
+    # retailers always count. Names are matched case-insensitively as substrings. Review for your market.
+    require_trusted_seller: bool = True
+    trusted_sellers: str = ("amazon,cloudtail,appario,retailez,flipkart,retailnet,supercomnet,"
+                            "myntra,ajio,tata cliq,tatacliq,nykaa,firstcry,decathlon,croma,reliance,vijay sales")
+    first_party_retailers: str = "croma,reliance_digital,vijay_sales,ikea,decathlon"
+    official_brand_retailers: str = ""  # retailer keys that are the brand's own store (e.g. from config/retailers.yaml)
 
     # --- Alert de-duplication ---
     alert_renotify_after_hours: int = 24
@@ -107,6 +116,18 @@ class Settings(BaseSettings):
 
     def retailer_enabled(self, key: str) -> bool:
         return bool(getattr(self, f"enable_{key}", False))
+
+    @property
+    def trusted_seller_list(self) -> list[str]:
+        return [s.strip().lower() for s in self.trusted_sellers.split(",") if s.strip()]
+
+    @property
+    def first_party_list(self) -> set[str]:
+        return {s.strip() for s in self.first_party_retailers.split(",") if s.strip()}
+
+    @property
+    def official_list(self) -> set[str]:
+        return {s.strip() for s in self.official_brand_retailers.split(",") if s.strip()}
 
     @property
     def channel_map(self) -> dict[str, str]:

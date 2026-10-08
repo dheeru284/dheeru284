@@ -28,6 +28,8 @@ class OfferInfo:
     observed_at: datetime | None = None
     seller: str | None = None
     listing_id: int | None = None
+    trusted: bool = True
+    official: bool = False  # the brand's own store
 
 
 @dataclass
@@ -83,12 +85,27 @@ def rank_offers(offers: list[OfferInfo], settings: Settings, now: datetime) -> l
             continue
         if o.match_confidence < settings.min_match_confidence_for_deals:
             continue
+        if settings.require_trusted_seller and not o.trusted:
+            continue
         if o.observed_at is not None:
             seen = o.observed_at if o.observed_at.tzinfo else o.observed_at.replace(tzinfo=timezone.utc)
             if seen < cutoff:
                 continue
         ok.append(o)
     return sorted(ok, key=lambda o: (o.price, o.retailer_key))
+
+
+def seller_trusted(retailer_key: str, seller: str | None, brand: str | None, settings: Settings) -> bool:
+    """First-party retailers and brand-official stores are trusted; on marketplaces the seller must be known and
+    on the trusted list (or be the brand itself). Unknown seller on a marketplace == untrusted."""
+    if retailer_key in settings.first_party_list or retailer_key in settings.official_list:
+        return True
+    if not seller:
+        return False
+    low = seller.lower()
+    if brand and brand.lower() in low:
+        return True  # brand's official storefront on a marketplace
+    return any(t in low for t in settings.trusted_seller_list)
 
 
 def severity_for(discount: float) -> str | None:
@@ -207,6 +224,8 @@ def build_inputs(session, product_id: int, settings: Settings, now: datetime | N
                 in_stock=bool(latest.availability), payable=bool(latest.is_payable),
                 match_confidence=rp.match_confidence or 0.0, observed_at=latest.timestamp,
                 seller=latest.seller or rp.seller, listing_id=rp.id,
+                trusted=seller_trusted(ret.key, latest.seller or rp.seller, product.brand, settings),
+                official=ret.key in settings.official_list,
             ))
         if rp.rating is not None and rp.review_count and (rp.match_confidence or 0) >= settings.min_match_confidence_for_deals:
             rated_num += rp.rating * rp.review_count

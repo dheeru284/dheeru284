@@ -177,3 +177,14 @@ Covers: matching (exact/model/storage/colour/pack/generation/connector/brand/ref
 * Scrape `/metrics` (Prometheus text; per-retailer `crawls_*`, `prices_recorded`, `deals_detected`, `slack_alerts_sent`, `duplicate_alerts_suppressed`, `retailer_blocked`). Logs are JSON, secrets redacted.
 * Set a real contact in `USER_AGENT`.
 * Throughput at 100k products has **not** been load-tested; design choices (daily roll-up, batched scheduling, Redis-backed throttle) are aimed at it, but measure before trusting it.
+
+## 16. Your alert conditions, and where each is enforced
+| Condition | Where |
+|---|---|
+| ≥ 1 year of price history | `median_365d` window + lifetime in `price_history.baseline_candidates`; backfill Amazon.in history with `python -m scripts.import_keepa` (paid Keepa API, `KEEPA_API_KEY`; stored as IMPORTED_HISTORY and flagged in alerts) |
+| Significant drop | `MIN_DISCOUNT_PERCENT` vs the lowest credible median (30/90/180/365d/lifetime) |
+| Trustworthy seller | `seller_trusted()`: first-party retailers (`FIRST_PARTY_RETAILERS`), brand-official stores, or marketplace sellers matching `TRUSTED_SELLERS`; unknown marketplace sellers are excluded (`REQUIRE_TRUSTED_SELLER`). **Review the default seller list** |
+| Review > 4★ | `MIN_RATING` (default 4.0 means ≥ 4.0; set 4.01 for strictly more) |
+| Compare all trusted sites + brand's own store | Every trusted listing matched at ≥ 80 % competes; add the brand store as a retailer in `config/retailers.yaml` and list its key in `OFFICIAL_BRAND_RETAILERS` — it is labelled "official brand store" in Slack |
+| Only the cheapest link | The alert's primary button and price are the lowest eligible price; others listed after it |
+| Immediate alerts | Latency = crawl interval of that product (hot: `CRAWL_INTERVAL_MINUTES`, lower it as far as the retailer's rate limits/terms allow). Detection and Slack delivery run right after each crawl. Run 24/7 via Docker; Claude's Monitor tool only watches while a session is open (max 30 min per watch) and is not a substitute for the worker |

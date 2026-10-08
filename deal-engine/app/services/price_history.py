@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 WINDOWS = (7, 30, 90, 180, 365)
-BASELINE_WINDOWS = (30, 90, 180)  # + lifetime
+BASELINE_WINDOWS = (30, 90, 180, 365)  # + lifetime
 # minimum number of distinct days with data inside a window for it to be a credible baseline
 MIN_DAYS_IN_WINDOW = {30: 10, 90: 20, 180: 30, 365: 45}
 MIN_DAYS_LIFETIME = 14

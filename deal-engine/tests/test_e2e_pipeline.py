@@ -35,7 +35,8 @@ def world(server, session, tmp_path):
     (tmp_path / "seed_urls.yaml").write_text(yaml.safe_dump({
         "shop_a": [f"{base}/p/101"], "shop_b": [f"{base}/p/9001"]}))
     s = Settings(_env_file=None, config_dir=str(tmp_path), per_domain_min_interval_seconds=0, page_cache_ttl_seconds=0,
-                 redis_url="redis://localhost:6399/0", slack_webhook_url=f"{base}/slack", crawl_interval_minutes=60)
+                 redis_url="redis://localhost:6399/0", slack_webhook_url=f"{base}/slack", crawl_interval_minutes=60,
+                 first_party_retailers="shop_a,shop_b,shop_c")
     server.prices["/p/101"] = {"name": "Sony WH-1000XM5 Wireless Noise Cancelling Headphones Black", "price": 20000,
                                "rating": 4.5, "reviews": 5300, "mpn": "WH1000XM5B"}
     server.prices["/p/9001"] = {"name": "Sony WH-1000XM5 Headphones (Black)", "price": 21000, "rating": 4.4, "reviews": 900}

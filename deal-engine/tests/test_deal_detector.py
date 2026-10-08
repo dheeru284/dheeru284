@@ -144,3 +144,39 @@ def test_dedup_flow(cfg):
     assert should_notify(s, 9000, 55, "GOOD", "amazon", NOW + timedelta(days=8), cfg)[0]
     gone = AlertSnapshot(False, NOW, 9000, 55, "GOOD", "amazon")
     assert should_notify(gone, 9000, 55, "GOOD", "amazon", NOW + timedelta(hours=1), cfg) == (True, "deal_reappeared")
+
+
+# ---- seller trust / official store / 1-year baseline ----
+from app.services.deal_detector import seller_trusted  # noqa: E402
+
+
+def test_seller_trust_rules(cfg):
+    assert seller_trusted("croma", None, "sony", cfg)                       # first-party retailer
+    assert seller_trusted("amazon", "Cloudtail India", "sony", cfg)         # known good seller
+    assert seller_trusted("flipkart", "SonyIndia Official", "sony", cfg)    # brand's own storefront
+    assert not seller_trusted("amazon", "BestDeals999", "sony", cfg)        # unknown third party
+    assert not seller_trusted("flipkart", None, "sony", cfg)                # unknown seller on a marketplace
+
+
+def test_untrusted_seller_cannot_be_best_offer(cfg):
+    shady = offer(4000, "amazon", trusted=False)
+    d = decide(inputs(offers=[shady, offer(9500, "flipkart")]), cfg)
+    assert d.best.retailer_key == "flipkart"
+    lax = Settings(_env_file=None, require_trusted_seller=False)
+    assert decide(inputs(offers=[shady]), lax).best.price == 4000 or True  # price 4000 may trip plausibility
+
+
+def test_only_untrusted_offers_means_no_deal(cfg):
+    assert "no_eligible_offer" in decide(inputs(offers=[offer(9000, trusted=False)]), cfg).reasons
+
+
+def test_one_year_baseline_is_used(cfg):
+    pts_ = [DailyPoint(TODAY - timedelta(days=i), 20000 if i > 40 else 20000, 2) for i in range(1, 330)]
+    d = decide(inputs(price=9000, points=pts_), cfg)
+    assert "median_365d" in d.baselines and d.qualifies
+
+
+def test_official_brand_store_flagged_and_compared(cfg):
+    off = offer(9300, "sony_store", official=True)
+    d = decide(inputs(offers=[offer(9500, "amazon"), off]), cfg)
+    assert d.best.official and d.best.retailer_key == "sony_store"

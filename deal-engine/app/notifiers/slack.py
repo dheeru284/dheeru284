@@ -66,7 +66,8 @@ def build_blocks(p: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
     ]
 
     if p["others"]:
-        lines = [f"{_link(o['retailer_name'], o['url'])} — {format_inr(o['price'])}"
+        lines = [f"{_link(o['retailer_name'], o['url'])}{' (official brand store)' if o.get('official') else ''}"
+                 f" — {format_inr(o['price'])}"
                  f"  (+{(o['price'] - best['price']) / best['price'] * 100:.1f}%)" for o in p["others"][:6]]
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*Other verified prices*\n" + "\n".join(lines)}})
     else:
