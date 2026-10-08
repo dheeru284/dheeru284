@@ -1,0 +1,11 @@
+# Add new public-page retailers here without writing code (robots.txt-gated, JSON-LD based).
+# retailers:
+#   shoppersstop:
+#     name: Shoppers Stop
+#     domain: www.shoppersstop.com
+#     search_url: "https://www.shoppersstop.com/search?q={query}"
+#     product_url_re: "/p/(?P<id>[\\w-]+)"
+#     scheme: https          # optional
+#     sitemap_max_urls: 200  # optional, 0 disables sitemap discovery
+# Then set ENABLE_SHOPPERSSTOP=true. For API/feed sources, write a RetailerAdapter subclass (README).
+retailers: {}

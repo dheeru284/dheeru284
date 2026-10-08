@@ -1,0 +1,71 @@
+x-app: &app
+  build: .
+  image: dealengine:latest
+  env_file: [.env]
+  environment: &env
+    DATABASE_URL: postgresql+psycopg2://deals:${POSTGRES_PASSWORD:-change-me}@postgres:5432/deals
+    REDIS_URL: redis://redis:6379/0
+  depends_on:
+    migrate: {condition: service_completed_successfully}
+    redis: {condition: service_healthy}
+  restart: unless-stopped
+  volumes: ["./config:/srv/config:ro", "./debug:/srv/debug"]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: deals
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: deals
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deals -d deals"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["redisdata:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:   # one-shot: alembic upgrade + retailer seeding
+    build: .
+    image: dealengine:latest
+    env_file: [.env]
+    environment: *env
+    command: ["sh", "-c", "alembic upgrade head && python -m scripts.seed"]
+    volumes: ["./config:/srv/config:ro"]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  app:
+    <<: *app
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *app
+    command: ["celery", "-A", "app.workers.celery_app:celery", "worker", "-l", "info",
+              "-Q", "default,crawl,discovery,alerts", "--concurrency", "4"]
+
+  scheduler:
+    <<: *app
+    command: ["celery", "-A", "app.workers.celery_app:celery", "beat", "-l", "info",
+              "--schedule", "/tmp/celerybeat-schedule"]
+
+volumes:
+  pgdata:
+  redisdata:

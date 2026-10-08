@@ -1,0 +1,48 @@
+# Discovery seed keywords. Edit freely - no code change needed. Top-level key == category stored on products.
+electronics:
+  - smartphones
+  - laptops
+  - monitors
+  - televisions
+  - headphones
+  - earbuds
+  - cameras
+  - smartwatches
+  - gaming consoles
+  - tablets
+home_appliances:
+  - air conditioner
+  - washing machine
+  - refrigerator
+  - microwave oven
+  - air purifier
+kitchen_appliances:
+  - air fryer
+  - mixer grinder
+  - induction cooktop
+  - electric kettle
+furniture:
+  - office chair
+  - sofa
+  - study table
+  - mattress
+fashion:
+  - shoes
+  - sneakers
+  - jackets
+  - watches
+  - backpacks
+beauty:
+  - skincare
+  - perfume
+  - hair dryer
+home_kitchen:
+  - cookware set
+  - vacuum cleaner
+baby_products:
+  - baby stroller
+  - diapers
+fitness:
+  - treadmill
+  - dumbbells
+  - yoga mat

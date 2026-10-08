@@ -1,0 +1,12 @@
+# Curated product page URLs per retailer key (see /retailers for keys). Crawled on the next discovery run.
+# Only add pages you are permitted to fetch. Example:
+# croma:
+#   - https://www.croma.com/<product-slug>/p/<id>
+amazon: []
+flipkart: []
+myntra: []
+croma: []
+reliance_digital: []
+tata_cliq: []
+ajio: []
+nykaa: []
