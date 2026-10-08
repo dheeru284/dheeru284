@@ -123,6 +123,8 @@ Services: `postgres`, `redis`, `migrate` (one-shot: alembic + seed), `app` (API 
 3. **Everyone else**: preferably an affiliate/product feed → `FEED_CROMA_URL=...` (CSV/JSON/JSON-lines; remap columns with `FEED_CROMA_MAP='{"price":"sale_price","id":"sku"}'`). Otherwise add real product URLs to `config/seed_urls.yaml` and check the logs for `robots.txt disallows` / `blocked`. Verify the `search_url` / `product_url_re` constants in `app/crawlers/<retailer>.py` against the live site — they are unverified guesses.
 4. Respect each site's Terms of Service; you are responsible for the retailers you enable (`ENABLE_<KEY>=false` turns one off).
 
+**Probe tool:** on a machine with open internet, `python -m scripts.check_retailers` (or `... croma myntra`; `--json` for machine output) reports per retailer whether it is configured, whether search is allowed by robots.txt, and for each URL in `config/seed_urls.yaml` whether it parsed (price/rating/stock), was blocked, or had no structured data. Verdicts: `WORKS`, `PARTIAL`, `BLOCKED`, `UNCONFIGURED`, `UNTESTED`. "NOT permitted or robots.txt unreachable" means the fetcher refused conservatively; it can't tell the two apart.
+
 ## 10. Adding a retailer
 *No code (public pages with JSON-LD):* add to `config/retailers.yaml` (template inside), restart.
 *Code:* create `app/crawlers/<name>.py`:
