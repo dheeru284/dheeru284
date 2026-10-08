@@ -178,6 +178,9 @@ Covers: matching (exact/model/storage/colour/pack/generation/connector/brand/ref
 * Set a real contact in `USER_AGENT`.
 * Throughput at 100k products has **not** been load-tested; design choices (daily roll-up, batched scheduling, Redis-backed throttle) are aimed at it, but measure before trusting it.
 
+## 15b. Credentials
+`docs/AFFILIATE_APPLICATIONS.md` has the signup checklist and application text; `python -m scripts.check_credentials` tests each key once without printing it.
+
 ## 16. Your alert conditions, and where each is enforced
 | Condition | Where |
 |---|---|
