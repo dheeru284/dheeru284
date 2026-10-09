@@ -191,3 +191,17 @@ Covers: matching (exact/model/storage/colour/pack/generation/connector/brand/ref
 | Compare all trusted sites + brand's own store | Every trusted listing matched at ≥ 80 % competes; add the brand store as a retailer in `config/retailers.yaml` and list its key in `OFFICIAL_BRAND_RETAILERS` — it is labelled "official brand store" in Slack |
 | Only the cheapest link | The alert's primary button and price are the lowest eligible price; others listed after it |
 | Immediate alerts | Latency = crawl interval of that product (hot: `CRAWL_INTERVAL_MINUTES`, lower it as far as the retailer's rate limits/terms allow). Detection and Slack delivery run right after each crawl. Run 24/7 via Docker; Claude's Monitor tool only watches while a session is open (max 30 min per watch) and is not a substitute for the worker |
+
+## 17. Easy mode: no signups, no keys, no Docker
+```bash
+pip install -r requirements.txt
+cp .env.example .env          # set only SLACK_WEBHOOK_URL
+# put product page URLs (one per line) in config/watchlist.txt
+python -m scripts.watch            # checks every 30 min; Ctrl+C to stop
+python -m scripts.watch --once     # one check, then exit
+python -m scripts.watch --interval 15 --browser   # real browser for JS pages (needs: playwright install chromium)
+```
+It keeps data in a local SQLite file, posts a plain-English Slack message whenever a watched price falls by at
+least `WATCH_MIN_DROP_PERCENT` (default 5 %) since the last check, and also sends the full "genuine deal" message
+once enough price history exists. Any website works if its product pages publish standard product data; shops
+that refuse automated access are reported and left alone (never bypassed). Keep it on a machine that stays on.

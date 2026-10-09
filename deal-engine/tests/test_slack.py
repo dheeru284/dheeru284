@@ -34,29 +34,33 @@ def text_of(blocks):
     return json.dumps(blocks, ensure_ascii=False)
 
 
-def test_blocks_contain_required_information():
+def test_blocks_are_plain_english_and_complete():
     blocks, fallback = build_blocks(payload())
     t = text_of(blocks)
-    for needle in ["Apple AirPods Pro 2 USB-C", "4.5/5", "18,421", "₹12,999", "₹27,999", "53.6%", "Flipkart",
-                   "Amazon India", "₹13,499", "Croma", "₹14,999", "90-day range", "₹29,999", "HIGH", "96%",
-                   "2026-10-08 10:00 UTC", "30-day trend", "90-day trend", "https://www.flipkart.com/p/1",
-                   "https://www.amazon.in/dp/B1", "90-day median", "not MRP"]:
+    for needle in ["Apple AirPods Pro 2 USB-C", "4.5★ from 18,421 reviews", "Now *₹12,999* at *Flipkart*",
+                   "Usually ₹27,999 over the last 90 days", "you save about *₹15,000* (54%)",
+                   "Where to buy (cheapest first)", "1. <https://www.flipkart.com/p/1|Flipkart> — ₹12,999  ← cheapest",
+                   "2. <https://www.amazon.in/dp/B1|Amazon India> — ₹13,499", "3. <https://www.croma.com/p/9|Croma> — ₹14,999",
+                   "lowest ₹12,999, highest ₹29,999", "210 price checks over 90 days", "How sure are we: high",
+                   "not the printed MRP", "Checked 08 Oct 2026, 10:00 UTC"]:
         assert needle in t, needle
-    assert blocks[0]["type"] == "header" and "GOOD DEAL" in blocks[0]["text"]["text"]
+    assert blocks[0]["type"] == "header" and "54% cheaper than usual" in blocks[0]["text"]["text"]
     assert blocks[-1]["type"] == "actions" and blocks[-1]["elements"][0]["url"] == "https://www.flipkart.com/p/1"
-    assert "mrp" not in t.lower().replace("not mrp", "")
-    assert "₹12,999" in fallback
+    for jargon in ("median_", "spike-filtered", "vs max", "Historical:", "discount_from"):
+        assert jargon not in t
+    assert fallback.startswith("Price drop: Apple AirPods Pro 2 USB-C is now ₹12,999 at Flipkart (54% cheaper than usual)")
 
 
-@pytest.mark.parametrize("sev,label", [("EXTREME", "EXTREME DEAL"), ("GREAT", "GREAT DEAL"), ("GOOD", "GOOD DEAL")])
-def test_severity_labels(sev, label):
-    assert label in build_blocks(payload(severity=sev))[0][0]["text"]["text"]
+def test_severity_titles():
+    assert "Huge price drop" in build_blocks(payload(severity="EXTREME"))[0][0]["text"]["text"]
+    assert "Big price drop" in build_blocks(payload(severity="GREAT"))[0][0]["text"]["text"]
+    assert "Price drop:" in build_blocks(payload(severity="GOOD"))[0][0]["text"]["text"]
 
 
-def test_single_retailer_and_low_confidence_warnings():
+def test_single_store_and_short_history_warnings_in_words():
     blocks, _ = build_blocks(payload(others=[], history_quality="MEDIUM", flags=["no_cross_retailer_confirmation"]))
     t = text_of(blocks)
-    assert "No other retailer confirmed" in t and "only one retailer" in t and "medium-confidence history" in t
+    assert "Only one store checked so far" in t and "Only one store confirms this price" in t and "Short price history" in t
 
 
 def test_mrkdwn_injection_is_escaped():
@@ -110,10 +114,6 @@ def test_slack_failures_raise_and_unconfigured():
         bad.send_deal(payload())
 
 
-def test_imported_history_warning_only_when_used_and_no_redundant_raw_max():
-    t = text_of(build_blocks(payload(uses_imported_history=False))[0])
-    assert "imported" not in t and "raw max" in t  # default payload: raw max (31,999) differs from spike-filtered
+def test_imported_history_note_only_when_used():
+    assert "imported" not in text_of(build_blocks(payload(uses_imported_history=False))[0])
     assert "imported" in text_of(build_blocks(payload(uses_imported_history=True))[0])
-    flat = payload()
-    flat["stats"] = {**flat["stats"], "max": 29999.0}
-    assert "raw max" not in text_of(build_blocks(flat)[0])

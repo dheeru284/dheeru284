@@ -1,0 +1,4 @@
+# One product page URL per line. Lines starting with # are ignored.
+# Works with any shop whose product pages publish standard product data (most do).
+# Example:
+# https://www.croma.com/some-product/p/123456

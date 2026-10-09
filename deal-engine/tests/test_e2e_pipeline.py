@@ -112,7 +112,7 @@ def test_full_pipeline_deal_dedup_and_slack(world, session):
     assert len(server.slack) == 1
     msg = server.slack[0]
     blob = str(msg)
-    assert "GOOD DEAL" in blob and "ShopA" in blob and "ShopB" in blob and f"{base}/p/101" in blob
+    assert "Price drop" in blob and "52% cheaper than usual" in blob and "ShopA" in blob and "ShopB" in blob and f"{base}/p/101" in blob
     notification_service.deliver(session, ev.id, s)
     assert len(server.slack) == 1  # not re-sent
     assert session.scalar(select(Notification.status).where(Notification.deal_event_id == ev.id)) == "sent"

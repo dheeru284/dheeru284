@@ -38,84 +38,101 @@ def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _window_words(btype: str) -> str:
+    if btype == "median_lifetime":
+        return "over its whole price history"
+    days = btype.removeprefix("median_").removesuffix("d")
+    return "over the last year" if days == "365" else f"over the last {days} days"
+
+
+_TITLES = {"EXTREME": ("🔥", "Huge price drop"), "GREAT": ("🚨", "Big price drop"), "GOOD": ("📉", "Price drop")}
+_CONF = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low"}
+
+
 def build_blocks(p: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
-    """Slack Block Kit payload + plain-text fallback. Pure function (unit-tested)."""
-    emoji, label = SEVERITY.get(p["severity"], ("🔥", "DEAL"))
-    best = p["best"]
-    base_label = baseline_label(p["baseline"]["type"])
+    """Plain-English Slack message (Block Kit) + one-line fallback. Pure function (unit-tested)."""
+    emoji, label = _TITLES.get(p["severity"], ("📉", "Price drop"))
+    best, base = p["best"], p["baseline"]
     stats = p["stats"]
-    title = f"{emoji} {label}: {p['discount']:.0f}% below observed price history"
-    header = {"type": "header", "text": {"type": "plain_text", "text": title[:150], "emoji": True}}
-    name = f"*{_link(_esc(p['product_name']), best['url'])}*"
-    if p.get("brand"):
-        name += f"\nBrand: {_esc(str(p['brand']).title())}"
-    rating = f"{p['rating']:.1f}/5" if p.get("rating") is not None else "n/a"
-    reviews = f"{p['review_count']:,}" if p.get("review_count") else "n/a"
+    pct = round(p["discount"])
+    save = max(0, base["price"] - best["price"])
+    name = _esc(p["product_name"])
+    when = _window_words(base["type"])
 
-    fields = [
-        {"type": "mrkdwn", "text": f"*⭐ Rating*\n{rating}"},
-        {"type": "mrkdwn", "text": f"*📝 Reviews*\n{reviews}"},
-        {"type": "mrkdwn", "text": f"*💰 Best price now*\n{format_inr(best['price'])}"},
-        {"type": "mrkdwn", "text": f"*🏆 Best retailer*\n{_link(best['retailer_name'], best['url'])}"},
-        {"type": "mrkdwn", "text": f"*📉 {base_label[0].upper() + base_label[1:]}*\n{format_inr(p['baseline']['price'])}"},
-        {"type": "mrkdwn", "text": f"*📊 Discount vs history*\n{p['discount']:.1f}% (not MRP)"},
-    ]
+    rating = f"{p['rating']:.1f}★" if p.get("rating") is not None else "not rated"
+    reviews = f" from {p['review_count']:,} reviews" if p.get("review_count") else ""
+
     blocks: list[dict[str, Any]] = [
-        header,
-        {"type": "section", "text": {"type": "mrkdwn", "text": name}, "fields": fields},
+        {"type": "header", "text": {"type": "plain_text", "text": f"{emoji} {label}: {pct}% cheaper than usual"[:150], "emoji": True}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": (
+            f"*{_link(name, best['url'])}*\n"
+            f"Now *{format_inr(best['price'])}* at *{_esc(best['retailer_name'])}*"
+            f"{' (the brand\'s own store)' if best.get('official') else ''}\n"
+            f"Usually {format_inr(base['price'])} {when}, so you save about *{format_inr(save)}* ({pct}%).\n"
+            f"Rating: {rating}{reviews}")}},
     ]
 
-    if p["others"]:
-        lines = [f"{_link(o['retailer_name'], o['url'])}{' (official brand store)' if o.get('official') else ''}"
-                 f" — {format_inr(o['price'])}"
-                 f"  (+{(o['price'] - best['price']) / best['price'] * 100:.1f}%)" for o in p["others"][:6]]
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*Other verified prices*\n" + "\n".join(lines)}})
-    else:
-        blocks.append({"type": "section", "text": {"type": "mrkdwn",
-                       "text": "*Other verified prices*\n_No other retailer confirmed yet_"}})
+    options = [best, *p["others"]]
+    lines = []
+    for i, o in enumerate(options[:6]):
+        tag = "  ← cheapest" if i == 0 else ""
+        lines.append(f"{i + 1}. {_link(_esc(o['retailer_name']), o['url'])} — {format_inr(o['price'])}{tag}")
+    title = "Where to buy (cheapest first)" if len(options) > 1 else "Where to buy"
+    extra = "" if len(options) > 1 else "\n_Only one store checked so far, so no comparison yet._"
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": f"*{title}*\n" + "\n".join(lines) + extra}})
 
     rng = p.get("range_90d")
-    rng_txt = f"{format_inr(rng[0])} – {format_inr(rng[1])}" if rng else "n/a"
-    hist = (
-        f"*Historical:* min {format_inr(stats['min'])} · median {format_inr(stats['median'])} · "
-        f"max {format_inr(stats['robust_max'])}"
-        + (f" (spike-filtered; raw max {format_inr(stats['max'])})" if stats["max"] != stats["robust_max"] else "")
-        + "\n"
-        f"*90-day range:* {rng_txt}\n"
-        f"{_trend('30-day trend', p.get('trend_30d'))} · {_trend('90-day trend', p.get('trend_90d'))}\n"
-        f"vs max {p['discount_from_max']:.0f}% · vs median {p['discount_from_median']:.0f}% · "
-        f"vs average {p['discount_from_average']:.0f}%"
-    )
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": hist}})
+    history = (f"Price history: lowest {format_inr(stats['min'])}, highest {format_inr(stats['robust_max'])}"
+               f"{f', last 3 months {format_inr(rng[0])} to {format_inr(rng[1])}' if rng else ''}. "
+               f"Based on {stats['n_observations']:,} price checks over {stats['span_days']} days.")
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": history}})
 
-    warn = []
+    notes = [f"How sure are we: {_CONF.get(p['confidence'], 'low')} (history quality {_CONF.get(p['history_quality'], 'low')})."]
     if "no_cross_retailer_confirmation" in p.get("flags", []):
-        warn.append("only one retailer currently verified")
+        notes.append("Only one store confirms this price.")
     if p.get("history_quality") != "HIGH":
-        warn.append(f"{p['history_quality'].lower()}-confidence history")
+        notes.append("Short price history, so double-check before buying.")
     if p.get("uses_imported_history"):
-        warn.append("includes imported (not self-observed) history")
+        notes.append("Part of the history was imported, not watched by us.")
+    notes.append('"Usually" is the typical price we saw, not the printed MRP.')
     ts = p["detected_at"]
     if isinstance(ts, str):
         ts = datetime.fromisoformat(ts)
-    ctx = (f"🔎 Deal confidence: *{p['confidence']}* (score {p['score']:.0f}/100, internal ranking signal) · "
-           f"History: *{p['history_quality']}* ({stats['n_observations']} obs / {stats['span_days']}d) · "
-           f"Match confidence: {p['match_confidence']:.0f}% · {ts.strftime('%Y-%m-%d %H:%M UTC')}")
-    if warn:
-        ctx += "\n⚠️ " + "; ".join(warn)
-    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": ctx}]})
+    notes.append(ts.strftime("Checked %d %b %Y, %H:%M UTC."))
+    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": " ".join(notes)}]})
 
     buttons = []
-    for i, o in enumerate([best, *p["others"]][:5]):
-        btn = {"type": "button", "text": {"type": "plain_text", "text": f"Buy on {o['retailer_name']}"[:75]},
-               "url": o["url"]}
+    for i, o in enumerate(options[:5]):
+        btn = {"type": "button", "text": {"type": "plain_text", "text": f"Buy at {o['retailer_name']}"[:75]}, "url": o["url"]}
         if i == 0:
             btn["style"] = "primary"
         buttons.append(btn)
     blocks.append({"type": "actions", "elements": buttons})
-    fallback = (f"{label}: {p['product_name']} — {format_inr(best['price'])} at {best['retailer_name']} "
-                f"({p['discount']:.0f}% below historical {base_label}) {best['url']}")
+    fallback = (f"{label}: {p['product_name']} is now {format_inr(best['price'])} at {best['retailer_name']} "
+                f"({pct}% cheaper than usual). {best['url']}")
     return blocks, fallback
+
+
+def build_quick_drop(p: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
+    """Simple 'the price just went down' message used by the watchlist runner (no long-history claim)."""
+    drop = round((p["old_price"] - p["new_price"]) / p["old_price"] * 100)
+    save = p["old_price"] - p["new_price"]
+    text = (f"*{_link(_esc(p['title']), p['url'])}*\n"
+            f"Price dropped from {format_inr(p['old_price'])} to *{format_inr(p['new_price'])}* at *{_esc(p['retailer_name'])}*"
+            f" — {drop}% cheaper, you save about {format_inr(save)}.")
+    if p.get("rating") is not None:
+        text += f"\nRating: {p['rating']:.1f}★" + (f" from {p['review_count']:,} reviews" if p.get("review_count") else "")
+    blocks: list[dict[str, Any]] = [
+        {"type": "header", "text": {"type": "plain_text", "text": f"📉 Price drop: {drop}% cheaper", "emoji": True}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": text}},
+        {"type": "context", "elements": [{"type": "mrkdwn", "text": (
+            f"This compares with the last price we saw ({p['history_days']} days of watching). "
+            "It is not yet checked against a long price history, so it may not be a genuinely great deal.")}]},
+        {"type": "actions", "elements": [{"type": "button", "style": "primary", "url": p["url"],
+                                           "text": {"type": "plain_text", "text": f"Buy at {p['retailer_name']}"[:75]}}]},
+    ]
+    return blocks, (f"Price drop: {p['title']} {format_inr(p['old_price'])} → {format_inr(p['new_price'])} "
+                    f"at {p['retailer_name']}. {p['url']}")
 
 
 @register_notifier
@@ -132,10 +149,18 @@ class SlackNotifier(Notifier):
     def _channel_for(self, payload: dict[str, Any]) -> str | None:
         return self.s.channel_map.get(payload.get("category") or "") or self.s.slack_channel_id
 
+    def send_quick_drop(self, payload: dict[str, Any]) -> None:
+        blocks, text = build_quick_drop(payload)
+        self._post(blocks, text, payload.get("category"))
+
     def send_deal(self, payload: dict[str, Any]) -> None:
+        blocks, text = build_blocks(payload)
+        self._post(blocks, text, payload.get("category"))
+
+    def _post(self, blocks: list[dict[str, Any]], text: str, category: str | None) -> None:
+        payload = {"category": category}
         if not self.is_configured():
             raise NotifierNotConfigured("Set SLACK_WEBHOOK_URL, or SLACK_BOT_TOKEN + SLACK_CHANNEL_ID")
-        blocks, text = build_blocks(payload)
         if self.s.slack_bot_token and self._channel_for(payload):
             resp = self.client.post(
                 "https://slack.com/api/chat.postMessage",
