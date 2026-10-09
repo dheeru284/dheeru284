@@ -46,3 +46,21 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-09 — no applications submitted
+Blocker persists: egress proxy denies api.ashbyhq.com, apply.workable.com, remotive.com, greenhouse/lever APIs; only some lever.co/ashby pages and linkedin.com/jobs load. Nothing could be applied to.
+Verified this run:
+- Jobgether "Databricks Engineer - Senior/Lead" (lever 039b20f4-…) -> 404, closed -> REJECT.
+- Jobgether "Senior Data Engineer / Microsoft Fabric Engineer" (lever 6b0c5357-…) -> 404, closed -> REJECT.
+Unverified leads from search snippets (REVIEW; check employer page, salary, India eligibility):
+| Company | Role | Notes |
+|---|---|---|
+| MediaRadar | Senior Data Engineer (Azure Databricks, Spark, Airflow) | remotive.com/remote/jobs/software-development/senior-data-engineer-4200805; Airflow/AKS not in resume |
+| Billigence | Senior Data Engineer (Azure Databricks) | contract, India remote; salary unknown (carried over) |
+| BrightClaim | Senior Data Engineer (ADF, Databricks) | remotive.com/remote/jobs/data/senior-data-engineer-5223168; eligibility/salary unknown |
+| Evnek Technologies | Senior Data Engineer (SQL Server, Azure, Databricks) | remotive .../senior-data-engineer-4571403; India staffing-style, salary unknown |
+| DATAMAXIS | Senior Data Engineer (Databricks/PySpark, Java) | remotive .../senior-data-engineer-4214664; Java needed, likely weak match |
+| New Era Technology | Senior Data Engineer – MS Fabric, India remote | builtinhyderabad.in/job/data-platform-engineer-iii-ms-fabric/8742308; full-time/contract, salary unknown |
+| Gainwell Technologies | Senior Data Engineer (Databricks), remote India | jobs.gainwelltechnologies.com ... /1332831100; dated Jan 2026, may be stale |
+| Weekday (client) | Senior Data Engineer / Fabric | Workable range ₹11–50 lakh, min below ₹42 lakh -> REJECT |
+Note: resume email is bhumireddy1706@gmail.com; resume shows employment ended Jan '26 (no notice-period info).
