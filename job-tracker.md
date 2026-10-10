@@ -46,3 +46,10 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-10 — no applications submitted
+- Reachable: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked: remoterocketship.com, Lever/Greenhouse API subdomains.
+- Search returned Jobgether (Lever) India-remote roles; the two fetched (Databricks Sr/Lead 039b20f4…, Fabric Sr 6b0c5357…) return 404, so they are closed -> REJECT (expired). The Fabric listing showed ₹11–50 LPA, so its minimum was below threshold anyway.
+- xTag Services (Wipro-linked) Sr Data Engineer Azure Databricks, posted 17 Aug 2026: stale and unverified, not pursued.
+- Still REVIEW from before: Billigence (site blocked), Climb AI (JS-rendered), EXL (blocked).
+- Nothing verified as remote-from-India, ≥₹42L, and open, so nothing was applied to.
