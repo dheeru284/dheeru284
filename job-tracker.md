@@ -46,3 +46,18 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-11 — no applications submitted
+Blockers: no browser/form-submission tool in this session (WebFetch is read-only, Ashby pages are JS-rendered), and no posting exposed a verifiable salary. Remotive/remoterocketship/dreamworkhq unreachable. Nothing met all APPLY criteria (India eligibility + salary >= ₹42L + open), so nothing was submitted.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer (India Remote) | job-boards.greenhouse.io/yipitdatajobs/jobs/7179707 | REJECT/closed | Posting redirects to board; no Senior Data Engineer listed open (only Data QA, Sr SWE/SDET India). |
+| SADA India | Senior Data Engineer | job-boards.greenhouse.io/sadaindia/jobs/6688955003 | REJECT/closed | Board shows "no current openings". |
+| MediaRadar | Senior Data Engineer (Azure Databricks, Airflow, AKS) | remotive.com/remote/jobs/software-development/senior-data-engineer-4200805 | REVIEW | India-based remote per snippet, posted ~6 days ago; salary unknown; Airflow/AKS not in resume. Remotive unreachable to verify. |
+| Evnek Technologies | Senior Data Engineer (SQL Server→Databricks, Unity Catalog) | remotive.com/remote/jobs/data/senior-data-engineer-4571403 | REVIEW | India remote per snippet; salary unknown; Indian staffing firm, likely below ₹42L. |
+| Billigence | Senior Data Engineer (Azure Databricks) | remotive.com/remote/jobs/software-development/senior-data-engineer-4005395 | REVIEW | Contract; salary unknown (carried over). |
+| Jobgether (various) | Senior DE / Databricks / Fabric | jobs.lever.co/jobgether/... | REJECT | Intermediary; listed pay ₹1–2L/month and INR 11–50 LPA, minimum below threshold. |
+| N-iX | Senior Data Engineer (#2173) | careers.n-ix.com/jobs/4240327101-data-management-senior | REVIEW | Needs Azure Databricks certification (not on resume); India eligibility unclear. |
+| EPAM | Senior Data Software Engineer | careers.epam.com | REJECT | Closed. |
+| Climb AI | Senior Data Engineer | Ashby | REVIEW | Still unreadable (JS-rendered). |
