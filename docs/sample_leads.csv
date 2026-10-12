@@ -1,0 +1,2 @@
+company_name,source_url,signal_type,summary,website,country,city,industry,category,evidence_date,remote_ok,is_inference,contact_name,contact_role,contact_email,contact_linkedin,contact_verified
+[SYNTHETIC] Example Integrators LLC,https://example.com/synthetic/ei/jobs/42,hiring,Hiring Oracle Integration Cloud consultant on 6-month contract,https://example-integrators.example,AE,Dubai,IT consulting,oracle_partner,2026-10-08,true,false,Alex Example,Practice Lead,alex@example-integrators.example,,true

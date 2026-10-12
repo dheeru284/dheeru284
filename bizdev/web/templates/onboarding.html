@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block body %}<h2>Onboarding</h2>
+<div class="card"><h3>Readiness</h3><table>{% for i in ob["items"] %}<tr><td>{{"✔" if i.done else "✘"}}</td><td>{{i.label}}</td><td class="mut">{{("required for: " ~ i.required_for|join(", ")) if i.required_for else "optional"}}</td></tr>{% endfor %}</table></div>
+<form class="card" method="post" action="/onboarding"><input type="hidden" name="csrf" value="{{csrf}}"><p class="mut">Only enter verified facts. Anything here may appear in outreach.</p>
+{% for f,l in [("website","Website"),("sender_name","BD contact name"),("sender_title","Designation"),("sender_email","Verified sender email"),("sender_phone","Phone")] %}<p>{{l}}<br><input name="{{f}}" value="{{p[f] or ''}}" style="width:100%"></p>{% endfor %}
+{% for f,l in [("description","Company description"),("postal_address","Postal address"),("delivery_capacity","Actual consultants / experience / capacity")] %}<p>{{l}}<br><textarea name="{{f}}" rows="3">{{p[f] or ''}}</textarea></p>{% endfor %}
+<p>Verified facts usable in messages (one per line)<br><textarea name="verified_facts" rows="4">{% for x in p.verified_facts or [] %}{{x.fact}}
+{% endfor %}</textarea></p>
+{% for f,l in [("certifications","Certifications (verified)"),("case_studies","Approved case studies"),("target_countries","Target countries"),("target_industries","Target industries")] %}<p>{{l}} (one per line)<br><textarea name="{{f}}" rows="2">{{(p[f] or [])|join("\n")}}</textarea></p>{% endfor %}
+<p>Minimum rates (JSON)<br><input name="min_rates" value='{{p.min_rates|tojson}}' style="width:100%"></p>
+<h3>Dubai travel</h3><label><input type="checkbox" name="travel_confirmed" value="yes"> Travel dates confirmed</label> Travel <input type="date" name="travel_date"> Window <input type="date" name="window_start"> – <input type="date" name="window_end">
+<p><button>Save</button></p></form>{% endblock %}

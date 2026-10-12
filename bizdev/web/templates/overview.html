@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block body %}
+<h2>Overview</h2>
+<p class="mut">{% if m.dubai_trip_passed %}The Dubai trip date has passed — Campaign A in-person scheduling is closed.{% else %}{{m.days_to_dubai}} days to Dubai travel date.{% endif %}</p>
+<div class="grid">{% for k,l in [("leads_discovered","Leads discovered"),("qualified","Qualified (A+B)"),("tier_a","Tier A"),("awaiting_approval","Awaiting approval"),("outreach_sent","Outreach sent (live)"),("dry_run","Dry-run sends"),("manual_pending","LinkedIn manual pending"),("response_rate","Response rate %"),("positive_responses","Positive responses"),("pending_responses","Pending responses"),("follow_ups_due","Follow-ups due"),("needs_review","Needs review"),("meetings_proposed","Meetings proposed"),("meetings_confirmed","Meetings confirmed"),("in_person","In-person Dubai"),("remote_meetings","Remote meetings"),("remote_opportunities","Remote opportunities")] %}
+<div class="card stat"><div class="n">{{m[k]}}</div><div class="l">{{l}}</div></div>{% endfor %}</div>
+{% if ob.blocked.send_email %}<div class="card"><b>Before live email can be enabled:</b><ul>{% for x in ob.blocked.send_email %}<li>{{x}}</li>{% endfor %}</ul><a href="/onboarding">Go to onboarding</a></div>{% endif %}
+<div class="card"><h3>High-priority prospects (Tier A)</h3><table>{% for o in top %}<tr><td><a href="/leads/{{o.id}}">{{o.name}}</a></td><td>{{o.score}}</td><td>{{o.status.value}}</td><td>{{o.next_action or ""}}</td></tr>{% else %}<tr><td class="mut">None yet</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Needs attention</h3><table>{% for o in due %}<tr><td><a href="/leads/{{o.id}}">{{o.name}}</a></td><td>{{o.status.value}}</td><td>{{o.next_action or ""}}</td></tr>{% else %}<tr><td class="mut">Nothing due</td></tr>{% endfor %}</table></div>
+<form method="post" action="/worker/run"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Run due jobs now</button></form>
+{% endblock %}

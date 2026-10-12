@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}EpohTech BizDev{% endblock %}</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1d1d1b;--mut:#6b6b66;--card:#fff;--line:#e3e2dc;--acc:#1f5f8b;--bad:#a8321e;--ok:#2d6a3a;--warn:#8a5a00}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#eceae4;--mut:#9a988f;--card:#1f1f1d;--line:#34332f;--acc:#6fb0dd;--bad:#e2775f;--ok:#7cc48a;--warn:#e0b050}}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,sans-serif}
+nav{display:flex;flex-wrap:wrap;gap:4px 14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+nav a{color:var(--fg);text-decoration:none}nav a:hover{color:var(--acc)}nav b{margin-right:10px}
+main{padding:16px;max-width:1200px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.stat .n{font-size:24px;font-weight:600}.stat .l{color:var(--mut);font-size:12px}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+.tbl{overflow-x:auto}
+.pill{display:inline-block;padding:1px 7px;border-radius:9px;border:1px solid var(--line);font-size:12px}
+.A{color:var(--ok)}.B{color:var(--warn)}.C{color:var(--mut)}
+.banner{padding:8px 12px;border-radius:6px;margin-bottom:12px;border:1px solid}
+.b-bad{border-color:var(--bad);color:var(--bad)}.b-ok{border-color:var(--ok);color:var(--ok)}.b-info{border-color:var(--acc);color:var(--acc)}
+button,input,select,textarea{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px 8px}
+button{cursor:pointer;background:var(--acc);color:#fff;border:0}button.sec{background:transparent;color:var(--fg);border:1px solid var(--line)}button.danger{background:var(--bad)}
+textarea{width:100%;box-sizing:border-box}form.inline{display:inline}
+pre{white-space:pre-wrap;margin:0}.mut{color:var(--mut)}.inf{font-style:italic;color:var(--warn)}
+</style></head><body>
+{% if user %}<nav><b>EpohTech BizDev</b><a href="/">Overview</a><a href="/leads">Leads</a><a href="/queue">Outreach queue</a>
+<a href="/appointments">Appointments</a><a href="/remote">Remote opportunities</a><a href="/reports">Reports</a>
+<a href="/settings">Automation settings</a><a href="/onboarding">Onboarding</a><a href="/audit">Audit</a>
+<form class="inline" method="post" action="/logout"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Log out</button></form></nav>{% endif %}
+<main>
+{% if halted %}<div class="banner b-bad">Outbound is halted ({{halted}}). Nothing will be dispatched.</div>{% endif %}
+{% if user %}{% if live %}<div class="banner b-bad">LIVE SENDING ENABLED — approved emails go to real recipients.</div>
+{% else %}<div class="banner b-info">Dry-run mode — no external messages are sent.</div>{% endif %}{% endif %}
+{% if flash %}<div class="banner b-ok">{{flash}}</div>{% endif %}
+{% block body %}{% endblock %}</main></body></html>

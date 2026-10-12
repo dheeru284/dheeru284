@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block body %}<h2>Activity &amp; audit</h2><p><a href="/audit">all</a> · <a href="?level=warn">warnings</a> · <a href="?level=error">errors</a></p>
+<div class="card tbl"><table><tr><th>Time (UTC)</th><th>Actor</th><th>Action</th><th>Entity</th><th>Detail</th></tr>{% for r in rows %}<tr><td>{{r.at.strftime("%Y-%m-%d %H:%M:%S")}}</td><td>{{r.actor}}</td><td class="{{'B' if r.level!='info'}}">{{r.action}}</td><td>{{r.entity or ""}} {{r.entity_id or ""}}</td><td class="mut">{{r.detail|tojson}}</td></tr>{% endfor %}</table></div>{% endblock %}

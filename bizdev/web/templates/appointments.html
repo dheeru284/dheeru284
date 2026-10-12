@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}<h2>Appointments</h2>
+<p class="mut">Availability source: {{avail[1]}} — {{"confirmed" if avail[0] else "NOT confirmed (booking blocked until confirmed in Settings → availability)"}}.</p>
+{% for a in rows %}{% set o=orgs[a.organization_id] %}<div class="card"><b><a href="/leads/{{o.id}}">{{o.name}}</a></b> <span class="pill">{{a.status}}</span> <span class="pill">{{a.format}}</span>
+{% if a.start_utc %}<p>{{to_local(a.start_utc,a.timezone).strftime("%a %d %b %Y %H:%M")}} {{a.timezone}} · {{to_local(a.start_utc,"Asia/Kolkata").strftime("%H:%M")}} IST · {{a.location or a.meeting_link or "location/link not set"}}{% if a.format=="in_person" and not a.location_confirmed %} <b class="B">location unconfirmed</b>{% endif %}</p>{% endif %}
+{% if a.agenda %}<details><summary>Agenda</summary><pre>{{a.agenda}}</pre></details>{% endif %}
+{% if a.status=="PROPOSED" %}<form method="post" action="/appointments/{{a.id}}/confirm"><input type="hidden" name="csrf" value="{{csrf}}">Slot agreed by prospect:
+<select name="slot">{% for s in a.proposed_slots %}<option value="{{s}}">{{to_local(fromiso(s),a.timezone).strftime("%a %d %b %H:%M")}} {{a.timezone}} / {{to_local(fromiso(s),"Asia/Kolkata").strftime("%H:%M")}} IST</option>{% endfor %}</select>
+<label><input type="checkbox" name="prospect_agreed" value="yes"> Prospect agreed in writing</label>
+<input name="location" placeholder="Location confirmed by prospect"><input name="meeting_link" placeholder="Video link"><button>Confirm &amp; create invite</button></form>{% endif %}
+{% if a.status in ["CONFIRMED","RESCHEDULED"] %}<form method="post" action="/appointments/{{a.id}}/outcome"><input type="hidden" name="csrf" value="{{csrf}}"><label><input type="checkbox" name="attended" value="yes"> attended</label> <input name="outcome" placeholder="Outcome"><input name="next_action" placeholder="Next action"><button class="sec">Record outcome</button></form>
+<form method="post" action="/appointments/{{a.id}}/cancel" class="inline"><input type="hidden" name="csrf" value="{{csrf}}"><button class="danger">Cancel</button></form>{% endif %}
+{% if a.outcome %}<p>Outcome: {{a.outcome}} · Next: {{a.next_action}}</p>{% endif %}</div>{% else %}<p class="mut">No appointments.</p>{% endfor %}{% endblock %}

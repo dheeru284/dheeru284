@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block body %}<h2>Leads</h2>
+<form class="card" method="get"><input name="q" value="{{f.q}}" placeholder="Search"> <select name="tier"><option value="">Tier</option>{% for t in "ABC" %}<option {{'selected' if f.tier==t}}>{{t}}</option>{% endfor %}</select>
+<select name="status"><option value="">Status</option>{% for s in statuses %}<option {{'selected' if f.status==s}}>{{s}}</option>{% endfor %}</select>
+<input name="country" value="{{f.country}}" placeholder="Country (AE)" size="6"> <select name="sort">{% for s in ["score","name","recent"] %}<option {{'selected' if f.sort==s}}>{{s}}</option>{% endfor %}</select> <button>Filter</button></form>
+<div class="card tbl"><table><tr><th>Organization</th><th>Score</th><th>Tier</th><th>Evidence conf.</th><th>Commercial</th><th>Category</th><th>Location</th><th>Status</th></tr>
+{% for o in rows %}<tr><td><a href="/leads/{{o.id}}">{{o.name}}</a>{% if o.is_synthetic %} <span class="pill">synthetic</span>{% endif %}</td><td>{{o.score}}</td><td class="{{o.tier}}">{{o.tier}}</td><td>{{o.evidence_confidence}}</td><td>{{o.commercial_score}}</td><td>{{o.category or ""}}</td><td>{{o.city or ""}} {{o.country or ""}}</td><td>{{o.status.value}}</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Import researched leads (CSV)</h3><p class="mut">Required columns: company_name, source_url, signal_type, summary. Optional: website,country,city,industry,category,evidence_date,remote_ok,is_inference,contact_name,contact_role,contact_email,contact_linkedin,contact_verified. See docs/sample_leads.csv.</p>
+<form method="post" action="/import" enctype="multipart/form-data"><input type="hidden" name="csrf" value="{{csrf}}"><input type="file" name="file" accept=".csv" required> <select name="campaign"><option>A_DUBAI</option><option>B_REMOTE</option></select> <button>Import</button></form></div>
+{% endblock %}

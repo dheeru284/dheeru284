@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<h2>Reports</h2>{% if d.synthetic_records %}<div class="banner b-info">Includes {{d.synthetic_records}} SYNTHETIC organizations.</div>{% endif %}
+{% for k,t in [("funnel","Lead funnel"),("channel","Channel / status"),("lead_sources","Lead sources"),("meeting_outcomes","Meeting outcomes"),("intro_variants","Intro template variants")] %}
+<div class="card"><h3>{{t}}</h3><table>{% for a,b in d[k].items() %}<tr><td>{{a}}</td><td>{{b}}</td></tr>{% else %}<tr><td class="mut">no data</td></tr>{% endfor %}</table></div>{% endfor %}
+<div class="card"><h3>Top service categories (qualified leads)</h3><table>{% for a,b in d.top_services %}<tr><td>{{a}}</td><td>{{b}}</td></tr>{% endfor %}</table></div>
+<p><a href="/api/metrics">JSON</a></p>{% endblock %}
