@@ -22,6 +22,9 @@ class Registry:
 
     def configure_from_db(self, db) -> None:
         s = get_settings()
+        if s.email_provider == "zoho" and s.zoho_user and s.zoho_app_password:
+            from .integrations.email import ZohoSMTPProvider
+            self.email = ZohoSMTPProvider(s.zoho_user, s.zoho_app_password, s.zoho_host, from_name=s.sender_name or None)
         if s.email_provider == "gmail":
             acct = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "google"))
             if acct and acct.encrypted_token:

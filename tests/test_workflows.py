@@ -246,7 +246,7 @@ def test_11_calendar_conflicts(db):
     with pytest.raises(scheduling.SchedulingError, match="conflict"):
         scheduling.confirm(db, a2, slot + timedelta(minutes=10), "admin", prospect_agreed=True, location="x")
     for s in a1.proposed_slots:  # in-person slots fall inside the Dubai window
-        assert date(2026, 11, 23) <= datetime.fromisoformat(s).date() <= date(2026, 12, 4)
+        assert date(2026, 11, 27) <= datetime.fromisoformat(s).date() <= date(2026, 12, 1)
 
 
 # 12

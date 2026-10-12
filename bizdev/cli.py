@@ -22,6 +22,7 @@ def main(argv=None):
     w = sub.add_parser("worker"); w.add_argument("--interval", type=int, default=60); w.add_argument("--once", action="store_true")
     i = sub.add_parser("import-csv"); i.add_argument("path"); i.add_argument("--campaign", default="A_DUBAI")
     sub.add_parser("report")
+    t = sub.add_parser("send-test"); t.add_argument("to")
     args = p.parse_args(argv)
     install_log_redaction()
 
@@ -66,6 +67,18 @@ def main(argv=None):
             if args.once:
                 break
             time.sleep(args.interval)
+    elif args.cmd == "send-test":
+        from .config import get_settings
+        from .integrations.email import OutboundEmail, ZohoSMTPProvider
+        s = get_settings()
+        if not (s.zoho_user and s.zoho_app_password):
+            raise SystemExit("Set ZOHO_SMTP_USER and ZOHO_APP_PASSWORD in your environment first.")
+        body = open("docs/outreach/TEST_EMAIL.txt", encoding="utf-8").read()
+        subject, _, body = body.partition("\n\n")
+        res = ZohoSMTPProvider(s.zoho_user, s.zoho_app_password, s.zoho_host, from_name=s.sender_name or None).send(
+            OutboundEmail(to=args.to, subject=subject.removeprefix("Subject: "), body=body, from_addr=s.zoho_user,
+                          idempotency_key=f"test-{time.time():.0f}"))
+        print("accepted by Zoho SMTP, Message-ID:", res.provider_message_id, "- now check the inbox of", args.to)
     elif args.cmd == "report":
         import json
         from .reports import detailed, overview

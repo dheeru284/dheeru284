@@ -34,6 +34,10 @@ class Settings:
     google_client_id: str = field(default_factory=lambda: os.getenv("GOOGLE_CLIENT_ID", ""))
     google_client_secret: str = field(default_factory=lambda: os.getenv("GOOGLE_CLIENT_SECRET", ""))
     oauth_redirect_base: str = field(default_factory=lambda: os.getenv("OAUTH_REDIRECT_BASE", "http://localhost:8000"))
+    zoho_user: str = field(default_factory=lambda: os.getenv("ZOHO_SMTP_USER", ""))
+    zoho_app_password: str = field(default_factory=lambda: os.getenv("ZOHO_APP_PASSWORD", ""))
+    zoho_host: str = field(default_factory=lambda: os.getenv("ZOHO_SMTP_HOST", "smtp.zoho.in"))
+    sender_name: str = field(default_factory=lambda: os.getenv("SENDER_NAME", ""))
     apollo_api_key: str = field(default_factory=lambda: os.getenv("APOLLO_API_KEY", ""))
 
 
@@ -61,11 +65,11 @@ DEFAULT_RULES: dict[str, object] = {
     ],
     "followup.enabled": True,
     "campaign.dubai": {
-        "travel_date": "2026-11-27", "window_start": "2026-11-23", "window_end": "2026-12-04",
+        "travel_date": "2026-11-27", "window_start": "2026-11-27", "window_end": "2026-12-01",
         "timezone": "Asia/Dubai",
     },
     "availability": {  # used when no calendar is connected; must be confirmed before booking
-        "timezone": "Asia/Dubai", "days": [0, 1, 2, 3, 4], "start_hour": 10, "end_hour": 17,
+        "timezone": "Asia/Dubai", "days": [0, 1, 2, 3, 4, 5, 6], "start_hour": 10, "end_hour": 17,
         "meeting_minutes": 30, "buffer_minutes": 15, "confirmed_by_admin": False,
     },
     "system.paused": False,
