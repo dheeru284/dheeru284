@@ -46,3 +46,12 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-12 — no applications submitted, nothing qualifying
+Searches (India-remote Senior DE/Databricks/Azure, worldwide Staff DE) returned mostly aggregator listings with no salary and no verifiable India eligibility.
+- Jobgether (Lever) x5 (039b20f4…, 48d2a20c…, c44864eb…, e535768e…, c6108318…): all 404 = closed -> REJECT. Jobgether is also an intermediary with no salary.
+- Smart Working Solutions, Senior DE contractual (f3b3e018…): 404 -> REJECT (also fixed IST shift contract).
+- Weekday Senior DE (Fabric/Databricks, India remote, posted 2026-10-01): earlier seen at ₹20–40 lakh -> REJECT (min below ₹42 lakh).
+- Nearform (GCP/BigQuery, India remote, via jointaro) and Massive Rocket (Snowflake/CDP, India): stack mismatch with Azure-heavy resume, salary unseen -> not pursued.
+- Billigence (remotive) and Climb AI (Ashby): still unverifiable (remotive.com unreachable, Ashby JS-rendered) -> remain REVIEW.
+- Staff DE (Virtual Vocations): stale (Dec 2025/Feb 2026), country eligibility unknown -> REJECT.
