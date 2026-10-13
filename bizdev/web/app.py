@@ -40,7 +40,7 @@ COOKIE = "bizdev_session"
 SESSION_TTL = 8 * 3600
 EDITABLE_RULES = ["scoring.weights", "scoring.tiers", "limits.email", "limits.linkedin", "limits.per_company_days",
                   "limits.per_contact_days", "quiet_hours", "approval.policy", "approval.segments",
-                  "followup.sequence", "followup.enabled", "campaign.dubai", "availability"]
+                  "followup.sequence", "followup.enabled", "campaign.dubai", "availability", "email.delivery"]
 
 
 
