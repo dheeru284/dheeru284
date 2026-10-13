@@ -202,8 +202,42 @@ class ZohoSMTPProvider:
             raise SendError(f"recipient refused: {list(refused)}", permanent=True)
         return SendResult(provider_message_id=em["Message-ID"], thread_id=None)
 
+    @property
+    def imap_host(self) -> str:
+        return self.host.replace("smtppro.", "imappro.").replace("smtp.", "imap.")
+
     def create_draft(self, m: OutboundEmail) -> str:
-        raise NotImplementedError("Drafts are kept in this app's queue; Zoho SMTP cannot create drafts.")
+        """Put the message in the Zoho Drafts folder over IMAP. Nothing is sent to the recipient."""
+        import imaplib
+        import ssl
+        import time as _t
+        em = self._build(m)
+        try:
+            im = imaplib.IMAP4_SSL(self.imap_host, 993, ssl_context=ssl.create_default_context(), timeout=30)
+        except OSError as e:
+            raise SendError(f"cannot reach {self.imap_host}: {e}") from None
+        try:
+            try:
+                im.login(self.user, self._pw)
+            except imaplib.IMAP4.error as e:
+                raise SendError(f"Zoho IMAP login failed on {self.imap_host}: {e} "
+                                "(enable IMAP access in Zoho Mail settings)", permanent=True) from None
+            folder = "Drafts"
+            typ, boxes = im.list()
+            for b in boxes or []:
+                line = b.decode(errors="replace") if isinstance(b, bytes) else str(b)
+                if "\\Drafts" in line:
+                    folder = line.rsplit(' "/" ', 1)[-1].strip().strip('"')
+                    break
+            typ, data = im.append(f'"{folder}"', "\\Draft", imaplib.Time2Internaldate(_t.time()), em.as_bytes())
+            if typ != "OK":
+                raise SendError(f"Zoho refused to save draft: {data}")
+        finally:
+            try:
+                im.logout()
+            except Exception:  # noqa: BLE001
+                pass
+        return em["Message-ID"]
 
     def fetch_replies(self, since_iso: str | None = None) -> list[InboundEmail]:
         return []  # reply ingestion via Zoho IMAP not implemented yet; log replies manually in the dashboard

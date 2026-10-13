@@ -386,3 +386,27 @@ def test_hourly_limit(db, live):
     org2 = db.scalar(select(Organization).where(Organization.name == "Other Co"))
     m2 = draft(db, org2, org2.contacts[0]); outreach.approve(db, m2, "admin")
     assert outreach.dispatch(db, m2) == MessageStatus.QUEUED
+
+
+def test_drafts_mode_saves_to_mailbox_not_sent(db, monkeypatch):
+    import imaplib
+    from bizdev.integrations.email import ZohoSMTPProvider
+    calls = {}
+
+    class FakeIMAP:
+        def __init__(self, host, port, ssl_context=None, timeout=None): calls["host"] = host
+        def login(self, u, p): calls["login"] = u
+        def list(self): return "OK", [b'(\\HasNoChildren \\Drafts) "/" "Drafts"']
+        def append(self, folder, flags, date, msg): calls["append"] = (folder, flags, msg); return "OK", [b"done"]
+        def logout(self): pass
+    monkeypatch.setattr(imaplib, "IMAP4_SSL", FakeIMAP)
+    import smtplib
+    monkeypatch.setattr(smtplib, "SMTP_SSL", lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not send")))
+    registry.email = ZohoSMTPProvider("dheeraj@theepoh.com", "pw", "smtp.zoho.in", from_name="Dheeraj")
+    org, c, m = approved_intro(db)
+    db.commit()
+    assert outreach.dispatch(db, m) == MessageStatus.MANUAL_PENDING
+    assert calls["host"] == "imap.zoho.in" and calls["append"][0] == '"Drafts"' and b"jane@acme.example" in calls["append"][2]
+    assert not db.scalars(select(Job).where(Job.kind == "followup")).all()  # no follow-ups until you really send
+    outreach.confirm_manual_sent(db, m, "admin")
+    assert m.status == MessageStatus.SENT and db.scalars(select(Job).where(Job.kind == "followup")).all()

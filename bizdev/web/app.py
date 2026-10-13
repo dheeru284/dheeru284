@@ -268,6 +268,16 @@ def queue(request: Request, user=Depends(current_user), db: Session = Depends(ge
                 live=outreach.live_sending_enabled(db), halted=outreach.halted(db), fstatus=status)
 
 
+@app.post("/queue/save_all_drafts")
+def queue_save_all(user=Depends(csrf), db: Session = Depends(get_db)):
+    n = {}
+    for m in list(db.scalars(select(Message).where(Message.status == MessageStatus.APPROVED, Message.channel == "email"))):
+        st = outreach.dispatch(db, m, user["email"]).value
+        n[st] = n.get(st, 0) + 1
+        db.commit()
+    return back("/queue", f"Results: {n}" if n else "No approved emails to save")
+
+
 @app.post("/queue/{mid}/{action}")
 def queue_action(mid: int, action: str, body: str = Form(None), subject: str = Form(None), reason: str = Form(""),
                  user=Depends(csrf), db: Session = Depends(get_db)):

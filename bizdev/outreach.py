@@ -214,13 +214,14 @@ def dispatch(db: Session, msg: Message, actor: str = "dispatcher") -> MessageSta
         msg.status = MessageStatus.CANCELLED
         audit(db, actor, "dispatch.cancelled_replied", "message", msg.id)
         return msg.status
-    lim = check_limits(db, msg)
+    drafts_mode = msg.channel == "email" and get_rule(db, "email.delivery") == "drafts" and hasattr(registry.email, "imap_host")
+    lim = None if drafts_mode else check_limits(db, msg)
     if lim:
         msg.status, msg.scheduled_for = MessageStatus.QUEUED, now_utc() + timedelta(hours=1)
         audit(db, actor, "dispatch.deferred", "message", msg.id, reason=lim)
         return msg.status
     tz = local_tz(db, contact, org)
-    allowed = next_allowed_time(db, now_utc(), tz)
+    allowed = now_utc() if drafts_mode else next_allowed_time(db, now_utc(), tz)
     if allowed > now_utc():
         msg.status, msg.scheduled_for = MessageStatus.QUEUED, allowed
         audit(db, actor, "dispatch.quiet_hours", "message", msg.id, until=allowed.isoformat())
@@ -235,6 +236,22 @@ def dispatch(db: Session, msg: Message, actor: str = "dispatcher") -> MessageSta
             audit(db, actor, "linkedin.manual_required", "message", msg.id, reason=str(e), profile=contact.linkedin_url)
             _after_out(db, org, msg)
             return msg.status
+
+    if msg.channel == "email" and get_rule(db, "email.delivery") == "drafts" and hasattr(registry.email, "imap_host"):
+        p = profile(db)
+        msg.attempts += 1
+        try:
+            draft_id = registry.email.create_draft(OutboundEmail(
+                to=contact.email, subject=msg.subject or "", body=msg.body, from_addr=p.sender_email,
+                idempotency_key=msg.idempotency_key))
+        except SendError as e:
+            msg.status, msg.last_error = MessageStatus.FAILED, str(e)[:500]
+            audit(db, actor, "draft.failed", "message", msg.id, error=str(e), level="error")
+            return msg.status
+        # MANUAL_PENDING = waiting for Dheeraj to review and send it from Zoho; nothing has gone out yet.
+        msg.status, msg.provider_message_id, msg.last_error = MessageStatus.MANUAL_PENDING, draft_id, None
+        audit(db, actor, "draft.saved_to_mailbox", "message", msg.id, to=contact.email)
+        return msg.status
 
     if not live_sending_enabled(db):
         msg.status, msg.sent_at = MessageStatus.DRY_RUN, now_utc()
@@ -295,6 +312,9 @@ def confirm_manual_sent(db: Session, msg: Message, actor: str) -> None:
     if msg.status != MessageStatus.MANUAL_PENDING:
         raise DispatchBlocked("only MANUAL_PENDING messages can be confirmed as sent")
     msg.status, msg.sent_at = MessageStatus.SENT, now_utc()
+    org = db.get(Organization, msg.organization_id)
+    if msg.kind == "intro" and msg.channel == "email":
+        _after_out(db, org, msg)  # follow-up clock starts when you actually send it
     audit(db, actor, "linkedin.manual_confirmed", "message", msg.id)
 
 

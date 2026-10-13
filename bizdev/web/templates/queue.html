@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% block body %}<h2>Outreach queue</h2>
 <form class="card" method="get">Status <select name="status"><option value="">all</option>{% for s in statuses %}<option {{'selected' if fstatus==s}}>{{s}}</option>{% endfor %}</select> <button class="sec">Filter</button></form>
+<form method="post" action="/queue/save_all_drafts" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button>Save all approved emails to Zoho Drafts</button> <span class="mut">Nothing is sent: you review and send each one from Zoho Mail.</span></form>
 <form method="post" action="/inbox/poll" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Check inbox for replies</button></form>
 {% for m in rows %}{% set o = orgs[m.organization_id] %}{% set c = contacts.get(m.contact_id) %}
 <div class="card"><b><a href="/leads/{{o.id}}">{{o.name}}</a></b> → {{c.full_name if c and c.full_name else ""}} &lt;{{c.email if c and m.channel=="email" else (c.linkedin_url if c else "")}}&gt;
@@ -11,7 +12,8 @@
 <button>Approve</button></form><form method="post" action="/queue/{{m.id}}/reject" class="inline"><input type="hidden" name="csrf" value="{{csrf}}"><input name="reason" placeholder="reason"><button class="danger">Reject</button></form>
 {% else %}<pre>{{m.subject or ""}}
 {{m.body}}</pre>{% endif %}</details>
-{% if m.status.value=="APPROVED" %}<form method="post" action="/queue/{{m.id}}/dispatch"><input type="hidden" name="csrf" value="{{csrf}}"><button>{{"Send now" if live else "Dispatch (dry-run)"}}</button></form>{% endif %}
-{% if m.status.value=="MANUAL_PENDING" %}<p class="banner b-info">Manual send required: open <a href="{{c.linkedin_url}}" rel="noopener noreferrer">the LinkedIn profile</a>, paste the note above, send it yourself, then confirm.</p><form method="post" action="/queue/{{m.id}}/confirm_manual"><input type="hidden" name="csrf" value="{{csrf}}"><button>I sent it — mark SENT</button></form>{% endif %}
+{% if m.status.value=="APPROVED" %}<form method="post" action="/queue/{{m.id}}/dispatch"><input type="hidden" name="csrf" value="{{csrf}}"><button>Save to Zoho Drafts / dispatch</button></form>{% endif %}
+{% if m.status.value=="MANUAL_PENDING" and m.channel=="email" %}<p class="banner b-info">Saved in your Zoho <b>Drafts</b> folder. Review it there and send it yourself, then click below so follow-ups start from the real send date.</p><form method="post" action="/queue/{{m.id}}/confirm_manual"><input type="hidden" name="csrf" value="{{csrf}}"><button>I sent it from Zoho — mark SENT</button></form>{% endif %}
+{% if m.status.value=="MANUAL_PENDING" and m.channel=="linkedin" %}<p class="banner b-info">Manual send required: open <a href="{{c.linkedin_url}}" rel="noopener noreferrer">the LinkedIn profile</a>, paste the note above, send it yourself, then confirm.</p><form method="post" action="/queue/{{m.id}}/confirm_manual"><input type="hidden" name="csrf" value="{{csrf}}"><button>I sent it — mark SENT</button></form>{% endif %}
 {% if m.status.value=="SENT" %}<form method="post" action="/queue/{{m.id}}/acknowledge"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Mark acknowledged</button></form>{% endif %}
 </div>{% else %}<p class="mut">Queue empty.</p>{% endfor %}{% endblock %}
