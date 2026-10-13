@@ -107,3 +107,27 @@ def test_e2e_all_pages_render(client, db):
     _login(client)
     for p in ["/", "/leads", "/leads/1", "/queue", "/appointments", "/remote", "/reports", "/settings", "/onboarding", "/audit"]:
         assert client.get(p).status_code == 200, p
+
+
+def test_e2e_zoho_settings_encrypted_and_test_send(client, db, monkeypatch):
+    import smtplib
+    from bizdev.models import IntegrationAccount
+    sent = {}
+
+    class FakeSMTP:
+        def __init__(self, host, port, context=None, timeout=None): sent["host"] = host
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def login(self, u, p): sent["login"] = (u, p)
+        def send_message(self, m): sent["msg"] = m; return {}
+    monkeypatch.setattr(smtplib, "SMTP_SSL", FakeSMTP)
+    csrf = _login(client)
+    client.post("/settings/zoho", data={"csrf": csrf, "email": "dheeraj@theepoh.com", "from_name": "Dheeraj",
+                                        "host": "smtp.zoho.in", "app_password": "super-secret-app-pw"})
+    acct = db.query(IntegrationAccount).filter_by(provider="zoho").one()
+    assert acct.status == "connected" and "super-secret-app-pw" not in acct.encrypted_token
+    assert "super-secret-app-pw" not in client.get("/settings").text
+    r = client.post("/settings/zoho/test", data={"csrf": csrf, "to": "me@example.com"})
+    assert "accepted" in r.text
+    assert sent["login"] == ("dheeraj@theepoh.com", "super-secret-app-pw") and sent["host"] == "smtp.zoho.in"
+    assert sent["msg"]["To"] == "me@example.com" and "Dheeraj" in sent["msg"]["From"]

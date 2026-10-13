@@ -416,7 +416,12 @@ def settings_page(request: Request, user=Depends(current_user), db: Session = De
     integ = list(db.scalars(select(IntegrationAccount)))
     services = list(db.scalars(select(ServiceOffering).order_by(ServiceOffering.category, ServiceOffering.title)))
     jobs = list(db.scalars(select(Job).where(Job.status.in_(["PENDING", "DEAD"])).order_by(Job.run_at).limit(50)))
-    return page(request, "settings.html", user, rules=rules, integ=integ, services=services, jobs=jobs,
+    zoho = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "zoho"))
+    zcfg = {}
+    if zoho and zoho.encrypted_token:
+        from ..security import decrypt_secret
+        zcfg = {k: v for k, v in json.loads(decrypt_secret(zoho.encrypted_token)).items() if k != "app_password"}
+    return page(request, "settings.html", user, zoho=zoho, zcfg=zcfg, zoho_hosts=ZOHO_HOSTS, rules=rules, integ=integ, services=services, jobs=jobs,
                 s=get_settings(), halted=outreach.halted(db), live=outreach.live_sending_enabled(db),
                 live_auth=get_rule(db, "system.live_send_authorized"), li=registry.linkedin.caps)
 
@@ -466,6 +471,51 @@ def settings_service(category: str = Form(...), title: str = Form(...), keywords
     return back("/settings", "Service added")
 
 
+@app.post("/settings/zoho")
+def settings_zoho(email: str = Form(...), from_name: str = Form(""), host: str = Form("smtp.zoho.in"),
+                  app_password: str = Form(""), user=Depends(csrf), db: Session = Depends(get_db)):
+    """Save Zoho SMTP credentials. The app password is encrypted at rest and never shown again."""
+    if host not in ZOHO_HOSTS:
+        return back("/settings", "Unknown Zoho SMTP host")
+    acct = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "zoho")) or IntegrationAccount(provider="zoho")
+    old = {}
+    if acct.encrypted_token:
+        from ..security import decrypt_secret
+        old = json.loads(decrypt_secret(acct.encrypted_token))
+    pw = app_password.strip() or old.get("app_password")
+    if not pw:
+        return back("/settings", "Enter the Zoho app-specific password")
+    acct.account_email = email.strip().lower()
+    acct.encrypted_token = encrypt_secret(json.dumps({"app_password": pw, "host": host, "from_name": from_name.strip()}))
+    acct.status, acct.scopes = "connected", ["smtp"]
+    db.add(acct)
+    audit(db, user["email"], "zoho.saved", account=acct.account_email, host=host)
+    db.commit()
+    registry.configure_from_db(db)
+    return back("/settings", "Zoho saved — now send a test email")
+
+
+@app.post("/settings/zoho/test")
+def settings_zoho_test(to: str = Form(...), user=Depends(csrf), db: Session = Depends(get_db)):
+    """Send docs/outreach/TEST_EMAIL.txt to ONE address the admin typed. Allowed in dry-run: it is a self-test."""
+    from ..integrations.email import OutboundEmail, SendError
+    from ..providers import zoho_provider_from_account
+    acct = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "zoho"))
+    if not acct or not acct.encrypted_token:
+        return back("/settings", "Save Zoho settings first")
+    raw = (Path(__file__).resolve().parents[2] / "docs/outreach/TEST_EMAIL.txt").read_text(encoding="utf-8")
+    head, _, body = raw.partition("\n\n")
+    try:
+        res = zoho_provider_from_account(acct).send(OutboundEmail(
+            to=to.strip(), subject=head.removeprefix("Subject: ").strip(), body=body, from_addr=acct.account_email,
+            idempotency_key=f"selftest-{int(time.time())}"))
+    except SendError as e:
+        audit(db, user["email"], "zoho.test_failed", level="error", error=str(e)); db.commit()
+        return back("/settings", f"Test FAILED: {e}")
+    audit(db, user["email"], "zoho.test_sent", to=to.strip(), message_id=res.provider_message_id); db.commit()
+    return back("/settings", f"Zoho accepted the test email to {to.strip()}. Check that inbox (and spam).")
+
+
 @app.post("/settings/linkedin")
 def settings_linkedin(partner_messaging: str = Form(""), evidence: str = Form(""), user=Depends(csrf), db: Session = Depends(get_db)):
     acct = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "linkedin")) or IntegrationAccount(provider="linkedin")
@@ -510,6 +560,8 @@ async def onboarding_save(request: Request, user=Depends(csrf), db: Session = De
 
 
 # ------------------------------------------------------------------ Google OAuth
+
+ZOHO_HOSTS = ["smtp.zoho.in", "smtp.zoho.com", "smtp.zoho.eu", "smtppro.zoho.in", "smtppro.zoho.com", "smtppro.zoho.eu"]
 
 GOOGLE_SCOPES = ["openid", "email", "https://www.googleapis.com/auth/gmail.send",
                  "https://www.googleapis.com/auth/gmail.compose", "https://www.googleapis.com/auth/gmail.readonly",

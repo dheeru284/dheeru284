@@ -33,6 +33,9 @@ class Registry:
             acct = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "google"))
             if acct and acct.encrypted_token:
                 self.calendar = GoogleCalendar(lambda: google_access_token(db))
+        zoho = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "zoho"))
+        if zoho and zoho.status == "connected" and zoho.encrypted_token:
+            self.email = zoho_provider_from_account(zoho)
         li = db.scalar(select(IntegrationAccount).where(IntegrationAccount.provider == "linkedin"))
         self.linkedin = LinkedInIntegration(li.capabilities if li else None)
 
@@ -59,3 +62,12 @@ def google_access_token(db) -> str:
     acct.encrypted_token = encrypt_secret(json.dumps(tok))
     db.commit()
     return tok["access_token"]
+
+
+def zoho_provider_from_account(acct):
+    """Build a Zoho SMTP sender from the encrypted credentials saved via Settings."""
+    import json
+    from .integrations.email import ZohoSMTPProvider
+    cfg = json.loads(decrypt_secret(acct.encrypted_token))
+    return ZohoSMTPProvider(acct.account_email, cfg["app_password"], cfg.get("host", "smtp.zoho.in"),
+                            from_name=cfg.get("from_name") or None)
