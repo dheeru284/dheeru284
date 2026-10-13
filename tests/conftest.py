@@ -45,6 +45,7 @@ def db(clock):
     p.sender_name, p.sender_title, p.sender_email = "Test Sender", "BD Lead", "bd@epohtech.example"
     p.website = "https://epohtech.example"
     p.description = "Technology services company (test)."
+    core.set_rule(s, "auto_draft.on_import", False)  # tests draft explicitly; auto-draft has its own test
     s.commit()
     registry.email = MockEmailProvider()
     registry.calendar = MockCalendar()

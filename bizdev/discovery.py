@@ -261,6 +261,34 @@ def run_source(db: Session, source: LeadSource, query: dict | None = None, campa
         except ValueError as e:
             stats["errors"] += 1
             audit(db, "discovery", "lead.rejected", level="warn", reason=str(e), company=raw.company_name)
+    stats["auto_drafted"] = auto_draft(db, campaign_code)
     audit(db, "discovery", "source.run", source=source.name, **stats)
     db.commit()
     return stats
+
+
+def auto_draft(db: Session, campaign_code: str) -> int:
+    """Draft one intro per qualified (Tier A/B) lead that has an email contact and no message yet.
+    Drafts still need human approval before anything is sent."""
+    from .core import get_rule
+    from .messaging import GenerationBlocked, draft
+    from .models import LeadStatus, Message
+    from .outreach import is_suppressed
+    if not get_rule(db, "auto_draft.on_import"):
+        return 0
+    n = 0
+    for org in db.scalars(select(Organization).where(Organization.tier.in_(["A", "B"]),
+                                                     Organization.status == LeadStatus.QUALIFIED)):
+        if db.scalar(select(Message.id).where(Message.organization_id == org.id)):
+            continue
+        c = next((c for c in sorted(org.contacts, key=lambda c: (not c.is_decision_maker, not c.verified))
+                  if c.email and not is_suppressed(db, c)), None)
+        if not c:
+            continue
+        try:
+            with db.begin_nested():
+                draft(db, org, c, kind="intro", channel="email", campaign_code=campaign_code, actor="auto_draft")
+            n += 1
+        except GenerationBlocked as e:
+            audit(db, "auto_draft", "draft.skipped", "organization", org.id, reason=str(e)[:200])
+    return n

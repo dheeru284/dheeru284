@@ -274,6 +274,19 @@ def queue(request: Request, user=Depends(current_user), db: Session = Depends(ge
                 live=outreach.live_sending_enabled(db), halted=outreach.halted(db), fstatus=status)
 
 
+@app.post("/queue/approve_all")
+def queue_approve_all(user=Depends(csrf), db: Session = Depends(get_db)):
+    """Approve every outbound DRAFTED message and queue it. The worker sends within limits and quiet hours."""
+    n = 0
+    for m in list(db.scalars(select(Message).where(Message.status == MessageStatus.DRAFTED, Message.direction == "out"))):
+        outreach.approve(db, m, user["email"])
+        outreach.enqueue_dispatch(db, m)
+        n += 1
+    audit(db, user["email"], "queue.approve_all", count=n)
+    db.commit()
+    return back("/queue", f"Approved and queued {n} message(s). Sending happens via the worker within limits and quiet hours.")
+
+
 @app.post("/queue/save_all_drafts")
 def queue_save_all(user=Depends(csrf), db: Session = Depends(get_db)):
     n = {}

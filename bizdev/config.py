@@ -72,6 +72,7 @@ DEFAULT_RULES: dict[str, object] = {
         "timezone": "Asia/Dubai", "days": [0, 1, 2, 3, 4, 5, 6], "start_hour": 10, "end_hour": 17,
         "meeting_minutes": 30, "buffer_minutes": 15, "confirmed_by_admin": False,
     },
+    "auto_draft.on_import": True,  # write an intro draft for every Tier A/B lead with an email when imported
     "email.delivery": "drafts",  # drafts = save to your mailbox Drafts for manual sending | send = send directly
     "system.paused": False,
     "system.emergency_stop": False,

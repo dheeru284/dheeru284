@@ -131,3 +131,19 @@ def test_e2e_zoho_settings_encrypted_and_test_send(client, db, monkeypatch):
     assert "accepted" in r.text
     assert sent["login"] == ("dheeraj@theepoh.com", "super-secret-app-pw") and sent["host"] == "smtp.zoho.in"
     assert sent["msg"]["To"] == "me@example.com" and "Dheeraj" in sent["msg"]["From"]
+
+
+def test_e2e_approve_all_queues_drafts(client, db):
+    from bizdev.core import set_rule
+    from bizdev.models import Job, Message
+    from bizdev.discovery import RawContact, RawLead, StaticSource, run_source
+    set_rule(db, "auto_draft.on_import", True); db.commit()
+    run_source(db, StaticSource("t", [RawLead("Acme", "t", "https://example.com/a", "hiring",
+        "Hiring contract Data Engineer, Databricks", website="https://acme.example", country="AE",
+        category="consulting", evidence_date=date(2026, 10, 10), remote_ok=True,
+        contacts=[RawContact("Jane Doe", "Head of Data", "jane@acme.example", verified=True)])]))
+    csrf = _login(client)
+    r = client.post("/queue/approve_all", data={"csrf": csrf})
+    assert "Approved and queued 1" in r.text
+    m = db.query(Message).one()
+    assert m.status.value == "APPROVED" and db.query(Job).filter_by(kind="dispatch").count() == 1

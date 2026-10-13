@@ -410,3 +410,17 @@ def test_drafts_mode_saves_to_mailbox_not_sent(db, monkeypatch):
     assert not db.scalars(select(Job).where(Job.kind == "followup")).all()  # no follow-ups until you really send
     outreach.confirm_manual_sent(db, m, "admin")
     assert m.status == MessageStatus.SENT and db.scalars(select(Job).where(Job.kind == "followup")).all()
+
+
+def test_auto_draft_on_import_only_qualified_with_email(db):
+    set_rule(db, "auto_draft.on_import", True)
+    run_source(db, StaticSource("t", [lead(), lead(name="NoEmail Co", url="https://example.com/n", email=None,
+                                                   website="https://noemail.example"),
+                                      lead(name="Weak Agency", url="https://example.com/w", signal="directory_listing",
+                                           remote=None, role=None, verified=False, email="hi@weak.example",
+                                           website="https://weak.example")]))
+    msgs = db.scalars(select(Message)).all()
+    assert len(msgs) == 1 and msgs[0].status == MessageStatus.DRAFTED
+    assert db.get(Contact, msgs[0].contact_id).email == "jane@acme.example"
+    run_source(db, StaticSource("t", [lead()]))  # re-import must not duplicate
+    assert len(db.scalars(select(Message)).all()) == 1

@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% block body %}<h2>Outreach queue</h2>
 <form class="card" method="get">Status <select name="status"><option value="">all</option>{% for s in statuses %}<option {{'selected' if fstatus==s}}>{{s}}</option>{% endfor %}</select> <button class="sec">Filter</button></form>
+<form method="post" action="/queue/approve_all" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button>Approve all drafts &amp; queue for sending</button> <span class="mut">Read every draft below first. Approved emails are sent by the worker (limits + quiet hours apply).</span></form>
 {% if delivery == "drafts" %}<form method="post" action="/queue/save_all_drafts" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button>Save all approved emails to Zoho Drafts</button> <span class="mut">Nothing is sent: you review and send each one from Zoho Mail.</span></form>{% endif %}
 <form method="post" action="/inbox/poll" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Check inbox for replies</button></form>
 {% for m in rows %}{% set o = orgs[m.organization_id] %}{% set c = contacts.get(m.contact_id) %}
