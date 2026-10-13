@@ -424,3 +424,14 @@ def test_auto_draft_on_import_only_qualified_with_email(db):
     assert db.get(Contact, msgs[0].contact_id).email == "jane@acme.example"
     run_source(db, StaticSource("t", [lead()]))  # re-import must not duplicate
     assert len(db.scalars(select(Message)).all()) == 1
+
+
+def test_import_inbox_imports_each_file_once(db, tmp_path):
+    from bizdev.discovery import import_inbox
+    (tmp_path / "a.csv").write_text("company_name,source_url,signal_type,summary,website,country\n"
+                                    "Acme,https://example.com/a,hiring,Hiring Data Engineer,https://acme.example,AE\n")
+    (tmp_path / "bad.csv").write_text("nope\n1\n")
+    r1 = import_inbox(db, str(tmp_path))
+    assert r1["a.csv"]["created"] == 1 and "error" in r1["bad.csv"]
+    r2 = import_inbox(db, str(tmp_path))
+    assert "a.csv" not in r2 and db.query(Organization).count() == 1

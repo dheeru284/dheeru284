@@ -20,6 +20,9 @@ def main(argv=None):
     a = sub.add_parser("create-admin"); a.add_argument("email")
     sub.add_parser("seed-demo")
     w = sub.add_parser("worker"); w.add_argument("--interval", type=int, default=60); w.add_argument("--once", action="store_true")
+    w.add_argument("--leads-dir", default="leads_inbox", help="folder watched for new lead CSVs")
+    w.add_argument("--pull-leads", action="store_true",
+                   help="each cycle, fetch ONLY the leads folder from the git remote (no code changes)")
     i = sub.add_parser("import-csv"); i.add_argument("path"); i.add_argument("--campaign", default="A_DUBAI")
     sub.add_parser("report")
     t = sub.add_parser("send-test"); t.add_argument("to")
@@ -54,9 +57,22 @@ def main(argv=None):
         with SessionLocal() as db, open(args.path, encoding="utf-8") as f:
             print(run_source(db, CSVImportSource(f.read()), campaign_code=args.campaign))
     elif args.cmd == "worker":
+        import subprocess
+        from .discovery import import_inbox
         from .outreach import poll_inbox, run_due_jobs
         from .providers import registry
         while True:
+            if args.pull_leads:
+                br = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True).stdout.strip()
+                r = subprocess.run(["git", "fetch", "-q", "origin", br], capture_output=True, text=True)
+                if r.returncode == 0:
+                    subprocess.run(["git", "checkout", f"origin/{br}", "--", args.leads_dir], capture_output=True)
+                else:
+                    print("lead pull failed:", r.stderr.strip()[:200])
+            with SessionLocal() as db:
+                res = import_inbox(db, args.leads_dir)
+                if res:
+                    print("imported:", res)
             with SessionLocal() as db:
                 registry.configure_from_db(db)
                 try:

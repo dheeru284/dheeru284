@@ -9,7 +9,7 @@ python -m bizdev.cli gen-keys > .env && echo "DATABASE_URL=sqlite:///./bizdev.db
 set -a; source .env; set +a
 alembic upgrade head
 python -m bizdev.cli create-admin dheeraj@theepoh.com
-python -m bizdev.cli import-csv docs/outreach/leads_2026-10-12.csv
+python -m bizdev.cli import-csv leads_inbox/leads_2026-10-12.csv
 uvicorn bizdev.web.app:app --port 8000
 ```
 3. Go to http://localhost:8000 → **Automation settings** → **Zoho Mail**. Enter your email, the name "Dheeraj", the host, and the app password, then Save.

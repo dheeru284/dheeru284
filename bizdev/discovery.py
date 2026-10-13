@@ -292,3 +292,27 @@ def auto_draft(db: Session, campaign_code: str) -> int:
         except GenerationBlocked as e:
             audit(db, "auto_draft", "draft.skipped", "organization", org.id, reason=str(e)[:200])
     return n
+
+
+def import_inbox(db: Session, folder: str, campaign_code: str = "A_DUBAI") -> dict:
+    """Import every new *.csv in `folder`. Files are remembered by content hash, so each is imported once."""
+    import hashlib
+    from pathlib import Path
+    from .core import get_rule, set_rule
+    done = set(get_rule(db, "imports.done") or [])
+    out = {}
+    for f in sorted(Path(folder).glob("*.csv")):
+        h = hashlib.sha256(f.read_bytes()).hexdigest()
+        if h in done:
+            continue
+        try:
+            out[f.name] = run_source(db, CSVImportSource(f.read_text(encoding="utf-8")), campaign_code=campaign_code)
+        except Exception as e:  # noqa: BLE001  a bad file must not stop the worker
+            out[f.name] = {"error": str(e)[:200]}
+            audit(db, "inbox", "import.failed", level="error", file=f.name, error=str(e)[:200])
+            db.commit()
+            continue
+        done.add(h)
+        set_rule(db, "imports.done", sorted(done), "inbox")
+        db.commit()
+    return out

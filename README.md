@@ -81,3 +81,9 @@ docs/              architecture, compliance, launch checklist, sample report
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Automatic lead import
+Drop CSV files into `leads_inbox/`. The worker imports each new file once and writes drafts for Tier A/B leads. With `--pull-leads`, the worker also fetches **only** `leads_inbox/` from the git remote every cycle, so lead batches pushed to the branch arrive on their own without any code being pulled.
+```bash
+python -m bizdev.cli worker --interval 300 --pull-leads
+```
