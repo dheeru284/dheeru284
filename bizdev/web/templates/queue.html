@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% block body %}<h2>Outreach queue</h2>
 <form class="card" method="get">Status <select name="status"><option value="">all</option>{% for s in statuses %}<option {{'selected' if fstatus==s}}>{{s}}</option>{% endfor %}</select> <button class="sec">Filter</button></form>
-<form method="post" action="/queue/save_all_drafts" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button>Save all approved emails to Zoho Drafts</button> <span class="mut">Nothing is sent: you review and send each one from Zoho Mail.</span></form>
+{% if delivery == "drafts" %}<form method="post" action="/queue/save_all_drafts" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button>Save all approved emails to Zoho Drafts</button> <span class="mut">Nothing is sent: you review and send each one from Zoho Mail.</span></form>{% endif %}
 <form method="post" action="/inbox/poll" class="card"><input type="hidden" name="csrf" value="{{csrf}}"><button class="sec">Check inbox for replies</button></form>
 {% for m in rows %}{% set o = orgs[m.organization_id] %}{% set c = contacts.get(m.contact_id) %}
 <div class="card"><b><a href="/leads/{{o.id}}">{{o.name}}</a></b> → {{c.full_name if c and c.full_name else ""}} &lt;{{c.email if c and m.channel=="email" else (c.linkedin_url if c else "")}}&gt;

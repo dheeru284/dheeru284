@@ -85,8 +85,14 @@ async def csrf(request: Request, user: dict = Depends(current_user)) -> dict:
 def page(request, name, user, **ctx):
     ctx.update(request=request, user=user, csrf=user["csrf"] if user else "", now=now_utc(),
                flash=request.query_params.get("flash"))
-    ctx.setdefault("halted", None)
-    ctx.setdefault("live", False)
+    gen = app.dependency_overrides.get(get_db, get_db)()  # banner must reflect real state on every page
+    _db = next(gen) if hasattr(gen, "__next__") else gen
+    try:
+        ctx["halted"], ctx["live"] = outreach.halted(_db), outreach.live_sending_enabled(_db)
+        ctx["delivery"] = get_rule(_db, "email.delivery")
+    finally:
+        if hasattr(gen, "__next__"):
+            gen.close()
     return TEMPLATES.TemplateResponse(request, name, ctx)
 
 
