@@ -191,8 +191,11 @@ class ZohoSMTPProvider:
                 refused = s.send_message(em)
         except smtplib.SMTPRecipientsRefused as e:
             raise SendError(f"recipient refused: {list(e.recipients)}", permanent=True) from None
-        except smtplib.SMTPAuthenticationError:
-            raise SendError("Zoho authentication failed (check app password / SMTP access)", permanent=True) from None
+        except smtplib.SMTPAuthenticationError as e:
+            reason = e.smtp_error.decode(errors="replace") if isinstance(e.smtp_error, bytes) else str(e.smtp_error)
+            raise SendError(f"Zoho authentication failed on {self.host}: {e.smtp_code} {reason[:200]} "
+                            "(check host/region, app password, and that SMTP access is enabled on your plan)",
+                            permanent=True) from None
         except (smtplib.SMTPException, OSError) as e:
             raise SendError(f"zoho smtp error: {type(e).__name__}: {e}") from None
         if refused:
