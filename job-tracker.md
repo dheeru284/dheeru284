@@ -46,3 +46,12 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-13 — no applications submitted
+Searches (search-engine snippets only) surfaced India-remote Databricks/Azure roles, but none could be verified as open or applied to:
+- Jobgether (Lever) 4d426592…, 7ac53bdb…, 6b0c5357…, c44864eb… -> 404, closed -> REJECT (expired).
+- YipitData (Greenhouse): India Remote board has no data engineering role (only QA/SWE/Data Specialist) -> REJECT.
+- Demandbase Staff Data Engineer: continental US only -> REJECT. Dice W2 contract: US only -> REJECT.
+- Remotive (DATAMAXIS India, Evnek, MediaRadar, indigoChart, Billigence): remotive.com unreachable via proxy; no salary shown -> REVIEW (unverified).
+- EPAM India remote: posting no longer available -> REJECT. N-iX: needs Azure Databricks cert, India eligibility unconfirmed -> REVIEW.
+Blocker unchanged: no way to submit applications from this session (no browser/forms access, no verified salary or eligibility). Nothing was applied to.
