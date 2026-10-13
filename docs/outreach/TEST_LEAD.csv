@@ -1,0 +1,2 @@
+company_name,source_url,signal_type,summary,website,country,city,industry,category,evidence_date,remote_ok,is_inference,contact_name,contact_role,contact_email,contact_linkedin,contact_verified
+[TEST] Dheeraj Self Test,https://example.com/selftest,hiring,Hiring a contract Senior Data Engineer (Databricks) for an internal test,https://example.com,IN,Bengaluru,Testing,consulting,2026-10-13,true,false,Dheeraj Test,Head of Data,dheeru1706@gmail.com,,true
