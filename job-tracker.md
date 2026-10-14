@@ -46,3 +46,12 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-14 — no applications submitted
+- Reachable: lever.co, linkedin.com. Unreachable from this session: greenhouse API, remoteok, remotive, weworkremotely. WebSearch works.
+- Jobgether (Lever) Databricks Engineer Sr/Lead (039b20f4...), Senior Data Engineer (0f35f05e...), Fabric Engineer (6b0c5357...), Data Engineer Senior (48d2a20c...): all return 404, closed -> REJECT (expired).
+- Jobera Senior Data Engineer, Bangalore: INR 20.9–36.0 lakh/yr, below 42 lakh -> REJECT.
+- Jobgether Fabric listing range INR 11–50 LPA: min below threshold anyway.
+- Wipro/Hirist Azure Databricks (Pan India, immediate joiners): salary not stated, India-local employer -> not pursued.
+- Remotive postings (Billigence, MediaRadar, Evnek, DATAMAXIS, BrightClaim, N HR): unreachable, salaries not shown, several contract/India-local -> remain REVIEW, unverified. Billigence still the best match.
+- Nothing qualified and verifiable (India-eligible, >= INR 42 lakh, open), so nothing applied.
