@@ -46,3 +46,10 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-15 — no applications submitted
+Search-only; no form submission possible and no salary visible on any posting, so none can meet the ₹3.5L/month check.
+- Jobgether "Databricks Engineer Sr/Lead" (lever 039b20f4…): 404, expired -> REJECT.
+- Climb AI (Ashby): still JS-rendered, unreadable -> REVIEW.
+- remotive.com unreachable. Unverified India-remote leads from snippets (salary unknown): MediaRadar, DATAMAXIS, Evnek, BrightClaim, Billigence (contract), other Jobgether Lever postings (0f35f05e…, 48d2a20c…) -> REVIEW.
+- Pune Azure role (clanx.ai): onsite 3 days -> REJECT.
