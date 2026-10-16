@@ -46,3 +46,19 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-16 — no applications submitted
+
+Blocker: egress proxy still returns 403 for greenhouse/lever APIs, remoteok, weworkremotely etc.; no form-filling/browser tool in this session, so nothing could be verified or submitted. Search snippets only (no salaries shown, nothing verified).
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Jobgether partner | Databricks Engineer Senior/Lead, India, remote FT | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REVIEW | Azure Databricks/Python/SQL/Spark fit; real employer unnamed; salary unknown |
+| MediaRadar | Senior Data Engineer | remotive.com/remote/jobs/software-development/senior-data-engineer-4200805 | REVIEW | Azure Databricks/Spark/AKS/Airflow; India eligibility + salary unconfirmed; Airflow/AKS not on resume |
+| Billigence | Senior Data Engineer (contract), India | remotive.com/.../senior-data-engineer-4005395 | REVIEW | Contract, not employee; salary unknown (carried over from 10-07) |
+| DATAMAXIS | Senior Data Engineer | remotive.com/.../senior-data-engineer-4214664 | REVIEW | Databricks/PySpark 5+ yrs; salary/location unconfirmed |
+| Evnek Technologies | Senior Data Engineer | remotive.com/.../senior-data-engineer-4571403 | REVIEW | SQL Server→Databricks, Unity Catalog; Indian company, salary likely below ₹42L |
+| Maltem Australia | Data Engineer Azure/Databricks | employmenthero.com/jobs/position/maltem-australia-data-engineer-azuredatabricks-remote | REVIEW | India contract option; unverified |
+| N-iX | Senior Data Engineer (#2173) | careers.n-ix.com/jobs/4240327101-data-management-senior | REJECT | Requires Azure Databricks cert; location unclear |
+| Jobgether | Data Engineer - Senior | jobs.lever.co/jobgether/48d2a20c-166f-47a5-953e-ba89db644b04 | REJECT | Remote Slovenia only |
+| EPAM | Senior Data Software Engineer | careers.epam.com | REJECT | No longer available |
