@@ -46,3 +46,13 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-17 — no applications submitted
+Blocker (same as 2026-10-07): remotive.com and workable.com are unreachable from this session, so postings could not be verified or applied to. Search snippets only.
+- Jobgether "Databricks Engineer – Senior/Lead" (lever.co/jobgether/039b20f4-...): 404 -> REJECT (expired).
+- Jobgether "Data Engineer – Senior" (lever.co/jobgether/48d2a20c-...): not opened; intermediary, one listing mentions Slovenia -> REVIEW.
+- Billigence Senior Data Engineer (Azure Databricks), India contract (remotive listing): still unverified; contract, salary not shown -> REVIEW.
+- Weekday Senior Data Engineer Fabric/Databricks (Workable 092975708B): India remote, but earlier seen at ₹20–40 lakh -> REJECT (below ₹42 lakh).
+- BrightClaim Azure Data Engineer, DATAMAXIS Senior Data Engineer (remotive): India remote per snippet, salary unseen -> REVIEW.
+- Staff/Senior DE roles on jointaro/Flex/Workiva: US-only -> REJECT. Route Staff DE (remotive): location unknown -> REVIEW.
+Salary-guide search: India senior DE market roughly ₹26–58 LPA; ₹42 lakh+ India-remote roles mostly come from foreign employers paying USD.
