@@ -46,3 +46,17 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-18 — no applications submitted
+Blocker: egress proxy returns 403 for greenhouse/lever/ashby APIs and remotive.com; WebFetch of lever.co gave 404 and ashbyhq/remotive DNS failures. Postings could not be verified (India eligibility, salary, open status) and no application could be submitted. Search snippets only.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Gainwell | Senior Data Engineer (SQL, Spark/PySpark, Databricks), Bangalore | jobs.gainwelltechnologies.com/job/.../1332831100 | REVIEW (unverified) | Dated Jan 2026, likely stale; Bangalore/remote mode and salary unknown. |
+| Jobgether partner roles | Senior Data Engineer (Full Stack/Databricks), India remote | jobs.lever.co/jobgether/0f35f05e-c98e-4d1e-bf7d-b01c12605509 | REVIEW (unverified) | Intermediary; real employer and salary unknown. 4d426592... URL now 404 (closed). |
+| Globalization Partners | Staff Data Engineer | dynamic.jobgether.com/offer/67927023f7751827909b292d-staff-data-engineer | REVIEW (unverified) | India eligibility unclear; Staff scope above resume. |
+| Robots & Pencils | Staff Data Engineer, Remote Worldwide | whynotremote.com/jobs/staff-data-engineer-2152171e | REVIEW (unverified) | Worldwide claim; Staff level, stack/salary unknown. |
+| Billigence | Senior Data Engineer (Azure Databricks), India remote contract | remotive.com/.../senior-data-engineer-4005395 | REVIEW (unverified) | Contract; salary not seen. |
+| YipitData | Senior Software Engineer / Data roles, India remote | job-boards.greenhouse.io/yipitdatajobs | REJECT | No Data Engineer role among India-remote listings (QA, SDET, SWE, Data Specialist). |
+| Weekday clients | Senior Data Engineer / Fabric | apply.workable.com/weekday-1 | REJECT | Ranges ₹11–50 LPA / ₹20–40 LPA; minimum below ₹42 lakh. |
+| CazVid | Senior Data Engineer, New Delhi | cazvid.com | REJECT | Deadline passed (May 2026); pay shown is far below threshold. |
