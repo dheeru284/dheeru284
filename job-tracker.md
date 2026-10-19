@@ -46,3 +46,11 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-19 — no applications submitted
+- Greenhouse/Lever/Ashby JSON APIs and remote boards are unreachable from this session; linkedin.com and some ATS pages load, but no login, resume upload or form submission is possible here, so nothing could be applied to.
+- Jobgether Senior Data Engineer (jobs.lever.co/jobgether/4d426592-00a5-469e-9a13-fb8dd0dece9a): 404, closed -> REJECT.
+- Other Jobgether Lever postings (0f35f05e-c98e-4d1e-bf7d-b01c12605509, 6b0c5357-fdda-4b44-b71e-e26353b72323): India-remote per search snippet; salary and real employer unknown -> REVIEW (unverified).
+- YipitData (Greenhouse yipitdatajobs): the board lists "India Remote" roles, but I saw only Software Engineer/QA/Data Specialist titles, no Data Engineer role and no salary -> not a target.
+- Hirist/Rojgar Group Senior Data Engineer (Databricks, MLflow, remote India): date and salary unclear, MLflow is not on the resume -> REVIEW (unverified).
+- Gainwell Bangalore Senior Data Engineer (Databricks): Jan 2026 listing, likely stale, and likely below ₹42 lakh -> REJECT.
