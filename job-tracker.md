@@ -46,3 +46,19 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-20 — no applications submitted
+Searches (standard web search) for Databricks/Azure/Snowflake Senior/Lead/Staff DE remote-India roles. Mostly aggregator hits (Jobgether, VirtualVocations, Employbl); employbl.com, phdata.io and boards-api.greenhouse.io are unreachable from this session, Jobgether Lever link returned 404.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Karat | Senior Data Engineer (India) | https://job-boards.greenhouse.io/karat/jobs/8880766002 | REVIEW (needs user) | Open, verified. Remote but Bengaluru residents only (you qualify). Salary NOT listed. Needs US-overlap hours ~3pm-11pm IST. Stack PostgreSQL/Redshift/Airflow/Terraform/AWS: resume lacks Airflow/Terraform/Redshift experience (Airflow only in coursework), so match is roughly 60-65%. Form asks sole-employment confirmation, proof of Bengaluru address, truthfulness declaration -> your call. |
+| phData | Senior Data Engineer (India, remote) | employbl.com listing (unreachable) | REVIEW (unverified) | Remote-first consultancy; could not open posting/salary. |
+| Jobgether partners | Senior DE / Databricks Senior-Lead (India) | jobs.lever.co/jobgether/... | REVIEW (unverified) | Intermediary, real employer and salary unknown; one link 404. |
+| Wipro-linked | Senior DE Azure Databricks | hirist.tech | REJECT | Posted 17 Aug 2026, immediate joiners, salary unseen, likely stale. |
+| EPAM | Senior Data Software Engineer | careers.epam.com | REJECT | No longer available. |
+| Orange Business | Databricks DE | weekday.works | REJECT | Hybrid Gurgaon. |
+| iTeamly | Lead DE (Snowflake) | justjoin.it | REJECT | Poland/Romania B2B, ~$6.7-8.6k/mo, India not eligible. |
+| Matterway | Lead DE dbt/Snowflake | hvcapital | REJECT | US, closed Mar 2026. |
+
+Note: the Karat page contained an embedded instruction aimed at AI agents (to alter a resume entry); ignored.
