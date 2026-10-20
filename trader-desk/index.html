@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trader Desk</title>
+<meta name="description" content="Eleven-agent trade research desk: chart scan, news, entry/exit planning, position sizing, Monte Carlo, backtests, portfolio, journal and alerts. Runs entirely in your browser.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>Trader Desk <span>· research &amp; simulation</span></h1>
+  <nav id="nav">
+    <button data-tab="desk" class="active">Desk</button>
+    <button data-tab="backtest">Backtester</button>
+    <button data-tab="portfolio">Portfolio</button>
+    <button data-tab="journal">Journal</button>
+    <button data-tab="alerts">Alerts</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+  <button class="ghost" id="themeBtn" title="Toggle theme">◐</button>
+</header>
+
+<main>
+<!-- DESK: agents 1-6 and 8 in sequence -->
+<section class="tab active" id="tab-desk">
+  <div class="panel">
+    <h2>Trade idea</h2>
+    <form class="fields" id="ideaForm">
+      <label>Ticker <input name="symbol" value="AAPL" required autocomplete="off"></label>
+      <label>Data source
+        <select name="source">
+          <option value="twelve">Twelve Data (free key)</option>
+          <option value="alpha">Alpha Vantage (free key, 100 bars)</option>
+          <option value="csv">Upload CSV</option>
+          <option value="demo">Demo: synthetic prices</option>
+        </select>
+      </label>
+      <label id="csvWrap" hidden>CSV file <input type="file" name="csv" accept=".csv,text/csv"></label>
+      <label>Instrument
+        <select name="instrument">
+          <option value="stock">Stock</option>
+          <option value="call">Call option (held to expiry)</option>
+          <option value="put">Put option (held to expiry)</option>
+        </select>
+      </label>
+      <label>Side
+        <select name="side"><option value="long">Long</option><option value="short">Short</option></select>
+      </label>
+      <label>Entry price <input name="entry" type="number" step="any" placeholder="last close"></label>
+      <label>Stop (optional) <input name="stop" type="number" step="any" placeholder="auto"></label>
+      <label>Target (optional) <input name="target" type="number" step="any" placeholder="auto"></label>
+      <label class="opt">Strike <input name="strike" type="number" step="any"></label>
+      <label class="opt">Premium / share <input name="premium" type="number" step="any"></label>
+      <label>Horizon / days to expiry (trading days) <input name="horizon" type="number" value="20" min="1" max="252"></label>
+      <label>Account size ($) <input name="account" type="number" value="25000" min="1"></label>
+      <label>Max risk per trade (%) <input name="riskPct" type="number" value="1" step="0.1" min="0.1"></label>
+      <label>Max position (% of account) <input name="maxPosPct" type="number" value="20" min="1" max="100"></label>
+      <label>Simulations <input name="sims" type="number" value="10000" min="1000" max="100000" step="1000"></label>
+      <label>Return history (days) <input name="lookback" type="number" value="252" min="60" max="1000"></label>
+      <label>Drift
+        <select name="drift">
+          <option value="zero">Zero drift (conservative)</option>
+          <option value="historical">Historical drift</option>
+        </select>
+      </label>
+      <button class="primary" type="submit" id="runBtn">Run desk</button>
+    </form>
+    <div class="err" id="deskErr"></div>
+  </div>
+  <div id="deskOut"></div>
+</section>
+
+<!-- BACKTESTER -->
+<section class="tab" id="tab-backtest">
+  <div class="panel">
+    <h2><span class="n">10</span>Backtester</h2>
+    <p class="muted">Runs on the bars loaded in the Desk tab. Long only, one position at a time, full equity per trade, signals on the close and fills at the next open.</p>
+    <form class="fields" id="btForm">
+      <label>Strategy <select name="strategy" id="btStrategy"></select></label>
+      <label>Months <input name="months" type="number" value="12" min="3" max="24"></label>
+      <label>Stop (ATR multiple) <input name="stopAtr" type="number" value="2" step="0.5" min="0.5"></label>
+      <label>Target (ATR multiple, 0 = none) <input name="tpAtr" type="number" value="0" step="0.5" min="0"></label>
+      <label>Cost per side (bps) <input name="costBps" type="number" value="5" min="0"></label>
+      <button class="primary" type="submit">Run backtest</button>
+    </form>
+    <div class="err" id="btErr"></div>
+  </div>
+  <div id="btOut"></div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="tab" id="tab-portfolio">
+  <div class="panel">
+    <h2><span class="n">7</span>Portfolio Tracker</h2>
+    <form class="fields" id="posForm">
+      <label>Ticker <input name="symbol" required></label>
+      <label>Shares <input name="shares" type="number" step="any" required></label>
+      <label>Cost / share <input name="cost" type="number" step="any" required></label>
+      <label>Current price <input name="price" type="number" step="any" required></label>
+      <label>Target weight % <input name="target" type="number" step="any" placeholder="optional"></label>
+      <button class="primary" type="submit">Add / update</button>
+    </form>
+    <div class="row" style="margin-top:10px"><label style="flex-direction:row;align-items:center;gap:8px">Cash ($) <input id="cash" type="number" step="any" style="width:140px"></label></div>
+  </div>
+  <div id="pfOut"></div>
+</section>
+
+<!-- JOURNAL -->
+<section class="tab" id="tab-journal">
+  <div class="panel">
+    <h2><span class="n">9</span>Trade Journal</h2>
+    <form class="fields" id="jForm">
+      <label>Date <input name="date" type="date" required></label>
+      <label>Ticker <input name="symbol" required></label>
+      <label>Side <select name="side"><option>long</option><option>short</option></select></label>
+      <label>Size (shares) <input name="size" type="number" step="any" required></label>
+      <label>Entry <input name="entry" type="number" step="any" required></label>
+      <label>Stop <input name="stop" type="number" step="any"></label>
+      <label>Exit (blank = open) <input name="exit" type="number" step="any"></label>
+      <label>Setup tag <input name="setup" placeholder="e.g. pullback, breakout"></label>
+      <label style="grid-column:1/-1">Notes: what you saw, what you felt <textarea name="notes"></textarea></label>
+      <button class="primary" type="submit">Log trade</button>
+    </form>
+  </div>
+  <div id="jOut"></div>
+</section>
+
+<!-- ALERTS -->
+<section class="tab" id="tab-alerts">
+  <div class="panel">
+    <h2><span class="n">11</span>Alert System</h2>
+    <p class="muted">This is a static site, so alerts are checked when a ticker is loaded on the Desk, while this page is open. For alerts while you're away, use a broker or a scheduled job.</p>
+    <form class="fields" id="aForm">
+      <label>Ticker <input name="symbol" required></label>
+      <label>Condition <select name="type" id="aType"></select></label>
+      <label>Value <input name="value" required></label>
+      <button class="primary" type="submit">Add alert</button>
+      <button class="ghost" type="button" id="notifyBtn">Enable browser notifications</button>
+    </form>
+  </div>
+  <div id="aOut"></div>
+</section>
+
+<!-- SETTINGS -->
+<section class="tab" id="tab-settings">
+  <div class="panel">
+    <h2>API keys</h2>
+    <p class="muted">Keys are stored only in this browser (localStorage) and sent only to the provider they belong to. All three have free tiers.</p>
+    <form class="fields" id="keyForm">
+      <label>Twelve Data key <input name="twelve" type="password" autocomplete="off"></label>
+      <label>Alpha Vantage key <input name="alpha" type="password" autocomplete="off"></label>
+      <label>Finnhub key (news) <input name="finnhub" type="password" autocomplete="off"></label>
+      <button class="primary" type="submit">Save</button>
+      <button class="ghost" type="button" id="clearKeys">Clear keys</button>
+    </form>
+    <ul class="plain muted" style="margin-top:10px">
+      <li>Twelve Data: twelvedata.com/pricing (Basic, free): daily bars, 800 calls/day.</li>
+      <li>Alpha Vantage: alphavantage.co/support/#api-key: the free tier gives the last 100 daily bars only (too short for the 200-day average or a 12-month backtest).</li>
+      <li>Finnhub: finnhub.io/register: company news on the free tier.</li>
+      <li>No key? Export daily OHLCV as CSV from your broker or a charting site and use "Upload CSV".</li>
+    </ul>
+    <div id="keyMsg" class="muted"></div>
+  </div>
+  <div class="panel">
+    <h2>Your data</h2>
+    <div class="row">
+      <button class="ghost" id="exportBtn">Export portfolio, journal, alerts (JSON)</button>
+      <label class="ghost" style="flex-direction:row;align-items:center;gap:6px">Import <input type="file" id="importFile" accept=".json"></label>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>Not financial advice. This tool does arithmetic on historical data; it does not know the future. Trade at your own risk.</footer>
+
+<script src="js/indicators.js"></script>
+<script src="js/data.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
