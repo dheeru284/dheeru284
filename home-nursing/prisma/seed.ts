@@ -58,7 +58,7 @@ async function main() {
   // Catalog — invasive services remain unbookable until a clinician signs off (clinicalReviewApproved).
   const cats: Record<string, string> = {};
   for (const [slug, name] of [["procedures", "Nursing procedures"], ["monitoring", "Monitoring & check-ups"], ["care", "Ongoing care"]])
-    cats[slug] = (await prisma.serviceCategory.upsert({ where: { slug: slug! }, create: { slug: slug!, name: name! }, update: {} })).id;
+    cats[slug!] = (await prisma.serviceCategory.upsert({ where: { slug: slug! }, create: { slug: slug!, name: name! }, update: {} })).id;
   for (const s of SERVICES) {
     const svc = await prisma.nursingService.upsert({
       where: { slug: s.slug },

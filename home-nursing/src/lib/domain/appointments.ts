@@ -25,6 +25,8 @@ const isExclusionViolation = (e: unknown) =>
   (e instanceof Prisma.PrismaClientUnknownRequestError && /appointment_no_nurse_overlap|23P01/.test(e.message)) ||
   (e instanceof Error && /appointment_no_nurse_overlap|exclusion constraint/.test(e.message));
 
+const isDeadlock = (e: unknown) => e instanceof Error && /40P01|deadlock detected/.test(e.message);
+
 /**
  * Creates an appointment after RE-validating everything the search showed (Step 9).
  * Double booking is prevented by the Postgres exclusion constraint, not just this check.
@@ -74,8 +76,7 @@ export async function createAppointment(p: Principal, input: CreateAppointmentIn
   const commission = Math.round((amount * commerce.nursingCommissionPct) / 100) + commerce.nursingFixedFeeInPaise;
   const status: AppointmentStatus = service.requiresPrescription ? "AWAITING_AUTHORIZATION" : "AWAITING_NURSE_ACCEPTANCE";
 
-  try {
-    const appt = await db.$transaction(async (tx) => {
+  const insert = () => db.$transaction(async (tx) => {
       const a = await tx.appointment.create({
         data: {
           reference: newReference("HN"), patientId: input.patientId, bookedByUserId: p.userId, nurseId: nurse.id, serviceId: service.id, addressId: address.id,
@@ -87,10 +88,13 @@ export async function createAppointment(p: Principal, input: CreateAppointmentIn
       await tx.appointmentStatusHistory.create({ data: { appointmentId: a.id, toStatus: status, actorUserId: p.userId, note: "created" } });
       return a;
     });
+  try {
+    // Concurrent overlapping inserts can surface as a deadlock (40P01) from the exclusion check; retry once, then it reports as an exclusion violation.
+    const appt = await insert().catch((e) => (isDeadlock(e) ? insert() : Promise.reject(e)));
     if (status === "AWAITING_NURSE_ACCEPTANCE") await notify(db, nurse.userId, "appointment.requested", { ref: appt.reference, when: formatInTz(appt.startAt) });
     return appt;
   } catch (e) {
-    if (isExclusionViolation(e)) throw new AppError("CONFLICT", "This time slot was just taken. Please choose another time or nurse.");
+    if (isExclusionViolation(e) || isDeadlock(e)) throw new AppError("CONFLICT", "This time slot was just taken. Please choose another time or nurse.");
     throw e;
   }
 }
@@ -193,7 +197,7 @@ export async function rescheduleAppointment(p: Principal, apptId: string, newSta
 
 /** Nurse-visible view: precise address only for the assigned nurse of an active booking. */
 export async function getAppointmentFor(p: Principal, apptId: string, db: Db = prisma) {
-  const { actor, appt } = await actorFor(db, p, apptId);
+  const { actor } = await actorFor(db, p, apptId);
   const full = await db.appointment.findUniqueOrThrow({
     where: { id: apptId },
     include: { service: true, address: true, history: { orderBy: { createdAt: "asc" } }, visit: { include: { checklist: true } }, patient: true, nurse: { include: { serviceAreas: true } } },

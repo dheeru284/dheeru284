@@ -76,7 +76,7 @@ export async function searchStays(db: Db, q: StaySearch) {
   return { hospital: { id: hospital.id, name: hospital.name, city: hospital.city }, nights, results: out };
 }
 
-const isStayOverlap = (e: unknown) => e instanceof Error && /stay_no_unit_overlap|exclusion constraint|23P01/.test(e.message + JSON.stringify((e as Prisma.PrismaClientKnownRequestError).meta ?? {}));
+const isStayOverlap = (e: unknown) => e instanceof Error && /stay_no_unit_overlap|exclusion constraint|23P01|40P01|deadlock detected/.test(e.message + JSON.stringify((e as Prisma.PrismaClientKnownRequestError).meta ?? {}));
 
 /** Picks a free unit and inserts the booking; the DB exclusion constraint makes concurrent requests safe. */
 export async function requestStay(p: Principal, input: { propertyId: string; checkIn: string; checkOut: string; guests: number; hospitalId?: string; guestNote?: string; extendedFromId?: string }, db: typeof prisma = prisma) {

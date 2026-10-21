@@ -1,0 +1,9 @@
+# Local development database. App runs on the host with `npm run dev`.
+services:
+  db:
+    image: postgres:16
+    environment: { POSTGRES_USER: hn, POSTGRES_PASSWORD: hn, POSTGRES_DB: homenursing }
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+volumes:
+  pgdata:
