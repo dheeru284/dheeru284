@@ -46,3 +46,19 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-21 — no applications submitted
+
+Still no way to verify or apply: remotive.com unresolvable, remoterocketship.com redirects, Ashby/Greenhouse/Lever APIs return nothing from this session; Jobgether Lever links from search now 404 (closed). No salary seen on any posting; India-only remote roles found are mostly India-salary (Weekday median ~₹27 LPA, below the ₹42 LPA floor). No USD-paid India-remote role found.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Billigence | Senior Data Engineer (Azure Databricks), India remote, contract | remotive.com/remote/jobs/software-development/senior-data-engineer-4005395 | REVIEW (unverified) | Stack fits; contract; salary unknown |
+| DATAMAXIS | Senior Data Engineer (Databricks/PySpark), India | remotive.com/.../senior-data-engineer-4214664 | REVIEW (unverified) | India-salary likely below floor |
+| MediaRadar | Senior Data Engineer (Databricks, Spark, AKS, Airflow), India remote | remotive.com/.../senior-data-engineer-4200805 | REVIEW (unverified) | Airflow not strong on resume; salary unknown |
+| Maltem Australia | Data Engineer Azure/Databricks – Remote | employmenthero.com/jobs/position/maltem-australia-data-engineer-azuredatabricks-remote | REVIEW (unverified) | India eligibility unclear |
+| Jobgether (Fabric) | Senior Data Engineer / Fabric Engineer | jobs.lever.co/jobgether/6b0c5357-... | REJECT | 404, closed |
+| Jobgether (Databricks) | Databricks Engineer Senior/Lead | jobs.lever.co/jobgether/039b20f4-... | REJECT | 404, closed |
+| EPAM | Senior Data Software Engineer | careers.epam.com | REJECT | No longer available |
+| Pune role (clanx) | Senior Data Engineer Azure | jobs.clanx.ai | REJECT | Onsite/hybrid |
+| BrightClaim | Senior Data Engineer | remotive.com | REJECT | Appears closed |
