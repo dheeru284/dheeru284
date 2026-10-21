@@ -1,0 +1,891 @@
+// Home nursing & patient-stay marketplace — relational model.
+// All timestamps are stored in UTC (timestamptz). Render in the user's timezone (default Asia/Kolkata).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────── Identity & access ─────────────
+
+enum RoleKey {
+  PATIENT
+  NURSE
+  ADMIN
+  COMPLIANCE_OFFICER
+  SUPPORT_AGENT
+  ACCOMMODATION_PARTNER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETION_REQUESTED
+  DELETED
+}
+
+model User {
+  id          String     @id @default(cuid())
+  phone       String     @unique // E.164, e.g. +919812345678
+  email       String?    @unique
+  fullName    String?
+  status      UserStatus @default(ACTIVE)
+  preferredLanguage String @default("en")
+  timezone    String     @default("Asia/Kolkata")
+  createdAt   DateTime   @default(now()) @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @db.Timestamptz
+  deletedAt   DateTime?  @db.Timestamptz
+
+  roles          UserRole[]
+  sessions       Session[]
+  patientProfiles PatientProfile[]       @relation("AccountHolder")
+  caregiverLinks CaregiverRelationship[]
+  addresses      PatientAddress[]
+  nurseProfile   NurseProfile?
+  partner        AccommodationPartner?
+  notifications  Notification[]
+  consents       PatientConsent[]
+  tickets        SupportTicket[]
+  complaints     Complaint[]             @relation("ComplaintRaisedBy")
+  privacyRequests PrivacyRequest[]
+  auditLogs      AuditLog[]
+  accommodationBookings AccommodationBooking[]
+  favoriteNurses FavoriteNurse[]
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  key         RoleKey          @unique
+  description String
+  permissions RolePermission[]
+  users       UserRole[]
+}
+
+model Permission {
+  id    String           @id @default(cuid())
+  key   String           @unique // e.g. "nurse.verify", "settings.write"
+  description String
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  @@id([userId, roleId])
+}
+
+model OtpChallenge {
+  id          String   @id @default(cuid())
+  phone       String
+  codeHash    String   // HMAC of code; raw OTP is never stored or logged
+  purpose     String   @default("login")
+  attempts    Int      @default(0)
+  consumedAt  DateTime? @db.Timestamptz
+  expiresAt   DateTime @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  @@index([phone, createdAt])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  expiresAt  DateTime @db.Timestamptz
+  revokedAt  DateTime? @db.Timestamptz
+  userAgent  String?
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int
+  windowEnd DateTime @db.Timestamptz
+}
+
+// ───────────── Patients ─────────────
+
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+  UNDISCLOSED
+}
+
+model PatientProfile {
+  id            String   @id @default(cuid())
+  accountUserId String
+  fullName      String
+  dateOfBirth   DateTime? @db.Date
+  gender        Gender   @default(UNDISCLOSED)
+  // Clinical context is minimised; only what the booked nurse needs.
+  medicalNotes  String?
+  allergies     String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  deletedAt     DateTime? @db.Timestamptz
+
+  account       User     @relation("AccountHolder", fields: [accountUserId], references: [id])
+  caregivers    CaregiverRelationship[]
+  appointments  Appointment[]
+  consents      PatientConsent[]
+  @@index([accountUserId])
+}
+
+model CaregiverRelationship {
+  id         String   @id @default(cuid())
+  patientId  String
+  caregiverUserId String
+  relation   String   // "son", "spouse", ...
+  canBook    Boolean  @default(true)
+  canViewRecords Boolean @default(false)
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  patient    PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caregiver  User           @relation(fields: [caregiverUserId], references: [id], onDelete: Cascade)
+  @@unique([patientId, caregiverUserId])
+}
+
+model PatientAddress {
+  id         String  @id @default(cuid())
+  userId     String
+  label      String?
+  line1      String
+  building   String?
+  landmark   String?
+  locality   String?
+  city       String
+  state      String
+  pincode    String
+  latitude   Float
+  longitude  Float
+  verificationStatus String @default("UNVERIFIED") // UNVERIFIED | GEOCODED | VERIFIED
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  deletedAt  DateTime? @db.Timestamptz
+  user       User @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+  @@index([userId])
+}
+
+model PatientConsent {
+  id         String   @id @default(cuid())
+  userId     String
+  patientId  String?
+  purpose    String   // "care_delivery", "share_with_nurse", "marketing", ...
+  noticeVersion String
+  grantedAt  DateTime @default(now()) @db.Timestamptz
+  withdrawnAt DateTime? @db.Timestamptz
+  user       User @relation(fields: [userId], references: [id])
+  patient    PatientProfile? @relation(fields: [patientId], references: [id])
+  @@index([userId, purpose])
+}
+
+model FavoriteNurse {
+  userId  String
+  nurseId String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nurse NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  @@id([userId, nurseId])
+}
+
+// ───────────── Nurses & credentials ─────────────
+
+enum NurseStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model NurseProfile {
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  displayName    String
+  gender         Gender
+  bio            String?
+  photoKey       String?
+  languages      String[]
+  yearsExperience Int        @default(0)
+  status         NurseStatus @default(DRAFT)
+  isPaused       Boolean     @default(false)
+  isDemo         Boolean     @default(false) // seed/demo data — never shown as a real verified nurse in production
+  ratingAvg      Float       @default(0)
+  ratingCount    Int         @default(0)
+  completedVisits Int        @default(0)
+  approvedAt     DateTime?   @db.Timestamptz
+  createdAt      DateTime    @default(now()) @db.Timestamptz
+  updatedAt      DateTime    @updatedAt @db.Timestamptz
+
+  user           User @relation(fields: [userId], references: [id])
+  qualifications NurseQualification[]
+  registrations  NurseRegistration[]
+  documents      CredentialDocument[]
+  eligibilities  NurseServiceEligibility[]
+  serviceAreas   NurseServiceArea[]
+  availability   NurseAvailability[]
+  exceptions     NurseAvailabilityException[]
+  appointments   Appointment[]
+  reviews        Review[]
+  favoritedBy    FavoriteNurse[]
+  @@index([status])
+}
+
+model NurseQualification {
+  id        String @id @default(cuid())
+  nurseId   String
+  code      String // "GNM", "BSC_NURSING", "MSC_NURSING", "ANM", "POST_BASIC_BSC", "CRITICAL_CARE_CERT"...
+  institution String?
+  yearCompleted Int?
+  verificationStatus String @default("PENDING") // PENDING | VERIFIED | REJECTED
+  nurse     NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  @@index([nurseId])
+}
+
+enum CredentialStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+  REVOKED
+}
+
+model NurseRegistration {
+  id              String @id @default(cuid())
+  nurseId         String
+  councilName     String // e.g. "Karnataka State Nursing Council"
+  state           String
+  registrationNumber String
+  issuedOn        DateTime? @db.Date
+  expiresOn       DateTime? @db.Date
+  status          CredentialStatus @default(PENDING)
+  nurse           NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  verifications   CredentialVerification[]
+  @@unique([councilName, registrationNumber])
+}
+
+model CredentialDocument {
+  id          String @id @default(cuid())
+  nurseId     String
+  kind        String // "REGISTRATION_CERT", "QUALIFICATION_CERT", "ID_PROOF", "PHOTO"
+  storageKey  String // private bucket key — never a public URL
+  mimeType    String
+  sizeBytes   Int
+  status      CredentialStatus @default(PENDING)
+  mandatory   Boolean @default(true)
+  expiresOn   DateTime? @db.Date
+  uploadedAt  DateTime @default(now()) @db.Timestamptz
+  nurse       NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  verifications CredentialVerification[]
+  @@index([nurseId, status])
+}
+
+// Append-only audit of every verification decision.
+model CredentialVerification {
+  id            String @id @default(cuid())
+  documentId    String?
+  registrationId String?
+  decision      CredentialStatus
+  reviewerUserId String
+  method        String // "MANUAL_DOCUMENT_REVIEW", "COUNCIL_PORTAL_CHECK", ...
+  notes         String?
+  decidedAt     DateTime @default(now()) @db.Timestamptz
+  document      CredentialDocument? @relation(fields: [documentId], references: [id])
+  registration  NurseRegistration?  @relation(fields: [registrationId], references: [id])
+}
+
+model NurseServiceEligibility {
+  id        String @id @default(cuid())
+  nurseId   String
+  serviceId String
+  priceInPaise Int?   // nurse override, else service base price
+  status    String @default("PENDING") // PENDING | APPROVED | REVOKED
+  approvedBy String?
+  approvedAt DateTime? @db.Timestamptz
+  nurse     NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  service   NursingService @relation(fields: [serviceId], references: [id])
+  @@unique([nurseId, serviceId])
+}
+
+model NurseServiceArea {
+  id        String @id @default(cuid())
+  nurseId   String
+  label     String // shown publicly, e.g. "Indiranagar, Bengaluru" — never the street address
+  city      String
+  // Private dispatch origin, used only by the matching engine.
+  latitude  Float
+  longitude Float
+  maxTravelMinutes Int? // nurse's own limit; effective = min(nurse, platform)
+  isPrimary Boolean @default(true)
+  nurse     NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  @@index([city])
+}
+
+// Weekly recurring working hours in the nurse's local timezone.
+model NurseAvailability {
+  id        String @id @default(cuid())
+  nurseId   String
+  dayOfWeek Int    // 0=Sunday
+  startMinute Int  // minutes since local midnight
+  endMinute Int
+  timezone  String @default("Asia/Kolkata")
+  nurse     NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  @@index([nurseId, dayOfWeek])
+}
+
+model NurseAvailabilityException {
+  id       String @id @default(cuid())
+  nurseId  String
+  startsAt DateTime @db.Timestamptz
+  endsAt   DateTime @db.Timestamptz
+  reason   String?  // holiday, break, blackout
+  nurse    NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  @@index([nurseId, startsAt])
+}
+
+// ───────────── Service catalog ─────────────
+
+model ServiceCategory {
+  id       String @id @default(cuid())
+  slug     String @unique
+  name     String
+  description String?
+  services NursingService[]
+}
+
+model NursingService {
+  id                 String  @id @default(cuid())
+  slug               String  @unique
+  name               String
+  description        String
+  categoryId         String
+  tags               String[]
+  durationMinutes    Int
+  basePriceInPaise   Int
+  travelChargeInPaise Int    @default(0)
+  patientTypes       String[]
+  requiredQualifications String[] // any-of qualification codes
+  requiresPrescription Boolean @default(false)
+  isInvasive         Boolean @default(false)
+  // Restricted/invasive services stay disabled until clinical review signs off.
+  clinicalReviewApproved Boolean @default(false)
+  equipment          String[]
+  preVisitInfo       String[]
+  documentationRequirements String[]
+  cancellationPolicyKey String @default("standard")
+  allowedCities      String[] // empty = all active cities
+  isActive           Boolean @default(false)
+  createdAt          DateTime @default(now()) @db.Timestamptz
+  updatedAt          DateTime @updatedAt @db.Timestamptz
+  category           ServiceCategory @relation(fields: [categoryId], references: [id])
+  requirements       ServiceRequirement[]
+  protocols          ServiceProtocol[]
+  eligibilities      NurseServiceEligibility[]
+  appointments       Appointment[]
+}
+
+model ServiceRequirement {
+  id        String @id @default(cuid())
+  serviceId String
+  kind      String // "PRESCRIPTION", "CLINICIAN_ORDER", "CONSENT", "PRE_VISIT_FORM"
+  description String
+  service   NursingService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model ServiceProtocol {
+  id          String @id @default(cuid())
+  serviceId   String
+  version     Int
+  checklist   Json   // [{key,label,required}]
+  reviewedBy  String? // qualified clinician name / id
+  reviewedAt  DateTime? @db.Timestamptz
+  isActive    Boolean @default(false)
+  service     NursingService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@unique([serviceId, version])
+}
+
+// ───────────── Appointments ─────────────
+
+enum AppointmentStatus {
+  DRAFT
+  AWAITING_INFORMATION
+  AWAITING_AUTHORIZATION
+  AWAITING_NURSE_ACCEPTANCE
+  CONFIRMED
+  NURSE_EN_ROUTE
+  NURSE_ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULE_REQUESTED
+  RESCHEDULED
+  NO_SHOW
+  UNDER_REVIEW
+}
+
+model Appointment {
+  id            String @id @default(cuid())
+  reference     String @unique
+  patientId     String
+  bookedByUserId String
+  nurseId       String
+  serviceId     String
+  addressId     String
+  startAt       DateTime @db.Timestamptz
+  endAt         DateTime @db.Timestamptz
+  // Window the nurse is blocked for (visit + travel buffer). DB exclusion constraint prevents overlap.
+  blockStart    DateTime @db.Timestamptz
+  blockEnd      DateTime @db.Timestamptz
+  status        AppointmentStatus @default(AWAITING_NURSE_ACCEPTANCE)
+  recurrenceGroupId String?
+  estTravelMinutes Int?
+  estDistanceKm Float?
+  travelEstimateSource String? // provider name, or "UNAVAILABLE"
+  amountInPaise Int
+  commissionInPaise Int
+  paymentStatus String @default("UNPAID") // UNPAID | AUTHORIZED | PAID | REFUNDED | PARTIALLY_REFUNDED
+  patientNotes  String?
+  cancelReason  String?
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+
+  patient   PatientProfile @relation(fields: [patientId], references: [id])
+  nurse     NurseProfile   @relation(fields: [nurseId], references: [id])
+  service   NursingService @relation(fields: [serviceId], references: [id])
+  address   PatientAddress @relation(fields: [addressId], references: [id])
+  history   AppointmentStatusHistory[]
+  documents AppointmentDocument[]
+  visit     VisitRecord?
+  review    Review?
+  payments  Payment[]
+  @@index([nurseId, startAt])
+  @@index([patientId, startAt])
+}
+
+model AppointmentStatusHistory {
+  id            String @id @default(cuid())
+  appointmentId String
+  fromStatus    AppointmentStatus?
+  toStatus      AppointmentStatus
+  actorUserId   String?
+  note          String?
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  @@index([appointmentId])
+}
+
+model AppointmentDocument {
+  id            String @id @default(cuid())
+  appointmentId String
+  kind          String // "PRESCRIPTION", "CLINICIAN_ORDER", "CARE_NOTE"
+  storageKey    String
+  mimeType      String
+  sizeBytes     Int
+  verificationStatus String @default("PENDING")
+  uploadedByUserId String
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model VisitRecord {
+  id            String @id @default(cuid())
+  appointmentId String @unique
+  arrivedAt     DateTime? @db.Timestamptz
+  startedAt     DateTime? @db.Timestamptz
+  completedAt   DateTime? @db.Timestamptz
+  notes         String?
+  observations  Json?   // { bp, pulse, tempC, spo2 } — recorded, never interpreted by software
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  checklist     VisitChecklist[]
+}
+
+model VisitChecklist {
+  id       String @id @default(cuid())
+  visitId  String
+  itemKey  String
+  label    String
+  done     Boolean @default(false)
+  visit    VisitRecord @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  @@unique([visitId, itemKey])
+}
+
+model Review {
+  id            String @id @default(cuid())
+  appointmentId String @unique
+  nurseId       String
+  rating        Int
+  comment       String?
+  moderationStatus String @default("VISIBLE") // VISIBLE | HIDDEN | FLAGGED
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  nurse         NurseProfile @relation(fields: [nurseId], references: [id])
+}
+
+model Complaint {
+  id           String @id @default(cuid())
+  raisedByUserId String
+  appointmentId String?
+  accommodationBookingId String?
+  category     String
+  severity     String @default("NORMAL") // NORMAL | SERIOUS | CRITICAL
+  description  String
+  status       String @default("OPEN") // OPEN | INVESTIGATING | RESOLVED | DISMISSED
+  resolution   String?
+  assignedToUserId String?
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+  raisedBy     User @relation("ComplaintRaisedBy", fields: [raisedByUserId], references: [id])
+}
+
+model Incident {
+  id          String @id @default(cuid())
+  reportedByUserId String
+  appointmentId String?
+  kind        String // "SAFETY", "CLINICAL", "PRIVACY", "SECURITY"
+  description String
+  status      String @default("OPEN")
+  createdAt   DateTime @default(now()) @db.Timestamptz
+}
+
+// ───────────── Hospitals & accommodation ─────────────
+
+model Hospital {
+  id         String @id @default(cuid())
+  name       String
+  address    String
+  city       String
+  state      String
+  pincode    String
+  latitude   Float
+  longitude  Float
+  phone      String?
+  website    String?
+  specialties String[]
+  verificationStatus String @default("UNVERIFIED")
+  dataSource String
+  lastVerifiedAt DateTime? @db.Timestamptz
+  isActive   Boolean @default(true)
+  mergedIntoId String?
+  // Directory entry only. A formal partnership must be recorded separately.
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  @@index([city])
+}
+
+model AccommodationPartner {
+  id          String @id @default(cuid())
+  userId      String @unique
+  businessName String
+  gstin       String?
+  verificationStatus String @default("PENDING")
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  user        User @relation(fields: [userId], references: [id])
+  properties  AccommodationProperty[]
+  settlements PartnerSettlement[]
+}
+
+model AccommodationProperty {
+  id          String @id @default(cuid())
+  partnerId   String
+  name        String
+  description String
+  propertyType String // SERVICED_APARTMENT | FURNISHED_APARTMENT | GUEST_HOUSE
+  address     String
+  city        String
+  state       String
+  pincode     String
+  latitude    Float
+  longitude   Float
+  bedrooms    Int
+  bathrooms   Int
+  maxGuests   Int
+  accessibility String[]
+  houseRules  String?
+  minStayNights Int @default(1)
+  cancellationPolicy String
+  verificationStatus String @default("PENDING")
+  isActive    Boolean @default(true)
+  isDemo      Boolean @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  partner     AccommodationPartner @relation(fields: [partnerId], references: [id])
+  images      PropertyImage[]
+  amenities   PropertyAmenity[]
+  units       PropertyUnit[]
+  rates       PropertyRate[]
+  blackouts   PropertyAvailability[]
+  @@index([city])
+}
+
+model PropertyImage {
+  id         String @id @default(cuid())
+  propertyId String
+  url        String
+  alt        String
+  property   AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model PropertyAmenity {
+  propertyId String
+  amenity    String
+  property   AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@id([propertyId, amenity])
+}
+
+// Each bookable unit. Inventory = number of units.
+model PropertyUnit {
+  id         String @id @default(cuid())
+  propertyId String
+  label      String
+  property   AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings   AccommodationBooking[]
+}
+
+// Partner-set blackout dates (unit null = whole property).
+model PropertyAvailability {
+  id         String @id @default(cuid())
+  propertyId String
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date // exclusive
+  reason     String?
+  property   AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model PropertyRate {
+  id           String @id @default(cuid())
+  propertyId   String
+  nightlyInPaise Int
+  monthlyInPaise Int?   // applied per 30 nights when stay >= 30
+  extendedStayDiscountPct Int @default(0) // for stays >= 14 nights
+  depositInPaise Int @default(0)
+  validFrom    DateTime @db.Date
+  validTo      DateTime? @db.Date
+  property     AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+enum StayStatus {
+  REQUESTED
+  CONFIRMED
+  DECLINED
+  CANCELLED
+  CHECKED_IN
+  COMPLETED
+}
+
+model AccommodationBooking {
+  id          String @id @default(cuid())
+  reference   String @unique
+  userId      String
+  unitId      String
+  hospitalId  String?
+  checkIn     DateTime @db.Date
+  checkOut    DateTime @db.Date // exclusive
+  guests      Int
+  status      StayStatus @default(REQUESTED)
+  totalInPaise Int
+  depositInPaise Int
+  commissionInPaise Int
+  paymentStatus String @default("UNPAID")
+  extendedFromId String?
+  guestNote   String?  // never contains medical information
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+  user        User @relation(fields: [userId], references: [id])
+  unit        PropertyUnit @relation(fields: [unitId], references: [id])
+  @@index([unitId, checkIn])
+}
+
+// ───────────── Money ─────────────
+
+model Payment {
+  id           String @id @default(cuid())
+  appointmentId String?
+  accommodationBookingId String?
+  provider     String // "mock", "razorpay"
+  providerOrderId String @unique
+  providerPaymentId String?
+  amountInPaise Int
+  currency     String @default("INR")
+  status       String @default("CREATED") // CREATED | CAPTURED | FAILED | REFUNDED
+  idempotencyKey String @unique
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+  refunds      Refund[]
+}
+
+model Refund {
+  id         String @id @default(cuid())
+  paymentId  String
+  amountInPaise Int
+  reason     String
+  status     String @default("PENDING")
+  providerRefundId String?
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  payment    Payment @relation(fields: [paymentId], references: [id])
+}
+
+model Commission {
+  id          String @id @default(cuid())
+  sourceType  String // "APPOINTMENT" | "ACCOMMODATION"
+  sourceId    String
+  amountInPaise Int
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  @@unique([sourceType, sourceId])
+}
+
+model PartnerSettlement {
+  id         String @id @default(cuid())
+  partnerId  String?
+  nurseId    String?
+  periodStart DateTime @db.Date
+  periodEnd  DateTime @db.Date
+  grossInPaise Int
+  commissionInPaise Int
+  netInPaise Int
+  status     String @default("PENDING")
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  partner    AccommodationPartner? @relation(fields: [partnerId], references: [id])
+}
+
+model WebhookEvent {
+  id         String @id // provider event id → idempotent processing
+  provider   String
+  type       String
+  receivedAt DateTime @default(now()) @db.Timestamptz
+}
+
+// ───────────── Comms, ops, governance ─────────────
+
+model NotificationTemplate {
+  id       String @id @default(cuid())
+  key      String
+  channel  String // SMS | EMAIL | IN_APP | WHATSAPP
+  language String @default("en")
+  body     String // must avoid sensitive health details
+  @@unique([key, channel, language])
+}
+
+model Notification {
+  id        String @id @default(cuid())
+  userId    String
+  channel   String
+  templateKey String
+  body      String
+  status    String @default("PENDING") // PENDING | SENT | FAILED
+  attempts  Int    @default(0)
+  lastError String?
+  readAt    DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user      User @relation(fields: [userId], references: [id])
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model SupportTicket {
+  id        String @id @default(cuid())
+  userId    String
+  subject   String
+  body      String
+  status    String @default("OPEN")
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user      User @relation(fields: [userId], references: [id])
+}
+
+model FeatureFlag {
+  key         String  @id
+  enabled     Boolean @default(false)
+  description String
+  rolloutCities String[]
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+}
+
+model PlatformSetting {
+  key       String @id
+  value     Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt @db.Timestamptz
+}
+
+model City {
+  id      String @id @default(cuid())
+  name    String
+  state   String
+  isActive Boolean @default(true)
+  @@unique([name, state])
+}
+
+model RouteCacheEntry {
+  key        String @id // hash(origin,dest,departure bucket,provider)
+  minutes    Int
+  distanceKm Float
+  provider   String
+  trafficAware Boolean
+  expiresAt  DateTime @db.Timestamptz
+}
+
+model AuditLog {
+  id         String @id @default(cuid())
+  actorUserId String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  actor      User? @relation(fields: [actorUserId], references: [id])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model PrivacyRequest {
+  id         String @id @default(cuid())
+  userId     String
+  kind       String // ACCESS | CORRECTION | DELETION | CONSENT_WITHDRAWAL | GRIEVANCE
+  details    String?
+  status     String @default("RECEIVED") // RECEIVED | IN_PROGRESS | COMPLETED | REJECTED
+  dueBy      DateTime @db.Timestamptz
+  resolvedAt DateTime? @db.Timestamptz
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  user       User @relation(fields: [userId], references: [id])
+}
+
+model ComplianceItem {
+  id            String @id @default(cuid())
+  jurisdiction  String // "IN" or state code e.g. "KA"
+  category      String
+  responsibleParty String // PLATFORM | NURSE | CLINICAL_ESTABLISHMENT | LAB_PARTNER | ACCOMMODATION | PAYMENT_TECH
+  requirement   String
+  applicability String @default("PENDING_LEGAL_REVIEW") // CONFIRMED | POTENTIALLY_APPLICABLE | NOT_APPLICABLE_AFTER_REVIEW | PENDING_LEGAL_REVIEW
+  issuingAuthority String?
+  referenceUrl  String?
+  requiredDocuments String[]
+  issueDate     DateTime? @db.Date
+  renewalDate   DateTime? @db.Date
+  reviewer      String?
+  reviewDate    DateTime? @db.Date
+  status        String @default("OPEN") // OPEN | IN_PROGRESS | SATISFIED | EXCEPTION_RECORDED | LAPSED
+  // When true and not SATISFIED/EXCEPTION_RECORDED, the gated operation is blocked in this jurisdiction.
+  blocksOperation String? // e.g. "NURSING_BOOKINGS", "ACCOMMODATION_BOOKINGS"
+  exceptionNote String?
+  notes         String?
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  @@index([jurisdiction])
+}
