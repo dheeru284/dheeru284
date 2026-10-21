@@ -38,3 +38,33 @@ export class MockStorageProvider implements StorageProvider {
     return exp > Date.now() && this.sign(key, exp, op) === sig;
   }
 }
+
+/** S3-compatible private bucket (AWS S3, Cloudflare R2, MinIO). Bucket must block all public access. */
+export class S3StorageProvider implements StorageProvider {
+  readonly name = "s3";
+  private client: import("@aws-sdk/client-s3").S3Client | undefined;
+  constructor(private cfg: { bucket: string; region: string; endpoint?: string; accessKeyId?: string; secretAccessKey?: string }) {}
+  private async s3() {
+    if (this.client) return this.client;
+    const { S3Client } = await import("@aws-sdk/client-s3");
+    this.client = new S3Client({
+      region: this.cfg.region,
+      endpoint: this.cfg.endpoint,
+      forcePathStyle: !!this.cfg.endpoint,
+      credentials: this.cfg.accessKeyId && this.cfg.secretAccessKey ? { accessKeyId: this.cfg.accessKeyId, secretAccessKey: this.cfg.secretAccessKey } : undefined,
+    });
+    return this.client;
+  }
+  async presignUpload(key: string, mimeType: string, ttlSec = 300) {
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+    const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+    const url = await getSignedUrl(await this.s3(), new PutObjectCommand({ Bucket: this.cfg.bucket, Key: key, ContentType: mimeType, ServerSideEncryption: "AES256" }), { expiresIn: ttlSec });
+    return { url, key, expiresAt: new Date(Date.now() + ttlSec * 1000) };
+  }
+  async presignDownload(key: string, ttlSec = 120) {
+    const { GetObjectCommand } = await import("@aws-sdk/client-s3");
+    const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+    const url = await getSignedUrl(await this.s3(), new GetObjectCommand({ Bucket: this.cfg.bucket, Key: key }), { expiresIn: ttlSec });
+    return { url, expiresAt: new Date(Date.now() + ttlSec * 1000) };
+  }
+}

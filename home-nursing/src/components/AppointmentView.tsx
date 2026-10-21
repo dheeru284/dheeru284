@@ -6,7 +6,7 @@ import { Alert, Field, StatusBadge, useAction } from "./ui";
 
 type A = {
   viewer: "PATIENT" | "NURSE" | "ADMIN"; id: string; reference: string; status: string; startAt: string; endAt: string;
-  service: { name: string; durationMinutes: number }; nurse: { displayName: string; serviceArea?: string }; patient: { fullName: string; allergies?: string | null; medicalNotes?: string | null };
+  service: { name: string; durationMinutes: number }; nurse: { id?: string; displayName: string; serviceArea?: string }; patient: { fullName: string; allergies?: string | null; medicalNotes?: string | null };
   address: { line1?: string; building?: string | null; landmark?: string | null; locality?: string | null; city: string; pincode?: string; latitude?: number; longitude?: number };
   travel: { minutes: number | null; distanceKm: number | null; source: string | null }; amountInPaise: number; paymentStatus: string; patientNotes: string | null;
   history: { id: string; toStatus: string; createdAt: string; note: string | null }[];
@@ -110,6 +110,30 @@ export function AppointmentView({ a }: { a: A }) {
         </div>
         {a.viewer === "NURSE" && (
           <div className="card space-y-2">{(NURSE_NEXT[a.status] ?? []).map((n) => <button key={n.to} className={n.to === "CANCELLED" || n.to === "NO_SHOW" ? "btn-secondary w-full" : "btn w-full"} disabled={act.busy} onClick={() => transition(n.to)}>{n.label}</button>)}</div>
+        )}
+        {a.viewer === "PATIENT" && a.status === "AWAITING_AUTHORIZATION" && (
+          <form className="card space-y-2" onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const file = fd.get("file") as File;
+            go(async () => {
+              const r = await api<{ upload: { url: string } }>(`/appointments/${a.id}/documents`, { body: { kind: fd.get("kind"), mimeType: file.type, sizeBytes: file.size } });
+              const put = await fetch(r.upload.url, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+              if (!put.ok) throw new Error("Upload failed");
+            });
+          }}>
+            <h2 className="h2">Prescription required</h2>
+            <p className="muted">Upload a valid prescription or clinician order. Our team checks it before the nurse is asked to confirm.</p>
+            <select name="kind" className="input"><option value="PRESCRIPTION">Prescription</option><option value="CLINICIAN_ORDER">Clinician order</option></select>
+            <input type="file" name="file" accept="application/pdf,image/jpeg,image/png" required className="text-sm" />
+            <button className="btn w-full" disabled={act.busy}>Upload</button>
+          </form>
+        )}
+        {a.viewer === "PATIENT" && (
+          <div className="card space-y-2">
+            <a className="btn-secondary w-full" href={`/patient/appointments/${a.id}/receipt`}>Receipt</a>
+            {a.nurse.id && <button className="btn-secondary w-full" onClick={() => go(() => api("/favorites", { body: { nurseId: a.nurse.id } }))}>Save nurse to favourites</button>}
+          </div>
         )}
         {a.viewer === "PATIENT" && ["AWAITING_NURSE_ACCEPTANCE", "CONFIRMED", "AWAITING_AUTHORIZATION"].includes(a.status) && (
           <div className="card space-y-3">

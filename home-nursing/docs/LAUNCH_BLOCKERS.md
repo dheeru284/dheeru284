@@ -1,26 +1,22 @@
 # Status, known gaps and launch blockers
 
-## Works end to end (dev adapters)
-All 20 MVP acceptance scenarios are exercised by `tests/e2e/acceptance.mjs` and/or the integration suite, with these caveats: travel times in dev come from a **simulated** provider (labelled in UI); payments use a mock adapter with the real signature contract; SMS is captured locally.
+## Implemented and tested
+- 96 unit/integration tests against real Postgres (`npm test`), 8 Playwright browser journeys on mobile + desktop (`npm run e2e`), 27 HTTP acceptance checks (`tests/e2e/acceptance.mjs`). All run in CI.
+- All 20 MVP acceptance scenarios from the brief.
+- Production adapters exist for every provider (see ARCHITECTURE.md), but **none has been exercised against the live service** — that needs your accounts.
 
-## Launch blockers
-1. **Legal review** of every item in REGULATORY_READINESS.md; final privacy/terms/refund text.
-2. **Clinical sign-off** of service protocols and checklists; invasive services stay off until recorded.
-3. **SMS provider** adapter (DLT-registered) — not implemented; production will not boot without it.
-4. **S3 storage** adapter — not implemented; uploads only work with the dev mock.
-5. **Google Routes API key** and billing; validate estimates against real trips in launch cities.
-6. **Razorpay** account, marketplace/settlement model, live webhook test.
-7. Security items unchecked in SECURITY.md (pen test, CSP, admin MFA, encryption of clinical fields).
-8. Real operations: verification SOP against council portals, support staffing, incident escalation.
+## Launch blockers (cannot be solved in code)
+1. **Legal**: every item in REGULATORY_READINESS.md; final privacy/terms/refund text (current pages are drafts); grievance officer appointment.
+2. **Clinical**: a qualified clinician must review service protocols/checklists; invasive services stay off until sign-off is recorded in Admin → Service catalog.
+3. **Accounts & keys**: Google Maps (Routes + Geocoding), MSG91 with DLT-registered templates, Razorpay (and the marketplace settlement model), S3 bucket, SMTP, optional WhatsApp Business.
+4. **Live verification**: validate travel estimates against real trips in launch cities; end-to-end test each provider in a staging environment.
+5. **Security**: independent penetration test; admin MFA; field-level encryption of clinical notes; malware scanning on uploads; secrets manager.
+6. **Operations**: verification SOP against council portals, support staffing, incident escalation, payout process.
+7. **Languages**: Hindi strings and templates need native review; other regional languages need translation.
 
-## Known gaps (not blocking a pilot, but real)
-- Prescription upload UI + admin authorization queue (API state `AWAITING_AUTHORIZATION` exists; transition is admin-only, no dedicated screen)
-- Map-based address picker/geocoding (manual coordinates or device location today)
-- Partner inventory calendar/blackout editing UI, property photos upload, partner payouts; settlement records not generated automatically
-- Accommodation payments (only nursing visit payments are wired)
-- Hospital merge workflow; admin hospital editing UI (API create only)
-- Email/WhatsApp channels; regional-language templates (schema supports `language`)
-- Reschedule is compensating, not single-transaction
-- Favorites, caregiver-management UI, nurse earnings settlement view, reports export
-- OpenAPI spec generation; Playwright E2E in CI (current e2e is a node HTTP script run manually)
-- Recurring appointments are created as independent visits grouped by `recurrenceGroupId`; no series-level edit
+## Remaining known gaps (smaller)
+- Map is a "check pin" link plus geocoder search, not an embedded draggable map.
+- Recurring series are independent visits grouped by `recurrenceGroupId` (no series-level edit).
+- Deposit refunds after checkout are manual via Admin → Payments (no automatic deposit release).
+- OpenAPI spec documents paths, methods and permissions; request bodies point to the Zod schema rather than being expanded.
+- Settlements create payout *records*; they don't call a payout API.

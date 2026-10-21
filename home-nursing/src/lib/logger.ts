@@ -15,6 +15,9 @@ function write(level: Level, msg: string, ctx?: Record<string, unknown>) {
   if (process.env.NODE_ENV === "test" && level !== "error") return;
   const line = JSON.stringify({ ts: new Date().toISOString(), level, msg, ...(redact(ctx) as object) });
   (level === "error" ? console.error : console.log)(line);
+  // Error-reporting integration point: forward redacted errors to a webhook (Sentry/Slack/incident tool relay).
+  const hook = process.env.ERROR_WEBHOOK_URL;
+  if (level === "error" && hook && process.env.NODE_ENV !== "test") void fetch(hook, { method: "POST", headers: { "content-type": "application/json" }, body: line }).catch(() => undefined);
 }
 
 export const logger = {

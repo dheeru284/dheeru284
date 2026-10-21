@@ -31,7 +31,9 @@ const isDeadlock = (e: unknown) => e instanceof Error && /40P01|deadlock detecte
  * Creates an appointment after RE-validating everything the search showed (Step 9).
  * Double booking is prevented by the Postgres exclusion constraint, not just this check.
  */
-export async function createAppointment(p: Principal, input: CreateAppointmentInput, db: typeof prisma = prisma, now = new Date()) {
+type CreateOpts = { ignoreAppointmentId?: string; rescheduledFromId?: string; beforeInsert?: (tx: Db) => Promise<void> };
+
+export async function createAppointment(p: Principal, input: CreateAppointmentInput, db: typeof prisma = prisma, now = new Date(), opts: CreateOpts = {}) {
   const s = await getSetting(db, "matching");
   const commerce = await getSetting(db, "commerce");
   await assertPatientAccess(db, p, input.patientId, "book");
@@ -51,7 +53,7 @@ export async function createAppointment(p: Principal, input: CreateAppointmentIn
     include: {
       user: { select: { status: true } }, registrations: true, documents: true, qualifications: true, eligibilities: true, serviceAreas: true, availability: true,
       exceptions: { where: { endsAt: { gt: blockStart }, startsAt: { lt: blockEnd } } },
-      appointments: { where: { status: { in: ACTIVE_APPOINTMENT_STATUSES }, blockEnd: { gt: blockStart }, blockStart: { lt: blockEnd } }, select: { blockStart: true, blockEnd: true } },
+      appointments: { where: { status: { in: ACTIVE_APPOINTMENT_STATUSES }, blockEnd: { gt: blockStart }, blockStart: { lt: blockEnd }, ...(opts.ignoreAppointmentId ? { id: { not: opts.ignoreAppointmentId } } : {}) }, select: { blockStart: true, blockEnd: true } },
     },
   });
   if (!nurse) throw new AppError("NOT_FOUND", "Nurse not found");
@@ -77,10 +79,11 @@ export async function createAppointment(p: Principal, input: CreateAppointmentIn
   const status: AppointmentStatus = service.requiresPrescription ? "AWAITING_AUTHORIZATION" : "AWAITING_NURSE_ACCEPTANCE";
 
   const insert = () => db.$transaction(async (tx) => {
+      if (opts.beforeInsert) await opts.beforeInsert(tx);
       const a = await tx.appointment.create({
         data: {
           reference: newReference("HN"), patientId: input.patientId, bookedByUserId: p.userId, nurseId: nurse.id, serviceId: service.id, addressId: address.id,
-          startAt: input.startAt, endAt, blockStart, blockEnd, status, recurrenceGroupId: input.recurrenceGroupId,
+          startAt: input.startAt, endAt, blockStart, blockEnd, status, recurrenceGroupId: input.recurrenceGroupId, rescheduledFromId: opts.rescheduledFromId,
           estTravelMinutes: est?.minutes, estDistanceKm: est?.distanceKm, travelEstimateSource: est ? est.provider : "UNAVAILABLE",
           amountInPaise: amount, commissionInPaise: commission, patientNotes: input.patientNotes,
         },
@@ -91,7 +94,7 @@ export async function createAppointment(p: Principal, input: CreateAppointmentIn
   try {
     // Concurrent overlapping inserts can surface as a deadlock (40P01) from the exclusion check; retry once, then it reports as an exclusion violation.
     const appt = await insert().catch((e) => (isDeadlock(e) ? insert() : Promise.reject(e)));
-    if (status === "AWAITING_NURSE_ACCEPTANCE") await notify(db, nurse.userId, "appointment.requested", { ref: appt.reference, when: formatInTz(appt.startAt) });
+    if (status === "AWAITING_NURSE_ACCEPTANCE") await notify(db, nurse.userId, opts.rescheduledFromId ? "appointment.rescheduled" : "appointment.requested", { ref: appt.reference, when: formatInTz(appt.startAt) });
     return appt;
   } catch (e) {
     if (isExclusionViolation(e) || isDeadlock(e)) throw new AppError("CONFLICT", "This time slot was just taken. Please choose another time or nurse.");
@@ -177,22 +180,91 @@ async function startVisit(tx: Db, apptId: string, serviceId: string, now: Date) 
   }
 }
 
-/** Reschedule = create the new booking (fully re-validated) and retire the old one atomically. */
+/**
+ * Reschedule in ONE transaction: the original is retired and the new booking inserted together,
+ * so a failure leaves the original untouched. The new slot goes back to the nurse for acceptance.
+ */
 export async function rescheduleAppointment(p: Principal, apptId: string, newStartAt: Date, db: typeof prisma = prisma, now = new Date()) {
   const { actor, appt } = await actorFor(db, p, apptId);
   if (actor !== "PATIENT") throw new AppError("FORBIDDEN", "Only the patient account can reschedule");
-  if (!["CONFIRMED", "AWAITING_NURSE_ACCEPTANCE", "RESCHEDULE_REQUESTED"].includes(appt.status)) throw new AppError("CONFLICT", "This appointment cannot be rescheduled");
-  // Release the old slot first inside a transaction so an overlapping new time on the same nurse is allowed.
-  const retired = await db.appointment.updateMany({ where: { id: apptId, status: appt.status }, data: { status: "RESCHEDULED" } });
-  if (retired.count !== 1) throw new AppError("CONFLICT", "Appointment changed; please refresh");
-  try {
-    const fresh = await createAppointment(p, { patientId: appt.patientId, nurseId: appt.nurseId, serviceId: appt.serviceId, addressId: appt.addressId, startAt: newStartAt, patientNotes: appt.patientNotes ?? undefined }, db, now);
-    await db.appointmentStatusHistory.create({ data: { appointmentId: apptId, fromStatus: appt.status, toStatus: "RESCHEDULED", actorUserId: p.userId, note: `rescheduled to ${fresh.reference}` } });
+  if (!["CONFIRMED", "AWAITING_NURSE_ACCEPTANCE", "RESCHEDULE_REQUESTED", "AWAITING_AUTHORIZATION"].includes(appt.status)) throw new AppError("CONFLICT", "This appointment cannot be rescheduled");
+  return createAppointment(
+    p,
+    { patientId: appt.patientId, nurseId: appt.nurseId, serviceId: appt.serviceId, addressId: appt.addressId, startAt: newStartAt, patientNotes: appt.patientNotes ?? undefined, recurrenceGroupId: appt.recurrenceGroupId ?? undefined },
+    db,
+    now,
+    {
+      ignoreAppointmentId: apptId,
+      rescheduledFromId: apptId,
+      beforeInsert: async (tx) => {
+        const r = await tx.appointment.updateMany({ where: { id: apptId, status: appt.status }, data: { status: "RESCHEDULED" } });
+        if (r.count !== 1) throw new AppError("CONFLICT", "Appointment changed; please refresh");
+        await tx.appointmentStatusHistory.create({ data: { appointmentId: apptId, fromStatus: appt.status, toStatus: "RESCHEDULED", actorUserId: p.userId, note: `moved to ${newStartAt.toISOString()}` } });
+      },
+    },
+  ).then(async (fresh) => {
+    const docs = await db.appointmentDocument.findMany({ where: { appointmentId: apptId } });
+    if (docs.length) await db.appointmentDocument.createMany({ data: docs.map(({ id: _id, appointmentId: _a, createdAt: _c, ...d }) => ({ ...d, appointmentId: fresh.id })) });
     return fresh;
-  } catch (e) {
-    await db.appointment.update({ where: { id: apptId }, data: { status: appt.status } }); // compensate
-    throw e;
-  }
+  });
+}
+
+/** Patient uploads a prescription / clinician order. The booking waits in AWAITING_AUTHORIZATION until staff verify it. */
+export async function startPrescriptionUpload(p: Principal, apptId: string, input: { kind: "PRESCRIPTION" | "CLINICIAN_ORDER"; mimeType: string; sizeBytes: number }, db: Db = prisma) {
+  const { validateUpload } = await import("./credentials");
+  validateUpload("PRESCRIPTION", input.mimeType, input.sizeBytes);
+  const { actor, appt } = await actorFor(db, p, apptId);
+  if (actor !== "PATIENT") throw new AppError("FORBIDDEN", "Only the patient account can upload prescriptions");
+  if (appt.status !== "AWAITING_AUTHORIZATION") throw new AppError("CONFLICT", "This booking is not waiting for a prescription");
+  const { newObjectKey } = await import("../providers/storage");
+  const key = newObjectKey(`prescriptions/${appt.patientId}`, input.mimeType);
+  const doc = await db.appointmentDocument.create({ data: { appointmentId: apptId, kind: input.kind, storageKey: key, mimeType: input.mimeType, sizeBytes: input.sizeBytes, uploadedByUserId: p.userId } });
+  return { document: { id: doc.id, kind: doc.kind, verificationStatus: doc.verificationStatus }, upload: await providers().storage.presignUpload(key, input.mimeType) };
+}
+
+/**
+ * Staff decision on an authorization document. Approval releases the booking to the nurse;
+ * rejection keeps it on hold so the patient can upload a corrected document (or cancels if requested).
+ * Staff check validity/date/prescriber — they do not make clinical decisions.
+ */
+export async function decideAuthorization(admin: Principal, documentId: string, decision: "VERIFIED" | "REJECTED", notes: string | undefined, db: typeof prisma = prisma) {
+  if (!admin.permissions.has("authorization.review")) throw new AppError("FORBIDDEN", "Not allowed");
+  const doc = await db.appointmentDocument.findUnique({ where: { id: documentId }, include: { appointment: { include: { nurse: true } } } });
+  if (!doc) throw new AppError("NOT_FOUND", "Document not found");
+  const a = doc.appointment;
+  await db.$transaction(async (tx) => {
+    await tx.appointmentDocument.update({ where: { id: documentId }, data: { verificationStatus: decision } });
+    if (decision === "VERIFIED" && a.status === "AWAITING_AUTHORIZATION") {
+      const r = await tx.appointment.updateMany({ where: { id: a.id, status: "AWAITING_AUTHORIZATION" }, data: { status: "AWAITING_NURSE_ACCEPTANCE" } });
+      if (r.count === 1) await tx.appointmentStatusHistory.create({ data: { appointmentId: a.id, fromStatus: "AWAITING_AUTHORIZATION", toStatus: "AWAITING_NURSE_ACCEPTANCE", actorUserId: admin.userId, note: "authorization verified" } });
+    }
+  });
+  await audit(db, { actorUserId: admin.userId, action: `authorization.${decision.toLowerCase()}`, entityType: "AppointmentDocument", entityId: documentId, metadata: { notes: notes ?? null } });
+  await notify(db, a.bookedByUserId, "appointment.authorization", { ref: a.reference, status: decision === "VERIFIED" ? "accepted" : "needs a new upload" });
+  if (decision === "VERIFIED") await notify(db, a.nurse.userId, "appointment.requested", { ref: a.reference, when: formatInTz(a.startAt) });
+}
+
+export async function authorizationQueue(admin: Principal, db: Db = prisma) {
+  if (!admin.permissions.has("authorization.review")) throw new AppError("FORBIDDEN", "Not allowed");
+  return db.appointment.findMany({
+    where: { status: "AWAITING_AUTHORIZATION" },
+    select: { id: true, reference: true, startAt: true, service: { select: { name: true } }, documents: { select: { id: true, kind: true, verificationStatus: true, mimeType: true, createdAt: true } } },
+    orderBy: { startAt: "asc" },
+  });
+}
+
+/** Receipt data. Tax treatment is a placeholder pending GST advice. */
+export async function receiptFor(p: Principal, apptId: string, db: Db = prisma) {
+  const { actor } = await actorFor(db, p, apptId);
+  if (actor === "NURSE") throw new AppError("FORBIDDEN", "Receipts are issued to the patient account");
+  const a = await db.appointment.findUniqueOrThrow({ where: { id: apptId }, include: { service: true, nurse: true, patient: true, payments: { include: { refunds: true } } } });
+  const captured = a.payments.filter((x) => x.status === "CAPTURED");
+  return {
+    receiptNo: `R-${a.reference}`, issuedAt: new Date().toISOString(), reference: a.reference, service: a.service.name, patient: a.patient.fullName, nurse: a.nurse.displayName,
+    visitAt: a.startAt, amountInPaise: a.amountInPaise, platformFeeInPaise: a.commissionInPaise, status: a.status, paymentStatus: a.paymentStatus,
+    payments: captured.map((x) => ({ id: x.providerPaymentId, amountInPaise: x.amountInPaise, at: x.updatedAt, refunds: x.refunds.map((r) => ({ amountInPaise: r.amountInPaise, status: r.status, at: r.createdAt })) })),
+    taxNote: "GST treatment to be confirmed with a tax advisor before launch.",
+  };
 }
 
 /** Nurse-visible view: precise address only for the assigned nurse of an active booking. */

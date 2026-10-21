@@ -456,6 +456,7 @@ model Appointment {
   blockEnd      DateTime @db.Timestamptz
   status        AppointmentStatus @default(AWAITING_NURSE_ACCEPTANCE)
   recurrenceGroupId String?
+  rescheduledFromId String? @unique
   estTravelMinutes Int?
   estDistanceKm Float?
   travelEstimateSource String? // provider name, or "UNAVAILABLE"
@@ -584,7 +585,9 @@ model Hospital {
   lastVerifiedAt DateTime? @db.Timestamptz
   isActive   Boolean @default(true)
   mergedIntoId String?
-  // Directory entry only. A formal partnership must be recorded separately.
+  // Directory entry only. A partnership is shown only when an agreement reference is recorded.
+  hasFormalPartnership Boolean @default(false)
+  partnershipAgreementRef String?
   createdAt  DateTime @default(now()) @db.Timestamptz
   @@index([city])
 }
@@ -636,8 +639,10 @@ model AccommodationProperty {
 model PropertyImage {
   id         String @id @default(cuid())
   propertyId String
-  url        String
+  url        String?  // external/demo image URL
+  storageKey String?  // uploaded photo in private storage, served via short-lived signed URL
   alt        String
+  createdAt  DateTime @default(now()) @db.Timestamptz
   property   AccommodationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
@@ -703,6 +708,7 @@ model AccommodationBooking {
   commissionInPaise Int
   paymentStatus String @default("UNPAID")
   extendedFromId String?
+  cancellationReason String?
   guestNote   String?  // never contains medical information
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
@@ -778,6 +784,7 @@ model NotificationTemplate {
   key      String
   channel  String // SMS | EMAIL | IN_APP | WHATSAPP
   language String @default("en")
+  subject  String? // email only
   body     String // must avoid sensitive health details
   @@unique([key, channel, language])
 }
@@ -788,7 +795,8 @@ model Notification {
   channel   String
   templateKey String
   body      String
-  status    String @default("PENDING") // PENDING | SENT | FAILED
+  vars      Json?   // template variables (needed for WhatsApp template params)
+  status    String @default("PENDING") // PENDING | SENT | FAILED | SKIPPED
   attempts  Int    @default(0)
   lastError String?
   readAt    DateTime? @db.Timestamptz

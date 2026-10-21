@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
-import { Header } from "@/components/Header";
+import { Header, currentLang } from "@/components/Header";
+import { SwRegister } from "@/components/SwRegister";
+import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = { title: "HomeNurse India — verified home nursing", description: "Book verified registered nurses at home and find stays near hospitals.", manifest: "/manifest.webmanifest" };
+export const metadata: Metadata = { title: "HomeNurse India — verified home nursing", description: "Book verified registered nurses at home and find stays near hospitals.", manifest: "/manifest.webmanifest", icons: { icon: "/icon.svg" } };
 export const viewport: Viewport = { themeColor: "#17705f", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await currentLang();
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body className="min-h-screen">
         <div className="bg-alert-600 px-4 py-2 text-center text-sm text-white" role="note">
-          This is not an emergency service. In a medical emergency call <a href="tel:112" className="font-bold underline">112</a> or go to the nearest hospital.
+          {t(lang, "emergency")} <a href="tel:112" className="font-bold underline">112</a> {t(lang, "emergencyTail")}
         </div>
+        <SwRegister />
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="mt-16 border-t border-slate-200 bg-white">

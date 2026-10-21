@@ -32,9 +32,14 @@ export function AddPatientForm() {
   );
 }
 
+type Geo = { formattedAddress: string; lat: number; lng: number; pincode?: string; city?: string; state?: string; locality?: string };
+
 export function AddAddressForm() {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState<{ lat: string; lng: string }>({ lat: "", lng: "" });
+  const [q, setQ] = useState("");
+  const [hits, setHits] = useState<{ provider: string; results: Geo[] } | null>(null);
+  const [picked, setPicked] = useState<Geo | null>(null);
   const r = useRouter();
   const { busy, error, run, setError } = useAction();
   if (!open) return <button className="btn-secondary" onClick={() => setOpen(true)}>Add address</button>;
@@ -47,24 +52,29 @@ export function AddAddressForm() {
         setOpen(false); r.refresh();
       });
     }}>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Label"><input name="label" className="input" placeholder="Home" /></Field>
-        <Field label="PIN code"><input name="pincode" className="input" inputMode="numeric" maxLength={6} required /></Field>
+      <div className="space-y-2 rounded-lg bg-slate-50 p-3">
+        <Field label="Search area or PIN code"><div className="flex gap-2"><input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Koramangala or 560034" /><button type="button" className="btn-secondary" onClick={() => api<{ provider: string; results: Geo[] }>(`/geocode?q=${encodeURIComponent(q)}`).then(setHits).catch((e) => setError(e.message))}>Search</button></div></Field>
+        {hits && (hits.results.length ? <ul className="space-y-1 text-sm">{hits.results.map((g) => <li key={g.formattedAddress}><button type="button" className="text-left text-brand-700 underline" onClick={() => { setPicked(g); setCoords({ lat: String(g.lat), lng: String(g.lng) }); }}>{g.formattedAddress}</button></li>)}</ul> : <p className="text-sm text-ink-500">No matches. Enter details manually.</p>)}
+        {hits?.provider === "dev-gazetteer" && <p className="text-xs text-amber-800">Development geocoder (fixed demo localities).</p>}
+        {picked && coords.lat && <a className="text-xs underline" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=17/${coords.lat}/${coords.lng}`}>Check pin on map</a>}
       </div>
-      <Field label="Address line"><input name="line1" className="input" required /></Field>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3" key={picked?.formattedAddress ?? "manual"}>
+        <Field label="Label"><input name="label" className="input" placeholder="Home" /></Field>
+        <Field label="PIN code"><input name="pincode" className="input" inputMode="numeric" maxLength={6} defaultValue={picked?.pincode} required /></Field>
+      </div>
+      <Field label="House / street"><input name="line1" className="input" required /></Field>
+      <div className="grid grid-cols-2 gap-3" key={(picked?.formattedAddress ?? "m") + "2"}>
         <Field label="Building / flat"><input name="building" className="input" /></Field>
         <Field label="Landmark"><input name="landmark" className="input" /></Field>
-        <Field label="Locality"><input name="locality" className="input" /></Field>
-        <Field label="City"><input name="city" className="input" required /></Field>
+        <Field label="Locality"><input name="locality" className="input" defaultValue={picked?.locality} /></Field>
+        <Field label="City"><input name="city" className="input" defaultValue={picked?.city} required /></Field>
       </div>
-      <Field label="State"><input name="state" className="input" required /></Field>
+      <Field label="State"><input key={picked?.state} name="state" className="input" defaultValue={picked?.state} required /></Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Latitude"><input className="input" value={coords.lat} onChange={(e) => setCoords({ ...coords, lat: e.target.value })} required /></Field>
         <Field label="Longitude"><input className="input" value={coords.lng} onChange={(e) => setCoords({ ...coords, lng: e.target.value })} required /></Field>
       </div>
       <button type="button" className="btn-secondary" onClick={() => navigator.geolocation?.getCurrentPosition((pos) => setCoords({ lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) }), () => setError("Could not get your location. Enter coordinates or use the map search once configured."))}>Use my current location</button>
-      <p className="text-xs text-ink-500">Map search and geocoding are enabled once a maps provider key is configured.</p>
       {error && <Alert>{error}</Alert>}
       <button className="btn" disabled={busy}>Save address</button>
     </form>

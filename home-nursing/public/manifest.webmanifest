@@ -1,1 +1,1 @@
-{ "name": "HomeNurse India", "short_name": "HomeNurse", "start_url": "/", "display": "standalone", "background_color": "#f8fafc", "theme_color": "#17705f", "icons": [] }
+{ "name": "HomeNurse India", "short_name": "HomeNurse", "start_url": "/", "display": "standalone", "background_color": "#f8fafc", "theme_color": "#17705f", "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }] }

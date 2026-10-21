@@ -28,3 +28,34 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    defaults: { run: { working-directory: home-nursing } }
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: hn, POSTGRES_PASSWORD: hn, POSTGRES_DB: homenursing }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://hn:hn@localhost:5432/homenursing
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: home-nursing/package-lock.json }
+      - run: npm ci
+      - run: npx prisma generate && npx prisma migrate deploy && npm run db:seed
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - name: HTTP acceptance checks
+        run: |
+          DEV_EXPOSE_OTP=true npx next dev -p 3300 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:3300/api/v1/health && break; sleep 2; done
+          npx tsx -e "import('@prisma/client').then(async ({PrismaClient}) => { const p = new PrismaClient(); await p.rateLimitBucket.deleteMany(); await p.\$disconnect(); })"
+          BASE_URL=http://localhost:3300 node tests/e2e/acceptance.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-results, path: home-nursing/test-results }

@@ -8,7 +8,14 @@ export function AccountView() {
   const [msg, setMsg] = useState<string | null>(null);
   const [reqs, setReqs] = useState<{ id: string; kind: string; status: string; createdAt: string }[]>([]);
   const [notes, setNotes] = useState<{ id: string; body: string; createdAt: string }[]>([]);
-  const load = () => { api<typeof reqs>("/privacy").then(setReqs).catch(() => undefined); api<typeof notes>("/notifications?limit=10").then(setNotes).catch(() => undefined); };
+  const [me, setMe] = useState<{ fullName: string | null; email: string | null; phone: string } | null>(null);
+  const [consents, setConsents] = useState<{ noticeVersion: string; consents: { id: string; purpose: string; grantedAt: string; withdrawnAt: string | null }[] } | null>(null);
+  const load = () => {
+    api<typeof reqs>("/privacy").then(setReqs).catch(() => undefined);
+    api<typeof notes>("/notifications?limit=10").then(setNotes).catch(() => undefined);
+    api<NonNullable<typeof me>>("/auth/me").then(setMe).catch(() => undefined);
+    api<NonNullable<typeof consents>>("/consents").then(setConsents).catch(() => undefined);
+  };
   useEffect(load, []);
   const privacy = (kind: string, confirmText?: string) => { if (confirmText && !confirm(confirmText)) return; const details = prompt("Optional details") ?? undefined; act.run(async () => { await api("/privacy", { body: { kind, details } }); setMsg("Request received. We will respond within the stated timeline."); load(); }); };
 
@@ -17,6 +24,23 @@ export function AccountView() {
       <h1 className="h1">Account, privacy and support</h1>
       {msg && <Alert kind="success">{msg}</Alert>}
       {act.error && <Alert>{act.error}</Alert>}
+      {me && (
+        <form className="card grid gap-3 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); const f = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>; act.run(async () => { await api("/account", { method: "PATCH", body: { fullName: f.fullName || undefined, email: f.email || undefined } }); setMsg("Profile updated."); load(); }); }}>
+          <h2 className="h2 sm:col-span-3">Profile</h2>
+          <Field label="Mobile"><input className="input" value={me.phone} disabled /></Field>
+          <Field label="Name"><input name="fullName" className="input" defaultValue={me.fullName ?? ""} /></Field>
+          <Field label="Email (for receipts and updates)"><input name="email" type="email" className="input" defaultValue={me.email ?? ""} /></Field>
+          <button className="btn-secondary sm:col-span-3 sm:w-fit" disabled={act.busy}>Save</button>
+        </form>
+      )}
+      {consents && (
+        <section className="card space-y-2">
+          <h2 className="h2">Consents</h2>
+          <p className="muted">Privacy notice version {consents.noticeVersion}. Withdrawing care consent may stop us from arranging visits.</p>
+          <ul className="text-sm">{consents.consents.map((c) => <li key={c.id} className="flex justify-between py-1"><span>{c.purpose.replaceAll("_", " ")} · given {fmt(c.grantedAt)}{c.withdrawnAt && ` · withdrawn ${fmt(c.withdrawnAt)}`}</span>{!c.withdrawnAt && <button className="underline" onClick={() => confirm("Withdraw this consent?") && act.run(async () => { await api("/consents", { method: "DELETE", body: { consentId: c.id } }); load(); })}>withdraw</button>}</li>)}</ul>
+          <div className="flex flex-wrap gap-2">{["marketing", "whatsapp_updates"].filter((p) => !consents.consents.some((c) => c.purpose === p && !c.withdrawnAt)).map((p) => <button key={p} className="btn-secondary" onClick={() => act.run(async () => { await api("/consents", { body: { purpose: p } }); load(); })}>Opt in: {p.replace("_", " ")}</button>)}</div>
+        </section>
+      )}
       <section className="card space-y-3">
         <h2 className="h2">Your data</h2>
         <div className="flex flex-wrap gap-2">

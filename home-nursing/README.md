@@ -24,6 +24,7 @@ Demo logins (OTP is shown on screen when `DEV_EXPOSE_OTP=true`):
 | Nurse (pending — not bookable) | +919000000105 |
 | Admin | +919000000001 |
 | Compliance officer | +919000000002 |
+| Support agent | +919000000003 |
 | Accommodation partner | +919000000020 |
 
 All demo people, nurses, hospitals and properties are fictional and badged "Demo data" in the UI.
@@ -32,15 +33,16 @@ All demo people, nurses, hospitals and properties are fictional and badged "Demo
 
 ```bash
 npm run lint && npm run typecheck
-npm test                         # 79 unit+integration tests against a real Postgres (TEST_DATABASE_URL, default homenursing_test)
-npm run build
+npm test                         # 96 unit+integration tests against real Postgres (TEST_DATABASE_URL, default homenursing_test)
+npm run e2e                      # Playwright browser journeys (mobile + desktop) against the seeded dev DB
+npm run build                    # also regenerates public/openapi.json
 BASE_URL=http://localhost:3000 node tests/e2e/acceptance.mjs   # 27 HTTP acceptance checks against a seeded dev server
-npm run jobs:run                 # reminders, credential expiry, notification dispatch (schedule every 5 min)
+npm run jobs:run                 # reminders, credential expiry, stale requests, notification dispatch, retention (every 5 min)
 ```
 
 ## Docs
 - [Architecture](docs/ARCHITECTURE.md) — modules, matching engine, booking integrity, providers
-- [API](docs/API.md) — `/api/v1` routes, error format
+- [API](docs/API.md) — `/api/v1` routes, error format; machine-readable spec at `/openapi.json`
 - [Security checklist](docs/SECURITY.md)
 - [Regulatory-readiness checklist](docs/REGULATORY_READINESS.md) — for Indian legal counsel
 - [Operations: deploy, backup, recovery](docs/OPERATIONS.md)

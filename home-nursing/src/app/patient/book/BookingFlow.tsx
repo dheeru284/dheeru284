@@ -79,7 +79,7 @@ export function BookingFlow(props: { services: { id: string; name: string; durat
                 <li key={m.nurseId} className="card flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-100 text-lg font-bold text-brand-700" aria-hidden>{m.displayName.split(" ").map((x) => x[0]).slice(-2).join("")}</div>
                   <div className="flex-1 space-y-1">
-                    <p className="font-semibold">{m.displayName} {m.isDemo && <DemoBadge />}</p>
+                    <p className="font-semibold"><Link href={`/nurses/${m.nurseId}`} className="hover:underline">{m.displayName}</Link> {m.isDemo && <DemoBadge />}</p>
                     <p className="text-sm"><span className="badge bg-emerald-100 text-emerald-800">Registration verified</span> {m.qualifications.join(", ")} · {m.yearsExperience} yrs · {m.gender.toLowerCase()}</p>
                     <p className="muted">{m.serviceArea} · Speaks {m.languages.join(", ")} · {m.ratingCount ? `★ ${m.ratingAvg.toFixed(1)} (${m.ratingCount})` : "No reviews yet"} · {m.completedVisits} visits</p>
                     <p className="text-sm">

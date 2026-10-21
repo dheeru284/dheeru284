@@ -1,0 +1,3129 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HomeNurse India API",
+    "version": "1.0.0",
+    "description": "Generated from route files. Errors: { error: { code, message, details } }."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "hn_session"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/accommodation-bookings": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "accommodation.book",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "accommodation.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/accommodation-bookings/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodation-bookings/{id}/cancel": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "accommodation.book",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodation-bookings/{id}/extend": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "accommodation.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/accommodation-bookings/[id]/extend/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodation-bookings/{id}/partner-status": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "stay.partner",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/accommodation-bookings/[id]/partner-status/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodation-bookings/{id}/pay": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "accommodation.book",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodation-bookings/{id}/respond": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "stay.partner",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/accommodation-bookings/[id]/respond/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodations/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/accommodations/search": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/account": {
+      "patch": {
+        "summary": "Self-service profile corrections (name, email, language). Phone changes need re-verification and go through support.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/account/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/appointments": {
+      "get": {
+        "summary": "Booking management list for operations. No clinical notes or street addresses.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.view_ops",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "audit.read",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/authorizations": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authorization.review",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/authorizations/{docId}": {
+      "get": {
+        "summary": "Short-lived signed link to view a prescription; every view is audited.",
+        "parameters": [
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authorization.review",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Short-lived signed link to view a prescription; every view is audited.",
+        "parameters": [
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authorization.review",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/authorizations/[docId]/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/cities": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "admin.access",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "locations.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/cities/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/complaints": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "complaint.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "complaint.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/complaints/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/credentials/{kind}/{id}": {
+      "get": {
+        "summary": "GET: short-lived signed download URL for a credential document (access is audited).",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "GET: short-lived signed download URL for a credential document (access is audited).",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/credentials/[kind]/[id]/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/flags": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "admin.access",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "flags.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/flags/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/metrics": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "admin.access",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/nurses": {
+      "get": {
+        "summary": "Verification queue. Returns credential metadata only; documents open via short-lived signed URLs.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/nurses/{id}/eligibility": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/nurses/[id]/eligibility/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/nurses/{id}/status": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/nurses/[id]/status/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/partners": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "partners.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "partners.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/partners/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/privacy": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/privacy/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/properties": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.verify",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/properties/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/qualifications/{id}": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/qualifications/[id]/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/reconciliation": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "payments.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/reports": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "reports.export",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/reviews": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "reviews.moderate",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "reviews.moderate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/reviews/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/services": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "catalog.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "catalog.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/services/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "admin.access",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "settings.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/settings/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settlements": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "payments.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "payments.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/settlements/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/suspicious": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "complaint.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/templates": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "templates.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "templates.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/templates/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "users.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "users.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/admin/users/[id]/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/appointments/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}/documents": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/appointments/[id]/documents/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}/receipt": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}/reschedule": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/appointments/[id]/reschedule/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}/review": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "review.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/appointments/[id]/review/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/{id}/transition": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/appointments/[id]/transition/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/otp/request": {
+      "post": {
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/auth/otp/request/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/auth/otp/verify/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/caregivers": {
+      "post": {
+        "summary": "Account holder links another registered user as caregiver for one of their patient profiles.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/caregivers/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/caregivers/list": {
+      "get": {
+        "summary": "Caregiver links on profiles the user holds.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Caregiver links on profiles the user holds.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/caregivers/list/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/compliance": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "compliance.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "compliance.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "compliance.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/consents": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/consents/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/consents/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/dev-storage": {
+      "put": {
+        "summary": "Mock storage endpoint for local development only. Disabled in production.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/favorites": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/favorites/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/favorites/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/geocode": {
+      "get": {
+        "summary": "Server-side geocoding so the maps API key never reaches the browser.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/hospitals": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "hospital.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/hospitals/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/hospitals/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "hospital.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/hospitals/[id]/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/matching": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/matching/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/media/property-images/{id}": {
+      "get": {
+        "summary": "Property photos are not sensitive, but storage stays private; serve via short-lived signed redirect for verified listings only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/medicine": {
+      "get": {
+        "summary": "Future phase boundary. Medicine delivery is not implemented and requires separate regulatory review.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Future phase boundary. Medicine delivery is not implemented and requires separate regulatory review.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurse-credentials/uploads": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurse-credentials/uploads/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/{id}": {
+      "get": {
+        "summary": "Public nurse profile: approved nurses only; no contact details, coordinates or documents.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/appointments": {
+      "get": {
+        "summary": "Nurse's queue. Only city/locality is shown until a booking is confirmed.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.nurse",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/availability": {
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/availability/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/earnings": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/eligibility": {
+      "post": {
+        "summary": "Nurse requests to offer a service; an admin must approve it against verified qualifications.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/eligibility/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/registrations": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/registrations/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/submit": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/nurses/me/time-off": {
+      "get": {
+        "summary": "Time off / holiday / break. Does not cancel existing bookings — those must be handled explicitly.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Time off / holiday / break. Does not cancel existing bookings — those must be handled explicitly.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/time-off/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Time off / holiday / break. Does not cancel existing bookings — those must be handled explicitly.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "nurse.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/nurses/me/time-off/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "partner.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "partner.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/bookings": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "stay.partner",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/properties": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/properties/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/properties/{id}/blackouts": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/properties/[id]/blackouts/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/properties/[id]/blackouts/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/properties/{id}/calendar": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/properties/{id}/photos": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/properties/[id]/photos/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/partners/me/properties/{id}/rates": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "property.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/partners/me/properties/[id]/rates/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/patients": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "patient.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/patients/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/patients/addresses": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/patients/addresses/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/confirm": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "authenticated",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/payments/confirm/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/dev-simulate": {
+      "post": {
+        "summary": "DEVELOPMENT ONLY: plays the role of the payment gateway's checkout, then goes through normal server verification.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/payments/dev-simulate/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/orders": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "appointment.book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/payments/orders/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/webhook": {
+      "post": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/privacy": {
+      "get": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.self",
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "privacy.self",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/privacy/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/refunds": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "payments.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/refunds/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/services": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/support": {
+      "post": {
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "support.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/support/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/visits/{id}/checklist": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "visit.record",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/visits/[id]/checklist/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/visits/{id}/notes": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-permission": "visit.record",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Validated by the Zod schema in src/app/api/v1/visits/[id]/notes/route.ts"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: ... }"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    }
+  }
+}

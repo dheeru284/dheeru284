@@ -2,9 +2,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, fmt, rupees } from "@/lib/client";
 import { Alert, Field, StatusBadge, useAction } from "@/components/ui";
+import { Authorizations, Bookings, Cities, Hospitals, Partners, Payments, Reports, Reviews, Suspicious, Templates, Users } from "./AdminMore";
 
 const TABS = [
-  ["overview", "Overview", "admin.access"], ["nurses", "Nurse verification", "nurse.verify"], ["travel", "Travel & matching", "admin.access"], ["services", "Service catalog", "catalog.manage"],
+  ["overview", "Overview", "admin.access"], ["nurses", "Nurse verification", "nurse.verify"], ["auth", "Prescriptions", "authorization.review"], ["bookings", "Bookings", "appointment.view_ops"], ["users", "Users", "users.manage"],
+  ["hospitals", "Hospitals", "hospital.manage"], ["partners", "Partners", "partners.manage"], ["reviews", "Reviews", "reviews.moderate"], ["payments", "Payments & settlements", "payments.manage"], ["reports", "Reports", "reports.export"],
+  ["templates", "Notification templates", "templates.manage"], ["cities", "Cities", "admin.access"], ["signals", "Suspicious activity", "complaint.manage"], ["travel", "Travel & matching", "admin.access"], ["services", "Service catalog", "catalog.manage"],
   ["properties", "Property verification", "property.verify"], ["complaints", "Complaints & incidents", "complaint.manage"], ["compliance", "Regulatory readiness", "compliance.manage"],
   ["privacy", "Privacy requests", "privacy.manage"], ["flags", "Feature flags", "admin.access"], ["audit", "Audit log", "audit.read"],
 ] as const;
@@ -26,6 +29,17 @@ export function AdminConsole({ permissions }: { permissions: string[] }) {
       {tab === "privacy" && <Privacy />}
       {tab === "flags" && <Flags canWrite={permissions.includes("flags.write")} />}
       {tab === "audit" && <Audit />}
+      {tab === "auth" && <Authorizations />}
+      {tab === "bookings" && <Bookings />}
+      {tab === "users" && <Users isAdmin={permissions.includes("flags.write")} />}
+      {tab === "hospitals" && <Hospitals />}
+      {tab === "partners" && <Partners />}
+      {tab === "reviews" && <Reviews />}
+      {tab === "payments" && <Payments />}
+      {tab === "reports" && <Reports />}
+      {tab === "templates" && <Templates />}
+      {tab === "cities" && <Cities />}
+      {tab === "signals" && <Suspicious />}
     </div>
   );
 }
@@ -192,7 +206,8 @@ function Compliance() {
 function Privacy() {
   const { data, reload } = useLoad<{ id: string; kind: string; status: string; dueBy: string; details: string | null }[]>("/admin/privacy");
   const act = useAction();
-  return <div className="space-y-2">{act.error && <Alert>{act.error}</Alert>}{data?.length === 0 && <p className="muted">No open requests.</p>}{data?.map((r) => <div key={r.id} className="card flex flex-wrap items-center justify-between gap-2"><span><b>{r.kind}</b> · due {fmt(r.dueBy)}<br /><span className="muted">{r.details}</span></span>{r.kind === "DELETION" && <button className="btn-danger" onClick={() => confirm("Execute deletion? Identity fields will be pseudonymised; records under legal retention are kept.") && act.run(async () => { await api("/admin/privacy", { body: { id: r.id, action: "execute_deletion" } }); reload(); })}>Execute deletion</button>}</div>)}</div>;
+  const setStatus = (id: string, status: string) => { const note = prompt("Note (what was done)") ?? undefined; act.run(async () => { await api("/admin/privacy", { body: { id, action: "set_status", status, note } }); reload(); }); };
+  return <div className="space-y-2">{act.error && <Alert>{act.error}</Alert>}{data?.length === 0 && <p className="muted">No open requests.</p>}{data?.map((r) => <div key={r.id} className="card flex flex-wrap items-center justify-between gap-2"><span><b>{r.kind}</b> · <StatusBadge status={r.status} /> · due {fmt(r.dueBy)}<br /><span className="muted">{r.details}</span></span><span className="flex gap-2">{r.status === "RECEIVED" && <button className="btn-secondary" onClick={() => setStatus(r.id, "IN_PROGRESS")}>Start</button>}{r.kind !== "DELETION" && <button className="btn-secondary" onClick={() => setStatus(r.id, "COMPLETED")}>Complete</button>}<button className="btn-secondary" onClick={() => setStatus(r.id, "REJECTED")}>Reject</button></span>{r.kind === "DELETION" && <button className="btn-danger" onClick={() => confirm("Execute deletion? Identity fields will be pseudonymised; records under legal retention are kept.") && act.run(async () => { await api("/admin/privacy", { body: { id: r.id, action: "execute_deletion" } }); reload(); })}>Execute deletion</button>}</div>)}</div>;
 }
 
 function Flags({ canWrite }: { canWrite: boolean }) {

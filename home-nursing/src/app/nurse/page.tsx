@@ -4,6 +4,7 @@ import { requirePage } from "@/lib/page-auth";
 import { formatInTz } from "@/lib/time";
 import { Empty, StatusBadge } from "@/components/ui";
 import { PauseToggle } from "./PauseToggle";
+import { Earnings, TimeOff } from "./NurseExtras";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function NurseHome() {
       <div className="grid gap-4 sm:grid-cols-4">
         <div className="card"><p className="muted">Verification</p><StatusBadge status={n.status} /></div>
         <div className="card"><p className="muted">Completed visits</p><p className="text-2xl font-bold">{completed.length}</p></div>
-        <div className="card"><p className="muted">Earnings after commission</p><p className="text-2xl font-bold">₹{(earnings / 100).toLocaleString("en-IN")}</p><p className="text-xs text-ink-500">Settlement status shown once payouts are configured.</p></div>
+        <div className="card"><p className="muted">Earnings after commission</p><p className="text-2xl font-bold">₹{(earnings / 100).toLocaleString("en-IN")}</p></div>
         <div className="card"><p className="muted">Availability</p><PauseToggle paused={n.isPaused} /></div>
       </div>
       {n.status !== "APPROVED" && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">You are not bookable until your credentials are verified and your profile is approved. <Link className="underline" href="/nurse/profile">Complete your profile</Link>.</div>}
@@ -41,6 +42,7 @@ export default async function NurseHome() {
           )) : <p className="muted">Nothing here.</p>}
         </section>
       ))}
+      <div className="grid gap-6 md:grid-cols-2"><TimeOff /><Earnings /></div>
       <section className="space-y-2"><h2 className="h2">Recent reviews</h2>{n.reviews.length ? n.reviews.map((r) => <div key={r.id} className="card">{"★".repeat(r.rating)} <span className="muted">{r.comment}</span></div>) : <p className="muted">No reviews yet.</p>}</section>
       <Link href="/account" className="text-sm text-brand-700 underline">Report an unsafe situation or contact support</Link>
     </div>

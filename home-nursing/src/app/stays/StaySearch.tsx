@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, rupees } from "@/lib/client";
 import { Alert, DemoBadge, Empty, Field, useAction } from "@/components/ui";
@@ -15,6 +17,11 @@ export function StaySearch() {
   const [results, setResults] = useState<{ nights: number; results: Result[] } | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const act = useAction();
+  const sp = useSearchParams();
+  useEffect(() => {
+    const id = sp.get("hospital");
+    if (id) api<Hospital>(`/hospitals/${id}`).then(setHospital).catch(() => undefined);
+  }, [sp]);
 
   useEffect(() => {
     const t = setTimeout(() => api<Hospital[]>(`/hospitals?q=${encodeURIComponent(q)}&limit=8`).then(setHospitals).catch(() => setHospitals([])), 250);
@@ -43,7 +50,7 @@ export function StaySearch() {
         {!results ? <Empty title="Pick a hospital and dates to see nearby stays." /> : !results.results.length ? <Empty title="No verified stays available for these dates.">Try different dates or a higher budget.</Empty> : results.results.map((r) => (
           <article key={r.id} className="card space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <div><h2 className="font-semibold">{r.name} {r.isDemo && <DemoBadge />}</h2><p className="muted">{r.propertyType.replaceAll("_", " ").toLowerCase()} · {r.bedrooms} bed · {r.bathrooms} bath · up to {r.maxGuests} guests</p></div>
+              <div><h2 className="font-semibold"><Link className="hover:underline" href={`/stays/${r.id}`}>{r.name}</Link> {r.isDemo && <DemoBadge />}</h2><p className="muted">{r.propertyType.replaceAll("_", " ").toLowerCase()} · {r.bedrooms} bed · {r.bathrooms} bath · up to {r.maxGuests} guests</p></div>
               <div className="text-right"><p className="text-lg font-bold">{rupees(r.quote.totalInPaise)}</p><p className="text-xs text-ink-500">{results.nights} nights{r.quote.depositInPaise ? ` + ${rupees(r.quote.depositInPaise)} refundable deposit` : ""}</p></div>
             </div>
             <p className="text-sm">{r.travelToHospital ? <>~{r.travelToHospital.minutes} min drive to hospital ({r.travelToHospital.distanceKm} km){r.travelToHospital.simulated && <span className="ml-2 badge bg-amber-100 text-amber-900">Simulated estimate (dev)</span>}</> : <>{r.straightLineKm} km straight-line (drive time unavailable)</>}</p>

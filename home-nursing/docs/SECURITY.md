@@ -6,7 +6,10 @@ Implemented (with tests where noted):
 - [x] RBAC enforced in API wrapper and domain services; resource-level checks (patient/caregiver/nurse/partner ownership) (tested)
 - [x] CSRF: SameSite + Origin check on mutating requests
 - [x] Input validation with Zod on every route; Prisma parameterised queries; React escaping
-- [x] Security headers (HSTS, nosniff, frame DENY, referrer, permissions policy)
+- [x] Security headers (HSTS, nosniff, frame DENY, referrer, permissions policy, CSP allow-listing Razorpay)
+- [x] CSV exports neutralise formula injection (tested); exports audited
+- [x] Prescription views and credential views audited; signed URLs expire in ≤5 min
+- [x] Non-app notification templates reject clinical terms
 - [x] Upload type/size allow-list; private-key storage, short-lived signed URLs; document views audited (tested)
 - [x] Payments: server-side signature verification, signed webhooks, replay protection, idempotent capture (tested)
 - [x] Logs redact OTP/token/secret/clinical fields (tested); SMS bodies contain no health details
@@ -15,7 +18,6 @@ Implemented (with tests where noted):
 
 Not yet done — required before launch:
 - [ ] Independent penetration test and code review
-- [ ] Content-Security-Policy header (Razorpay checkout domains to allow-list)
 - [ ] Rate limits on remaining write endpoints; bot protection on OTP
 - [ ] Field-level encryption for clinical notes; DB/storage encryption at rest via managed infra
 - [ ] Break-glass clinical access workflow for admins

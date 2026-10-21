@@ -2,7 +2,7 @@
  * Refuses to run in production. */
 import { PrismaClient, type RoleKey } from "@prisma/client";
 import { ROLE_PERMISSIONS } from "../src/lib/auth/rbac";
-import { DEFAULT_TEMPLATES } from "../src/lib/domain/notifications";
+import { DEFAULT_TEMPLATES, SUBJECTS } from "../src/lib/domain/notifications";
 import { DEFAULT_COMMERCE, DEFAULT_MATCHING } from "../src/lib/domain/settings";
 
 const prisma = new PrismaClient();
@@ -50,7 +50,16 @@ async function main() {
   for (const f of flags) await prisma.featureFlag.upsert({ where: { key: f.key }, create: { key: f.key, description: f.description, enabled: f.enabled ?? false }, update: {} });
 
   for (const [key, body] of Object.entries(DEFAULT_TEMPLATES))
-    for (const channel of ["IN_APP", "SMS"]) await prisma.notificationTemplate.upsert({ where: { key_channel_language: { key, channel, language: "en" } }, create: { key, channel, language: "en", body }, update: {} });
+    for (const channel of ["IN_APP", "SMS", "EMAIL"]) await prisma.notificationTemplate.upsert({ where: { key_channel_language: { key, channel, language: "en" } }, create: { key, channel, language: "en", body, subject: channel === "EMAIL" ? SUBJECTS[key] ?? "Update from HomeNurse India" : null }, update: {} });
+  // Hindi starter templates — MUST be reviewed by a native speaker and DLT-registered before use.
+  const HI: Record<string, string> = {
+    "appointment.confirmed": "आपकी विज़िट {{ref}} ({{when}}) की पुष्टि हो गई है।",
+    "appointment.reminder": "याद दिलाना: विज़िट {{ref}} {{when}} पर।",
+    "appointment.cancelled": "विज़िट {{ref}} रद्द कर दी गई है।",
+    "appointment.completed": "विज़िट {{ref}} पूरी हुई। कृपया ऐप में अपनी प्रतिक्रिया दें।",
+  };
+  for (const [key, body] of Object.entries(HI))
+    for (const channel of ["IN_APP", "SMS"]) await prisma.notificationTemplate.upsert({ where: { key_channel_language: { key, channel, language: "hi" } }, create: { key, channel, language: "hi", body }, update: {} });
 
   for (const c of [["Bengaluru", "Karnataka"], ["Mumbai", "Maharashtra"], ["Delhi", "Delhi"], ["Chennai", "Tamil Nadu"], ["Hyderabad", "Telangana"]])
     await prisma.city.upsert({ where: { name_state: { name: c[0]!, state: c[1]! } }, create: { name: c[0]!, state: c[1]! }, update: {} });
@@ -104,6 +113,7 @@ async function main() {
   };
   const admin = await mkUser("+919000000001", "Demo Admin", ["ADMIN"]);
   await mkUser("+919000000002", "Demo Compliance Officer", ["COMPLIANCE_OFFICER"]);
+  await mkUser("+919000000003", "Demo Support Agent", ["SUPPORT_AGENT"]);
   const patientUser = await mkUser("+919000000010", "Demo Patient Family", ["PATIENT"]);
   const partnerUser = await mkUser("+919000000020", "Demo Stays Operator", ["ACCOMMODATION_PARTNER"]);
 

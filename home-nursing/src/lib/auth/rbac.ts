@@ -5,7 +5,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, string[]> = {
   PATIENT: ["patient.self", "appointment.book", "accommodation.book", "review.write", "support.write", "privacy.self"],
   NURSE: ["nurse.self", "appointment.nurse", "visit.record", "support.write", "privacy.self"],
   ACCOMMODATION_PARTNER: ["partner.self", "property.manage", "stay.partner", "support.write", "privacy.self"],
-  SUPPORT_AGENT: ["admin.access", "support.manage", "complaint.manage", "appointment.view_ops"],
+  SUPPORT_AGENT: ["admin.access", "support.manage", "complaint.manage", "appointment.view_ops", "authorization.review"],
   COMPLIANCE_OFFICER: ["admin.access", "compliance.manage", "privacy.manage", "audit.read", "nurse.verify"],
   // Admin does NOT get clinical.read — clinical records need an explicit, audited break-glass grant.
   ADMIN: [
@@ -25,6 +25,12 @@ export const ROLE_PERMISSIONS: Record<RoleKey, string[]> = {
     "compliance.manage",
     "privacy.manage",
     "reports.export",
+    "authorization.review",
+    "users.manage",
+    "reviews.moderate",
+    "templates.manage",
+    "locations.manage",
+    "partners.manage",
   ],
 };
 

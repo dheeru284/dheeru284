@@ -4,6 +4,7 @@ import { requirePage } from "@/lib/page-auth";
 import { formatInTz } from "@/lib/time";
 import { StatusBadge, Empty } from "@/components/ui";
 import { AddPatientForm, AddAddressForm } from "./forms";
+import { Caregivers, Favorites, StayActions } from "./extras";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,10 @@ export default async function PatientDashboard() {
           <AddAddressForm />
         </div>
       </section>
+      <section className="grid gap-6 md:grid-cols-2">
+        <Caregivers patients={profiles.map((x) => ({ id: x.id, fullName: x.fullName, mine: x.accountUserId === p.userId }))} />
+        <Favorites />
+      </section>
       <section className="space-y-3">
         <h2 className="h2">Appointments</h2>
         {appts.length ? (
@@ -43,7 +48,7 @@ export default async function PatientDashboard() {
       </section>
       <section className="space-y-3">
         <h2 className="h2">Stays</h2>
-        {stays.length ? <ul className="space-y-2">{stays.map((s) => <li key={s.id} className="card flex justify-between"><span><b>{s.unit.property.name}</b><br /><span className="muted">{s.checkIn.toISOString().slice(0, 10)} → {s.checkOut.toISOString().slice(0, 10)} · {s.reference}</span></span><StatusBadge status={s.status} /></li>)}</ul> : <Empty title="No stays booked"><Link className="text-brand-700 underline" href="/stays">Find a stay near a hospital</Link></Empty>}
+        {stays.length ? <ul className="space-y-2">{stays.map((s) => <li key={s.id} className="card"><div className="flex justify-between"><span><b>{s.unit.property.name}</b><br /><span className="muted">{s.checkIn.toISOString().slice(0, 10)} → {s.checkOut.toISOString().slice(0, 10)} · {s.reference} · ₹{((s.totalInPaise + s.depositInPaise) / 100).toLocaleString("en-IN")} incl. deposit · {s.paymentStatus.toLowerCase()}</span></span><StatusBadge status={s.status} /></div><StayActions id={s.id} status={s.status} paymentStatus={s.paymentStatus} checkOut={s.checkOut.toISOString().slice(0, 10)} /></li>)}</ul> : <Empty title="No stays booked"><Link className="text-brand-700 underline" href="/stays">Find a stay near a hospital</Link></Empty>}
       </section>
     </div>
   );

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, rupees } from "@/lib/client";
 import { Alert, Empty, Field, StatusBadge, useAction } from "@/components/ui";
+import { PropertyManager, StayStatusButtons } from "./PropertyManager";
 
 type Partner = null | { businessName: string; verificationStatus: string; properties: { id: string; name: string; city: string; verificationStatus: string; units: unknown[]; rates: { nightlyInPaise: number }[] }[] };
 type Booking = { id: string; reference: string; property: string; unit: string; checkIn: string; checkOut: string; guests: number; status: string; totalInPaise: number; guest: { name: string | null; phone: string } };
@@ -12,6 +13,7 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
   const act = useAction();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [adding, setAdding] = useState(false);
+  const [managing, setManaging] = useState<string | null>(null);
   const load = () => api<Booking[]>("/partners/me/bookings").then(setBookings).catch(() => undefined);
   useEffect(() => { if (partner) load(); }, [partner]);
 
@@ -49,13 +51,13 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
           <button className="btn sm:col-span-2" disabled={act.busy}>Submit listing</button>
         </form>
       )}
-      <section className="space-y-2"><h2 className="h2">Properties</h2>{partner.properties.length ? partner.properties.map((p) => <div key={p.id} className="card flex justify-between"><span><b>{p.name}</b> · {p.city} · {p.units.length} unit(s) · {p.rates[0] ? rupees(p.rates[0].nightlyInPaise) + "/night" : ""}</span><StatusBadge status={p.verificationStatus} /></div>) : <Empty title="No properties yet" />}</section>
+      <section className="space-y-2"><h2 className="h2">Properties</h2>{partner.properties.length ? partner.properties.map((p) => <div key={p.id} className="card space-y-2"><div className="flex flex-wrap items-center justify-between gap-2"><span><b>{p.name}</b> · {p.city} · {p.units.length} unit(s) · {p.rates[0] ? rupees(p.rates[0].nightlyInPaise) + "/night" : ""}</span><span className="flex items-center gap-2"><StatusBadge status={p.verificationStatus} /><button className="btn-secondary" onClick={() => setManaging(managing === p.id ? null : p.id)}>{managing === p.id ? "Close" : "Calendar & pricing"}</button></span></div>{managing === p.id && <PropertyManager propertyId={p.id} />}</div>) : <Empty title="No properties yet" />}</section>
       <section className="space-y-2">
         <h2 className="h2">Booking requests and reservations</h2>
         {bookings.length ? bookings.map((b) => (
           <div key={b.id} className="card flex flex-wrap items-center justify-between gap-2">
             <span><b>{b.property}</b> · {b.unit} · {b.checkIn.slice(0, 10)} → {b.checkOut.slice(0, 10)} · {b.guests} guests<br /><span className="muted">{b.reference} · {b.guest.name ?? "Guest"} · {b.guest.phone} · {rupees(b.totalInPaise)}</span></span>
-            <span className="flex items-center gap-2"><StatusBadge status={b.status} />{b.status === "REQUESTED" && <><button className="btn" onClick={() => act.run(async () => { await api(`/accommodation-bookings/${b.id}/respond`, { body: { decision: "CONFIRMED" } }); load(); })}>Confirm</button><button className="btn-secondary" onClick={() => act.run(async () => { await api(`/accommodation-bookings/${b.id}/respond`, { body: { decision: "DECLINED" } }); load(); })}>Decline</button></>}</span>
+            <span className="flex items-center gap-2">{b.status !== "REQUESTED" && <StayStatusButtons id={b.id} status={b.status} onDone={load} />}{b.status === "REQUESTED" && <StatusBadge status={b.status} />}{b.status === "REQUESTED" && <><button className="btn" onClick={() => act.run(async () => { await api(`/accommodation-bookings/${b.id}/respond`, { body: { decision: "CONFIRMED" } }); load(); })}>Confirm</button><button className="btn-secondary" onClick={() => act.run(async () => { await api(`/accommodation-bookings/${b.id}/respond`, { body: { decision: "DECLINED" } }); load(); })}>Decline</button></>}</span>
           </div>
         )) : <Empty title="No bookings yet" />}
       </section>

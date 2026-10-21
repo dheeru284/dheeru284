@@ -38,15 +38,27 @@ All settings live in `PlatformSetting` (Zod-validated, audited) — editable in 
 - Nurse service-origin coordinates never leave the server.
 
 ## Providers
-| Interface | Dev adapter | Production adapter |
-|---|---|---|
-| Routing | `SimulatedRoutingProvider` (labelled `simulated`) | `GoogleRoutesProvider` ✅ implemented |
-| Payments | `MockPaymentProvider` (same HMAC contract) | `RazorpayProvider` ✅ orders, signature, webhook, refunds |
-| SMS/OTP | `MockSmsProvider` | ❌ not implemented (DLT-registered provider needed) |
-| Storage | `MockStorageProvider` (HMAC-signed URLs) | ❌ S3 presigner not implemented |
-| Email / WhatsApp | — | ❌ not implemented (channels logged as FAILED) |
+| Interface | Dev adapter | Production adapter | Verified against live service? |
+|---|---|---|---|
+| Routing | `SimulatedRoutingProvider` (labelled) | `GoogleRoutesProvider` (traffic-aware, departure time) | No — tested with mocked HTTP |
+| Geocoding | `DevGazetteerGeocoder` (5 demo localities) | `GoogleGeocodingProvider` | No — mocked HTTP |
+| SMS/OTP | `MockSmsProvider` | `Msg91SmsProvider` (DLT flow templates) | No — mocked HTTP |
+| Email | `MockEmailProvider` | `SmtpEmailProvider` (nodemailer) | No |
+| WhatsApp | `MockWhatsAppProvider` | `WhatsAppCloudProvider` (template messages) | No |
+| Payments | `MockPaymentProvider` (same HMAC contract) | `RazorpayProvider` (orders, signature, webhooks, refunds) + Checkout.js in UI | No — signature maths tested |
+| Storage | `MockStorageProvider` (HMAC URLs) | `S3StorageProvider` (presigned PUT/GET, SSE) | Presigning tested offline; no live bucket |
+| Errors | stdout JSON | `ERROR_WEBHOOK_URL` forwarder | — |
 
-`assertProductionSafe` refuses to boot in production with any mock adapter.
+`assertProductionSafe` refuses to boot in production with any mock/simulated/dev adapter or missing keys.
 
+## Other flows added in phase 2
+- **Prescription authorization**: patient uploads to private storage → staff queue (`authorization.review`) → verified releases the booking to the nurse; rejected keeps it on hold. Views are audited. Staff check documents; they do not make clinical decisions.
+- **Atomic reschedule**: old booking retired and new one inserted in one transaction (`beforeInsert` hook); the exclusion constraint sees both.
+- **Stays**: pay after partner confirmation (total + deposit), partner blackouts/rate periods/photos/calendar, check-in/out, cancellations route paid stays to a refund-review queue (property policy, not a formula).
+- **Settlements**: per-period records for nurses and partners from completed + paid work; finance marks them paid with a payout reference. Reconciliation flags captured-but-unpaid, stale orders, over-refunds.
+- **Notifications**: IN_APP/SMS/EMAIL/WHATSAPP with per-language templates, retries (3), SKIPPED when a channel isn't configured; clinical words blocked in non-app templates.
+- **Jobs** (`npm run jobs:run`): credential expiry, reminders (24h), expiry of never-accepted requests, notification dispatch, data retention.
+- **i18n**: UI chrome + templates per language; English complete, Hindi starter set (needs native review), other languages fall back to English.
+- **PWA**: manifest, icon, service worker that caches static assets only (never API responses).
 ## Medicine delivery
 Feature flag `medicine_delivery` exists, is locked off in the admin API, and `/api/v1/medicine` returns `FEATURE_DISABLED`. No code path sells medicines.

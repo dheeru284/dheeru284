@@ -47,7 +47,7 @@ export async function searchStays(db: Db, q: StaySearch) {
       blackouts: { none: { startDate: { lt: checkOut }, endDate: { gt: checkIn } } },
     },
     include: {
-      images: true, amenities: true,
+      images: { take: 1 }, amenities: true,
       rates: { where: { validFrom: { lte: checkIn }, OR: [{ validTo: null }, { validTo: { gte: checkOut } }] }, orderBy: { validFrom: "desc" }, take: 1 },
       units: { include: { bookings: { where: { status: { in: [...ACTIVE_STAY] }, checkIn: { lt: checkOut }, checkOut: { gt: checkIn } }, select: { id: true } } } },
     },
@@ -159,7 +159,74 @@ export async function partnerRespond(p: Principal, bookingId: string, decision: 
 }
 
 export async function cancelStay(p: Principal, bookingId: string, db: Db = prisma) {
-  const r = await db.accommodationBooking.updateMany({ where: { id: bookingId, userId: p.userId, status: { in: ["REQUESTED", "CONFIRMED"] } }, data: { status: "CANCELLED" } });
+  const r = await db.accommodationBooking.updateMany({ where: { id: bookingId, userId: p.userId, status: { in: ["REQUESTED", "CONFIRMED"] } }, data: { status: "CANCELLED", cancellationReason: "cancelled by guest" } });
   if (r.count !== 1) throw new AppError("NOT_FOUND", "Cancellable booking not found");
-  return db.accommodationBooking.findUniqueOrThrow({ where: { id: bookingId } });
+  const b = await db.accommodationBooking.findUniqueOrThrow({ where: { id: bookingId }, include: { unit: { include: { property: { include: { partner: true } } } } } });
+  await notify(db, b.unit.property.partner.userId, "stay.status", { ref: b.reference, status: "cancelled by guest" });
+  // Paid stays: refund amount follows the property's stated policy, so it goes to staff review rather than an automatic formula.
+  if (b.paymentStatus === "PAID") await db.complaint.create({ data: { raisedByUserId: p.userId, accommodationBookingId: b.id, category: "refund_review", description: `Guest cancelled paid stay ${b.reference}; apply property policy: ${b.unit.property.cancellationPolicy}` } });
+  return b;
+}
+
+// ───────── Partner inventory management (partner can only touch their own properties) ─────────
+
+async function ownProperty(db: Db, p: Principal, propertyId: string) {
+  const partnerId = await partnerIdFor(db, p);
+  const prop = await db.accommodationProperty.findFirst({ where: { id: propertyId, partnerId } });
+  if (!prop) throw new AppError("NOT_FOUND", "Property not found");
+  return prop;
+}
+
+export async function addBlackout(p: Principal, propertyId: string, startDate: string, endDate: string, reason: string | undefined, db: Db = prisma) {
+  await ownProperty(db, p, propertyId);
+  const s = parseDate(startDate), e = parseDate(endDate);
+  if (e <= s) throw new AppError("VALIDATION", "End must be after start");
+  return db.propertyAvailability.create({ data: { propertyId, startDate: s, endDate: e, reason } });
+}
+
+export async function removeBlackout(p: Principal, blackoutId: string, db: Db = prisma) {
+  const b = await db.propertyAvailability.findUnique({ where: { id: blackoutId } });
+  if (!b) throw new AppError("NOT_FOUND", "Not found");
+  await ownProperty(db, p, b.propertyId);
+  await db.propertyAvailability.delete({ where: { id: blackoutId } });
+}
+
+/** New rate period. Existing bookings keep their quoted price. */
+export async function setRate(p: Principal, propertyId: string, r: { nightlyInPaise: number; monthlyInPaise?: number; extendedStayDiscountPct: number; depositInPaise: number; validFrom: string; validTo?: string }, db: Db = prisma) {
+  await ownProperty(db, p, propertyId);
+  return db.propertyRate.create({ data: { propertyId, nightlyInPaise: r.nightlyInPaise, monthlyInPaise: r.monthlyInPaise, extendedStayDiscountPct: r.extendedStayDiscountPct, depositInPaise: r.depositInPaise, validFrom: parseDate(r.validFrom), validTo: r.validTo ? parseDate(r.validTo) : null } });
+}
+
+export async function partnerCalendar(p: Principal, propertyId: string, from: string, to: string, db: Db = prisma) {
+  await ownProperty(db, p, propertyId);
+  const f = parseDate(from), t = parseDate(to);
+  const [units, blackouts, rates] = await Promise.all([
+    db.propertyUnit.findMany({ where: { propertyId }, include: { bookings: { where: { checkIn: { lt: t }, checkOut: { gt: f }, status: { in: ["REQUESTED", "CONFIRMED", "CHECKED_IN"] } }, select: { id: true, reference: true, checkIn: true, checkOut: true, status: true } } } }),
+    db.propertyAvailability.findMany({ where: { propertyId, startDate: { lt: t }, endDate: { gt: f } } }),
+    db.propertyRate.findMany({ where: { propertyId }, orderBy: { validFrom: "desc" } }),
+  ]);
+  return { units, blackouts, rates };
+}
+
+export async function startPropertyPhotoUpload(p: Principal, propertyId: string, mimeType: string, sizeBytes: number, alt: string, db: Db = prisma) {
+  const { validateUpload } = await import("./credentials");
+  validateUpload("PHOTO", mimeType, sizeBytes);
+  await ownProperty(db, p, propertyId);
+  const { newObjectKey } = await import("../providers/storage");
+  const key = newObjectKey(`properties/${propertyId}`, mimeType);
+  const img = await db.propertyImage.create({ data: { propertyId, storageKey: key, alt } });
+  return { image: { id: img.id }, upload: await providers().storage.presignUpload(key, mimeType) };
+}
+
+/** Partner-side stay lifecycle. Partner cancellation records a reason and triggers a refund review. */
+export async function partnerStayTransition(p: Principal, bookingId: string, to: "CHECKED_IN" | "COMPLETED" | "CANCELLED", reason: string | undefined, db: Db = prisma) {
+  const partnerId = await partnerIdFor(db, p);
+  const from = to === "CHECKED_IN" ? ["CONFIRMED"] : to === "COMPLETED" ? ["CHECKED_IN"] : ["REQUESTED", "CONFIRMED"];
+  const r = await db.accommodationBooking.updateMany({ where: { id: bookingId, status: { in: from as never }, unit: { property: { partnerId } } }, data: { status: to, ...(to === "CANCELLED" ? { cancellationReason: reason ?? "cancelled by property" } : {}) } });
+  if (r.count !== 1) throw new AppError("CONFLICT", "Booking cannot move to that status");
+  const b = await db.accommodationBooking.findUniqueOrThrow({ where: { id: bookingId } });
+  await notify(db, b.userId, "stay.status", { ref: b.reference, status: to.replace("_", " ").toLowerCase() });
+  if (to === "CANCELLED" && b.paymentStatus === "PAID") await db.complaint.create({ data: { raisedByUserId: p.userId, accommodationBookingId: b.id, category: "refund_review", severity: "SERIOUS", description: `Partner cancelled paid stay ${b.reference}: ${reason ?? ""}`.trim() } });
+  await audit(db, { actorUserId: p.userId, action: `stay.${to.toLowerCase()}`, entityType: "AccommodationBooking", entityId: bookingId });
+  return b;
 }
