@@ -46,3 +46,17 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-22 — no applications submitted
+
+Searched (web search + direct fetch of Lever/Greenhouse). Nothing qualified: no posting could be confirmed for India eligibility, salary >= Rs 42 lakh/yr, and open status. No form-submission tooling was available either.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Jobgether (partner) | Senior Data Engineer | jobs.lever.co/jobgether/0f35f05e-c98e-4d1e-bf7d-b01c12605509 | REJECT | 404, closed |
+| Jobgether (partner) | Staff Data Engineer | jobs.lever.co/jobgether/7ac53bdb-fcb1-4d90-a2bc-362a08a94eab | REJECT | 404, closed |
+| YipitData | Senior Data Engineer (India Remote) | job-boards.greenhouse.io/yipitdatajobs/jobs/7179707 | REJECT | URL is the board index, not a DE posting; no salary shown |
+| Gainwell | Senior Data Engineer (Databricks), Bangalore | jobs.gainwelltechnologies.com (Jan 2026) | REVIEW (unverified) | India remote per snippet; salary unknown; posting is ~9 months old |
+| All Known Services (Weekday) | Senior Data Engineer (Snowflake & dbt), India remote | jobs.weekday.works/wkdy6jggbr | REVIEW (unverified) | Weekday listings typically < Rs 40 lakh; salary unseen |
+| Jobgether | Data Engineer - Senior (Azure/Databricks, contract) | jobs.lever.co/jobgether/48d2a20c-166f-47a5-953e-ba89db644b04 | REVIEW (unverified) | Strong stack match; contract; salary unknown |
+| Jobgether | Senior DE / Fabric Engineer | jobs.lever.co/jobgether/6b0c5357-fdda-4b44-b71e-e26353b72323 | REJECT (likely) | Range snippet Rs 11–50 LPA; minimum below threshold |
