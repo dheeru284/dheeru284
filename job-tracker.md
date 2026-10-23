@@ -46,3 +46,7 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-23 — no applications submitted
+
+Blocker: egress proxy returns 403 on CONNECT for job-board hosts (boards-api.greenhouse.io, api.lever.co, remoteok.com, weworkremotely.com); linkedin.com returns 429. No posting can be opened, verified or applied to from this session. Nothing new was found or applied; earlier REVIEW items (Billigence, Climb AI, EXL, UAE leads) remain unverified. Fix: allow job-board domains in the environment's network policy, or run this routine somewhere with open egress.
