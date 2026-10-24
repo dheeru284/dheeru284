@@ -46,3 +46,17 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-24 — no applications submitted
+
+Blockers: WebFetch can't reach remotive.com / employbl.com (DNS fail); Lever Jobgether URLs from search returned 404 (closed/stale). Only search snippets available, so no posting was verified (India eligibility, salary, open status) and nothing was applied to. Exchange rates not checked live.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| phData | Senior Data Engineer (India – Remote, posted Sep 2026) | greenhouse mirror on employbl.com/jobs/senior-data-engineer-phdata-1780618 | REVIEW (unverified) | Direct India hire, India hours; Snowflake/Azure/Databricks/SQL/Python fit (resume has no Scala). Salary unknown. Find the official Greenhouse posting. |
+| Billigence | Senior Data Engineer (Azure Databricks), India remote, contract | remotive.com/remote/jobs/software-development/senior-data-engineer-4005395 | REVIEW (unverified) | Same role as 2026-10-07 entry; contract, salary not seen. |
+| Jobgether | Senior Data Engineer / Fabric Engineer, India remote | lever.co/jobgether/6b0c5357-... | REJECT | Snippet range INR 11–50 LPA (min below ₹42L); page now 404. |
+| Jobgether | Databricks Engineer Senior/Lead | lever.co/jobgether/039b20f4-... | REJECT | 404 / intermediary, expired. |
+| xTag Services | Senior Data Engineer – Azure Databricks | hirist.tech/j/senior-data-engineer-azure-databricks-1663489 | REVIEW (unverified) | Posted 17 Aug 2026, 8+ yrs, immediate joiners only (resume shows gap since Jan '26 so notice period fine); salary unknown. |
+| Karat | Senior Data Engineer (India) | employbl.com/jobs/senior-data-engineer-india-karat-1801876 | REJECT | Bangalore-only (not remote). |
+| FlexJobs staff DE roles | Staff Data Engineer | flexjobs.com | REJECT | "Anywhere in U.S." only. |
