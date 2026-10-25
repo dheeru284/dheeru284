@@ -46,3 +46,11 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-25 — no applications submitted
+Search snippets only; nothing qualified.
+- YipitData (Greenhouse): India-remote board has no Senior Data Engineer role (only QA, SDET, Software Eng, Data Specialist) -> REJECT.
+- Jobgether (Lever 0f35f05e...): 404, closed -> REJECT.
+- Jobgether Senior Data Engineer / Fabric (6b0c5357...): INR 11–50 LPA, minimum below ₹42 lakh; intermediary -> REJECT.
+- EPAM Senior Data Software Engineer: no longer available -> REJECT. CazVid New Delhi: deadline 17 May 2026, expired -> REJECT.
+- Unverified REVIEW leads: DATAMAXIS (remotive, India-only, no salary), Velotio Databricks (Pune, no salary), XCentium Fabric+Databricks (no salary), Jobgether Databricks Senior/Lead (039b20f4...), Maltem Azure/Databricks (contract, Employment Hero).
