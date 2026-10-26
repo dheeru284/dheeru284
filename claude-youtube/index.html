@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude YouTube</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<style>
+:root{--bg:#0f0f10;--panel:#1b1b1e;--fg:#eee;--mut:#999;--acc:#ff3b3b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+main{max-width:900px;margin:auto;padding:16px}h1{margin:.2em 0}.mut{color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.chips button{background:var(--panel);color:var(--fg);border:1px solid #333;border-radius:99px;padding:4px 10px;cursor:pointer}
+form{display:flex;gap:8px}input{flex:1;padding:10px;border-radius:8px;border:1px solid #333;background:var(--panel);color:var(--fg)}
+form button,.copy{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}
+#out{background:var(--panel);border-radius:10px;padding:16px;margin-top:14px;overflow-x:auto}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #333;padding:6px;vertical-align:top}pre{white-space:pre-wrap;background:#000;padding:10px;border-radius:6px}
+</style></head><body><main>
+<h1>▶ Claude YouTube</h1><p class="mut">Free, offline faceless-channel manager. 14 commands. Type a command or tap one.</p>
+<div class="chips" id="chips"></div>
+<form id="f"><input id="q" placeholder="/ideas productivity 20" autofocus><button>Run</button></form>
+<button class="copy" id="copy" style="margin-top:10px">Copy markdown</button>
+<div id="out"></div></main>
+<script src="engine.js"></script>
+<script>
+const ex={"channel-audit":"/channel-audit productivity","ideas":"/ideas productivity 20","hook":"/hook deep work","script":"/script deep work 8min","title":"/title deep work | focus, productivity","thumbnail":"/thumbnail deep work","seo":"/seo deep work | deep work, focus tips","shorts":"/shorts paste your long script here.","weekly-plan":"/weekly-plan productivity","trends":"/trends productivity","thumbnail-text":"/thumbnail-text deep work","cta":"/cta tutorial","comment-reply":"/comment-reply This changed how I work!","upload-checklist":"/upload-checklist deep work"};
+let md="";const q=document.getElementById("q"),o=document.getElementById("out");
+const go=v=>{md=ClaudeYouTube.run(v);o.innerHTML=window.marked?marked.parse(md):"<pre>"+md.replace(/</g,"&lt;")+"</pre>"};
+ClaudeYouTube.commands.forEach(c=>{const b=document.createElement("button");b.textContent="/"+c;b.onclick=()=>{q.value=ex[c];go(q.value)};chips.appendChild(b)});
+document.getElementById("f").onsubmit=e=>{e.preventDefault();go(q.value)};
+document.getElementById("copy").onclick=()=>navigator.clipboard.writeText(md);
+go("/help");
+</script></body></html>
