@@ -46,3 +46,21 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-26 — no applications submitted
+
+Reachable: linkedin.com, job-boards.greenhouse.io (via WebFetch). Unreachable: Lever/Greenhouse APIs via curl, employbl.com, phdata.io, remoterocketship.com. Salaries are almost never published, so the ₹42L floor can't be confirmed for most roles. Exchange rates not needed (no salary found in INR-convertible form except Doodleblue).
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Karat | Senior Data Engineer (India), Remote - Bengaluru only | job-boards.greenhouse.io/karat/jobs/8880766002 | REVIEW (~55% match) | Verified open. Requires Bengaluru residence (you qualify), 3pm–11pm IST US-overlap hours, sole employment. Stack: Airflow, Redshift, Terraform, AWS, Docker — not on resume beyond Airflow coursework. No salary listed. Not applied. |
+| Doodleblue Innovations | Senior Data Engineer (Azure Databricks Lakehouse), remote India, 9–12 yrs | Indeed (in.indeed.com/viewjob?jk=71fe222178c5062c) | REJECT | Up to ₹1.5L/month, below ₹3.5L/month. Posted Jul 2026. |
+| Billigence | Senior Data Engineer – Azure Databricks, India remote (contract) | remoterocketship | REJECT | Posted Mar 2026, stale; unverified salary. |
+| Enqora Solutions | Senior Data Engineer – Databricks & PySpark, remote, 7+ yrs | search snippet | REVIEW (unverified) | Strong stack fit; posting date, India eligibility, salary unknown. |
+| phData | Senior Data Engineer, India – Remote | employbl / Greenhouse | REVIEW (unverified) | Careers page unreachable; salary unknown. |
+| YipitData | Senior Data Engineer | Greenhouse board | REJECT | No data-engineer opening on board (India roles are QA/SDET/SWE/Data Specialist). |
+| Infosys, Optum India, Quess | Databricks DE | search snippets | REJECT | On-site/hybrid, junior pay (Infosys) or not remote. |
+| Eliassen | Remote Azure Data Engineer | careers.eliassen.com | REJECT | US-focused; employer warns of fraudulent postings under its brand. |
+| Jobgether (Lever) | Various Senior DE | jobs.lever.co/jobgether/* | REVIEW | Intermediary; real employer and salary unknown. |
+
+Prior-run REVIEW items (Climb AI, EXL, UAE leads) remain unverified.
