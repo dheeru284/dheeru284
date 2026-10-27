@@ -46,3 +46,12 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-27 — no applications submitted, nothing qualifying found
+Searches: Sr Data Engineer Databricks/Fabric/Azure India-remote, Staff DE worldwide remote. Verification:
+- YipitData (Greenhouse 7179707): board has India-remote roles but no Data Engineer opening now -> REJECT (closed/none).
+- Jobgether (Lever 4d426592…, 0f35f05e…, 6b0c5357…): all 404 -> REJECT (expired). Intermediary anyway; Fabric one listed ₹11–50 LPA (min below threshold).
+- Weekday (Fabric/Databricks, ₹11–50 LPA or ₹20–40 LPA): min below ₹42 lakh -> REJECT.
+- DATAMAXIS, New Era Technology, BrightClaim (Remotive): India-eligible but no salary shown, unverified -> REVIEW (low priority).
+- Staff DE Snowflake/dbt roles (Route etc.): US-only -> REJECT.
+- Still unresolved from earlier runs: Billigence, Climb AI, EXL (sites blocked / JS-rendered).
