@@ -46,3 +46,15 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-28 — no applications submitted
+Search snippets only; employbl.com unresolvable, Jobgether Lever page 404 (closed). No posting verified, no application submitted.
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Jobgether (partner) | Sr Data Engineer / Fabric Engineer, India remote | jobs.lever.co/jobgether/6b0c5357-fdda-4b44-b71e-e26353b72323 | REJECT | Range INR 11–50 LPA; min below ₹42 lakh. |
+| Jobgether | Databricks Engineer Senior/Lead | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REJECT | 404, closed. |
+| Karat | Senior Data Engineer (India), Bangalore remote | Greenhouse via employbl | REVIEW (unverified) | Salary/stack unknown; Bangalore-only. |
+| Forbes India, New Era Technology, Weekday clients | Sr Data Engineer, India remote | various | REVIEW/likely REJECT | India-market pay, typically below ₹42 lakh; salary unseen. |
+| Clanx (Pune) | Sr Data Engineer Azure | jobs.clanx.ai | REJECT | ₹15–20 lakh/yr. |
+| Globalization Partners, Smart Working | Staff Data Engineer (India) | greenhouse / aggregator | REJECT | Closed/archived. |
+Observation: India-hosted remote roles mostly pay below ₹42 lakh/yr; qualifying roles likely need US/EU-employer "worldwide remote" postings, which searches did not surface.
