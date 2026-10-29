@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import lru_cache
 
+from ..macro import MacroPoint, MacroSource
 from ..schemas import Candle, CandleSeries, DataSource, Exchange, Instrument, InstrumentType, Interval
 from ..session import IST, bar_starts, is_trading_day
 from .base import MarketDataProvider, UnknownInstrument, UnsupportedInterval
@@ -34,6 +35,8 @@ class _Profile:
     anchor: float  # long-run price level
     minute_vol: float  # stdev of one-minute log return
     base_volume: int  # shares/contracts per minute at mid-session
+    tick: float = 0.05
+    gap_sd: float = 0.006  # stdev of the overnight gap (log return)
 
 
 _INSTRUMENTS = {
@@ -57,6 +60,16 @@ _INSTRUMENTS = {
 _PROFILES = {
     "NIFTY": _Profile(anchor=24_500.0, minute_vol=0.00042, base_volume=9_000),
     "BANKNIFTY": _Profile(anchor=52_000.0, minute_vol=0.00055, base_volume=4_000),
+}
+# Simulated cross-market factors, sampled on the NSE session grid only.
+_MACRO_PROFILES = {
+    "BRENT": _Profile(anchor=66.0, minute_vol=0.00055, base_volume=0, tick=0.01, gap_sd=0.012),
+    "WTI": _Profile(anchor=62.0, minute_vol=0.00055, base_volume=0, tick=0.01, gap_sd=0.012),
+    "USDINR": _Profile(anchor=88.0, minute_vol=0.00007, base_volume=0, tick=0.0025, gap_sd=0.0015),
+    "INDIAVIX": _Profile(anchor=13.0, minute_vol=0.0016, base_volume=0, tick=0.0025, gap_sd=0.04),
+    "GOLD": _Profile(anchor=4_000.0, minute_vol=0.0003, base_volume=0, tick=0.1, gap_sd=0.006),
+    "SPX_FUT": _Profile(anchor=6_800.0, minute_vol=0.0003, base_volume=0, tick=0.25),
+    "US10Y": _Profile(anchor=4.2, minute_vol=0.0005, base_volume=0, tick=0.001, gap_sd=0.008),
 }
 
 
@@ -89,18 +102,18 @@ def _seed_for(seed: int, symbol: str, day: date) -> int:
 
 
 def _round_tick(price: float, tick: float) -> float:
-    return round(round(price / tick) * tick, 2)
+    return round(round(price / tick) * tick, 4)
 
 
 @lru_cache(maxsize=256)
 def _minute_bars(seed: int, symbol: str, day: date) -> tuple[Candle, ...]:
-    profile = _PROFILES[symbol]
-    tick = _INSTRUMENTS[symbol].tick_size
+    profile = _PROFILES.get(symbol) or _MACRO_PROFILES[symbol]
+    tick = profile.tick
     rng = _SplitMix64(_seed_for(seed, symbol, day))
 
     # Day open: a slow ~90-day cycle around the anchor plus an overnight gap.
     cycle = 0.05 * math.sin(2 * math.pi * day.toordinal() / 90.0)
-    price = profile.anchor * math.exp(cycle + 0.006 * rng.gauss())
+    price = profile.anchor * math.exp(cycle * profile.gap_sd / 0.006 + profile.gap_sd * rng.gauss())
 
     # Regime for the day: trend up, trend down or mean-reverting range, so
     # the strategy sees all of its outcomes across a week of sessions.
@@ -192,3 +205,26 @@ class MockMarketDataProvider(MarketDataProvider):
         return CandleSeries(
             instrument=instrument, interval=interval, source=self.source, candles=candles
         )
+
+
+class MockMacroSource(MacroSource):
+    """Simulated factor values (5-minute closes on the NSE grid). Not market data."""
+
+    source = DataSource.SIMULATED
+
+    def __init__(self, seed: int = 7) -> None:
+        self.seed = seed
+
+    def points(self, key: str, start: datetime, end: datetime) -> list[MacroPoint]:
+        if key not in _MACRO_PROFILES:
+            raise UnknownInstrument(key)
+        out = []
+        day = start.astimezone(IST).date()
+        while day <= end.astimezone(IST).date():
+            if is_trading_day(day):
+                for bar in _aggregate(_minute_bars(self.seed, key, day), Interval.FIVE_MINUTE):
+                    close_time = bar.timestamp + Interval.FIVE_MINUTE.delta
+                    if start <= close_time <= end:
+                        out.append(MacroPoint(timestamp=close_time, value=bar.close))
+            day += timedelta(days=1)
+        return out

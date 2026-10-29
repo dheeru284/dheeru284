@@ -1,91 +1,104 @@
 # OptionPulse AI
 
-Five-minute NIFTY setup dashboard. **Phases 1–2: simulated data only.** No
-authentication, no broker connection, no order placement.
+A calm, light-themed portal for NIFTY intraday strategies. It shows what each
+strategy is looking at right now, paper-trades all of them under identical
+rules, and puts oil, the rupee, India VIX, global markets and headlines next
+to the chart.
 
-```
-optionpulse/
-├── backend/          FastAPI + pure-Python domain (Python ≥ 3.11)
-│   ├── src/optionpulse/
-│   │   ├── schemas.py      canonical Instrument / Candle / CandleSeries
-│   │   ├── session.py      NSE session calendar (09:15–15:30 IST)
-│   │   ├── validation.py   gap / order / alignment / integrity / staleness checks
-│   │   ├── indicators.py   EMA, Wilder RSI, session VWAP
-│   │   ├── strategy.py     LONG_SETUP / SHORT_SETUP / NO_TRADE / DATA_INVALID
-│   │   ├── providers/      MarketDataProvider contract + deterministic mock
-│   │   └── api.py          read-only HTTP API (GET only)
-│   └── tests/              pytest suite
-├── frontend/         Next.js 15 (App Router) dashboard
-└── docs/PHASE3_ANGEL_ONE_SMARTAPI.md
-```
+**Paper trading only.** No broker connection, no authentication, no orders.
+Nothing here is investment advice.
+
+## Pages
+
+| Page | What you get |
+|---|---|
+| **Today** (`/`) | NIFTY 5-minute chart with EMA 9/21, VWAP, RSI and today's paper trades marked; the paper desk (each strategy's state, open position, today's points and checks); cross-market tiles with sparklines; market-mood reading; scored headlines. Refreshes every 30 s. |
+| **Strategies** (`/strategies`) | Each strategy in plain words: how it thinks, exact long/short/exit rules, parameters, when it shines or struggles, its live checks and its last 20 sessions. Plus the paper-desk rules and the market-mood filter. |
+| **Performance** (`/performance`) | Paper results over 5/10/20/40 sessions. Filter by strategy, side and outcome; mood filter on, off or compared side by side; KPIs, cumulative points chart, comparison table and a sortable trade log. |
+
+## Data sources
+
+| Source | Used for | Notes |
+|---|---|---|
+| Yahoo Finance chart API (`OPTIONPULSE_PROVIDER=yahoo`, the default) | NIFTY 50 (`^NSEI`), NIFTYBEES volume, Brent, WTI, USD/INR, India VIX, gold, S&P 500 futures, US 10Y | Real prices, **delayed and unofficial**; keyless, for personal use. NIFTY has no volume, so VWAP is weighted by NIFTYBEES ETF volume (labelled in the UI). 5-minute history covers about 60 days. |
+| Google News RSS, Economic Times RSS | Headlines | Scored with a transparent keyword lexicon (rising oil/VIX/yields/dollar counts as negative for NIFTY). Shown for context, **not used in trades** (no archive to test it against). |
+| Deterministic mock (`OPTIONPULSE_PROVIDER=mock`) | Everything except news | Works offline. Labelled SIMULATED everywhere. |
+
+The Angel One SmartAPI provider is planned in `docs/PHASE3_ANGEL_ONE_SMARTAPI.md`.
+
+## Strategies
+
+| Strategy | Style | Long when | Exit |
+|---|---|---|---|
+| Trend Pulse | Trend | EMA9 > EMA21, close > VWAP and EMA9, RSI 55–70 | stop 1 ATR, target 2 ATR |
+| Opening Range Breakout | Breakout | first close above the 09:15–09:30 high, above VWAP, before 13:00 | stop at range low (≤ 1.5 ATR), target 2R, one trade per side per day |
+| VWAP Snap-back | Mean reversion | ≥ 1.5 ATR below VWAP, RSI ≤ 30, green candle, 09:45–14:30 | target VWAP, stop 1 ATR |
+
+Shorts mirror each rule. The full text lives in `backend/src/optionpulse/strategies.py`
+and is served by `GET /api/portal/catalog`.
+
+## How paper trades are simulated
+
+1. A setup is read when its candle closes; the trade enters at the **next** candle's open (no look-ahead).
+2. Entries 09:20–14:30, one position per strategy, 3-candle cooldown after an exit.
+3. Stop and target fixed at entry; a gap fills at the open; if a candle touches both, the stop counts first.
+4. Squared off at 15:20. 0.5 point slippage on entry and exit. Results are NIFTY index points (option premiums are not simulated).
+5. Sessions whose data fails validation (gaps, bad candles) are not traded.
+6. **Market-mood filter:** RISK_OFF (Brent ≥ +1.5%, India VIX ≥ +5% or USD/INR ≥ +0.3% since yesterday) blocks longs; RISK_ON (the mirror moves) blocks shorts. The live desk trades with it on; Performance shows both.
+
+Trades are recomputed from market data on every request, so history and
+today's live trades always follow the same rules and nothing is stored.
 
 ## Run locally
 
-Prerequisites: Python 3.11+, Node.js 20+.
+Prerequisites: Python 3.11+, Node.js 20+, and internet access for live data.
 
 ```bash
-# 1. Backend (terminal 1)
+# Terminal 1: backend
 cd optionpulse/backend
 python3 -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
-pytest                               # 72 tests
-uvicorn optionpulse.main:app --reload --port 8000
+pytest                               # 122 tests, all offline
+uvicorn optionpulse.main:app --port 8000
+# offline / no Yahoo access:  OPTIONPULSE_PROVIDER=mock uvicorn optionpulse.main:app --port 8000
 
-# 2. Frontend (terminal 2)
+# Terminal 2: frontend
 cd optionpulse/frontend
 npm install
-npm run dev                          # http://localhost:3000
+npm run dev                          # open http://localhost:3000
 ```
 
-The frontend proxies `/api/*` to `OPTIONPULSE_BACKEND_URL`
-(default `http://127.0.0.1:8000`). Production build: `npm run build && npm start`.
-Type check: `npm run typecheck`. Settings are listed in `.env.example`.
+Production build: `npm run build && npm start`. Settings are in `.env.example`.
 
-## API
+## API (all GET, read-only)
 
 | Route | Purpose |
 |---|---|
-| `GET /api/health` | provider, data source, `order_placement: disabled` |
-| `GET /api/instruments` | canonical instruments |
-| `GET /api/candles?symbol=NIFTY&interval=FIVE_MINUTE&sessions=1&as_of=` | raw `CandleSeries` |
-| `GET /api/dashboard?symbol=NIFTY&as_of=` | session candles + indicators + strategy result |
+| `/api/health` | provider, data source, `order_placement: disabled` |
+| `/api/portal/overview?symbol=NIFTY&as_of=` | today: candles, live strategy states, open positions, factors, regime, news |
+| `/api/portal/performance?symbol=NIFTY&sessions=20&as_of=` | per-strategy stats, equity curves and trades, mood filter on and off |
+| `/api/portal/catalog` | strategy descriptions, engine rules, regime thresholds, factor notes |
+| `/api/dashboard`, `/api/candles`, `/api/instruments` | the Phase 1–2 endpoints |
 
-`as_of` (ISO 8601; naive values are read as IST) replays any moment. Only
-candles that have closed by `as_of` are returned. Interactive docs:
-http://127.0.0.1:8000/docs.
+`as_of` (ISO 8601, naive = IST) replays any moment. Interactive docs at http://127.0.0.1:8000/docs.
 
-## Simulated data
+## Layout
 
-`MockMarketDataProvider` generates one-minute bars per trading day from
-`(seed, symbol, date)` with its own SplitMix64 PRNG and SHA-256 seeding, then
-aggregates to 3/5/15 minutes. Each day gets a trend-up, trend-down or range
-regime and U-shaped intraday volume. The same request always returns the same
-candles; a golden-hash test pins the output. Every series carries
-`source: SIMULATED`, and the UI shows it in a banner, badge and chart
-watermark. The volume is invented: the real NIFTY 50 index has none (see
-Phase 3 plan, item 5).
-
-## Strategy rules
-
-Evaluated on the last **closed** five-minute candle, with three previous
-sessions loaded so indicators are warm at 09:15.
-
-| Signal | Conditions |
-|---|---|
-| `LONG_SETUP` | EMA9 > EMA21, close > VWAP, close > EMA9, 55 ≤ RSI14 ≤ 70 |
-| `SHORT_SETUP` | EMA9 < EMA21, close < VWAP, close < EMA9, 30 ≤ RSI14 ≤ 45 |
-| `NO_TRADE` | data valid, neither side passes every check |
-| `DATA_INVALID` | validation issue (empty, gap, duplicate, out of order, misaligned, bad OHLC, future or stale candle), fewer than 30 candles, or zero volume (no VWAP) |
-
-Indicator definitions: EMA seeded with the SMA of the first *n* closes,
-α = 2/(n+1); RSI uses Wilder smoothing (checked against the StockCharts
-example); VWAP uses typical price (H+L+C)/3, reset at each session open.
-Thresholds live in `StrategyConfig`.
-
-A setup describes the chart against fixed rules. It is not advice.
+```
+backend/src/optionpulse/
+  schemas.py, session.py, validation.py   canonical models, NSE calendar, data checks
+  indicators.py                           EMA, Wilder RSI, session VWAP, ATR
+  strategy.py, strategies.py              rule sets and their documentation
+  engine.py                               paper-trading engine and statistics
+  macro.py, news.py                       cross-market factors, regime, headlines
+  providers/  mock.py, yahoo.py           market-data sources
+  portal.py, api.py                       assembly and HTTP API
+frontend/  app/ (Today, Strategies, Performance)  components/  lib/
+```
 
 ## Known limits
 
+* Yahoo's feed is unofficial: it can be delayed, rate-limited or change without notice. A null bar becomes a gap and that session is not traded.
 * No NSE holiday calendar yet: every weekday is a session.
-* Mock supports 1, 3, 5 and 15-minute intervals (they divide the 375-minute session).
+* A few weeks of paper results say little about the future.

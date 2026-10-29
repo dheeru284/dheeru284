@@ -19,7 +19,10 @@ def test_only_read_routes(client):
     methods = {m for route in client.app.routes for m in getattr(route, "methods", set())}
     assert methods <= {"GET", "HEAD"}
     api_paths = {route.path for route in client.app.routes if route.path.startswith("/api")}
-    assert api_paths == {"/api/health", "/api/instruments", "/api/candles", "/api/dashboard"}
+    assert api_paths == {
+        "/api/health", "/api/instruments", "/api/candles", "/api/dashboard",
+        "/api/portal/catalog", "/api/portal/overview", "/api/portal/performance",
+    }
 
 
 def test_instruments(client):
@@ -71,6 +74,11 @@ def test_errors(client):
     assert client.get("/api/dashboard", params={"symbol": "XYZ"}).status_code == 404
     assert client.get("/api/dashboard", params={"interval": "TEN_MINUTE"}).status_code == 422
     assert client.get("/api/dashboard", params={"interval": "BOGUS"}).status_code == 422
+
+
+def test_settings_default_to_live_yahoo(monkeypatch):
+    monkeypatch.delenv("OPTIONPULSE_PROVIDER", raising=False)
+    assert Settings.from_env().provider == "yahoo"
 
 
 def test_settings_refuse_unavailable_provider(monkeypatch):

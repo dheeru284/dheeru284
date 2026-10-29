@@ -10,6 +10,9 @@ def _csv(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+PROVIDERS = ("yahoo", "mock")  # yahoo: real delayed prices; mock: deterministic simulation
+
+
 @dataclass(frozen=True)
 class Settings:
     provider: str = "mock"
@@ -18,10 +21,10 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> Settings:
-        provider = os.environ.get("OPTIONPULSE_PROVIDER", "mock").lower()
-        if provider != "mock":
+        provider = os.environ.get("OPTIONPULSE_PROVIDER", "yahoo").lower()
+        if provider not in PROVIDERS:
             # Broker providers arrive in Phase 3; refuse rather than silently fall back.
-            raise ValueError(f"OPTIONPULSE_PROVIDER={provider!r} is not available yet; only 'mock' is supported")
+            raise ValueError(f"OPTIONPULSE_PROVIDER={provider!r} is not available; choose one of {PROVIDERS}")
         return cls(
             provider=provider,
             mock_seed=int(os.environ.get("OPTIONPULSE_MOCK_SEED", "7")),

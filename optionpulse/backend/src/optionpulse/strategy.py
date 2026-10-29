@@ -111,6 +111,34 @@ def compute_indicators(series: CandleSeries, config: StrategyConfig) -> Indicato
     )
 
 
+def trend_checks(
+    close: float, fast: float, slow: float, vwap: float, strength: float, config: StrategyConfig
+) -> tuple[list[Check], list[Check]]:
+    """The four long and four short conditions, shared by the dashboard and the paper-trading engine."""
+    f, s = f"EMA{config.ema_fast}", f"EMA{config.ema_slow}"
+    long_checks = [
+        Check(name="trend", passed=fast > slow, detail=f"{f} {fast:.2f} vs {s} {slow:.2f}"),
+        Check(name="vwap", passed=close > vwap, detail=f"close {close:.2f} vs VWAP {vwap:.2f}"),
+        Check(name="ema_fast", passed=close > fast, detail=f"close {close:.2f} vs {f} {fast:.2f}"),
+        Check(
+            name="rsi",
+            passed=config.long_rsi_min <= strength <= config.long_rsi_max,
+            detail=f"RSI {strength:.1f} in [{config.long_rsi_min:g}, {config.long_rsi_max:g}]",
+        ),
+    ]
+    short_checks = [
+        Check(name="trend", passed=fast < slow, detail=f"{f} {fast:.2f} vs {s} {slow:.2f}"),
+        Check(name="vwap", passed=close < vwap, detail=f"close {close:.2f} vs VWAP {vwap:.2f}"),
+        Check(name="ema_fast", passed=close < fast, detail=f"close {close:.2f} vs {f} {fast:.2f}"),
+        Check(
+            name="rsi",
+            passed=config.short_rsi_min <= strength <= config.short_rsi_max,
+            detail=f"RSI {strength:.1f} in [{config.short_rsi_min:g}, {config.short_rsi_max:g}]",
+        ),
+    ]
+    return long_checks, short_checks
+
+
 def evaluate(
     series: CandleSeries,
     config: StrategyConfig | None = None,
@@ -151,27 +179,7 @@ def evaluate(
     assert fast is not None and slow is not None and strength is not None
 
     snapshot = IndicatorSnapshot(close=close, ema_fast=fast, ema_slow=slow, vwap=vwap, rsi=strength)
-    f, s = f"EMA{config.ema_fast}", f"EMA{config.ema_slow}"
-    long_checks = [
-        Check(name="trend", passed=fast > slow, detail=f"{f} {fast:.2f} vs {s} {slow:.2f}"),
-        Check(name="vwap", passed=close > vwap, detail=f"close {close:.2f} vs VWAP {vwap:.2f}"),
-        Check(name="ema_fast", passed=close > fast, detail=f"close {close:.2f} vs {f} {fast:.2f}"),
-        Check(
-            name="rsi",
-            passed=config.long_rsi_min <= strength <= config.long_rsi_max,
-            detail=f"RSI {strength:.1f} in [{config.long_rsi_min:g}, {config.long_rsi_max:g}]",
-        ),
-    ]
-    short_checks = [
-        Check(name="trend", passed=fast < slow, detail=f"{f} {fast:.2f} vs {s} {slow:.2f}"),
-        Check(name="vwap", passed=close < vwap, detail=f"close {close:.2f} vs VWAP {vwap:.2f}"),
-        Check(name="ema_fast", passed=close < fast, detail=f"close {close:.2f} vs {f} {fast:.2f}"),
-        Check(
-            name="rsi",
-            passed=config.short_rsi_min <= strength <= config.short_rsi_max,
-            detail=f"RSI {strength:.1f} in [{config.short_rsi_min:g}, {config.short_rsi_max:g}]",
-        ),
-    ]
+    long_checks, short_checks = trend_checks(close, fast, slow, vwap, strength, config)
 
     if all(c.passed for c in long_checks):
         signal, reasons = Signal.LONG_SETUP, ["all long conditions met"]

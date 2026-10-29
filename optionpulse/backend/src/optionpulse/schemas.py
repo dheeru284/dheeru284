@@ -74,6 +74,7 @@ _INTERVAL_MINUTES = {
 
 class DataSource(str, Enum):
     SIMULATED = "SIMULATED"  # deterministic mock generator, not market data
+    PUBLIC_DELAYED = "PUBLIC_DELAYED"  # free public feed (Yahoo Finance): real prices, delayed, unofficial
     BROKER_HISTORICAL = "BROKER_HISTORICAL"  # reserved for Phase 3
     BROKER_LIVE = "BROKER_LIVE"  # reserved for a later phase
 

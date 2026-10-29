@@ -80,3 +80,26 @@ def session_vwap(candles: Sequence[Candle]) -> list[float | None]:
         cum_vol += candle.volume
         out.append(cum_pv / cum_vol if cum_vol > 0 else None)
     return out
+
+
+def atr(candles: Sequence[Candle], period: int = 14) -> list[float | None]:
+    """Wilder's Average True Range. The first defined value is at index ``period``.
+
+    True range uses the previous close, so the first candle contributes none;
+    the seed is the mean of the first ``period`` true ranges.
+    """
+    if period < 1:
+        raise ValueError("period must be >= 1")
+    out: list[float | None] = [None] * len(candles)
+    if len(candles) <= period:
+        return out
+    ranges = [
+        max(c.high - c.low, abs(c.high - p.close), abs(c.low - p.close))
+        for p, c in zip(candles, candles[1:])
+    ]
+    current = sum(ranges[:period]) / period
+    out[period] = current
+    for i in range(period, len(ranges)):
+        current = (current * (period - 1) + ranges[i]) / period
+        out[i + 1] = current
+    return out

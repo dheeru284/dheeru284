@@ -1,4 +1,4 @@
 from .base import MarketDataProvider, UnknownInstrument, UnsupportedInterval
-from .mock import MockMarketDataProvider
+from .mock import MockMacroSource, MockMarketDataProvider
 
-__all__ = ["MarketDataProvider", "MockMarketDataProvider", "UnknownInstrument", "UnsupportedInterval"]
+__all__ = ["MarketDataProvider", "MockMacroSource", "MockMarketDataProvider", "UnknownInstrument", "UnsupportedInterval"]

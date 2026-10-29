@@ -4,19 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optionpulse"
-version = "0.2.0"
+version = "0.3.0"
 description = "OptionPulse AI backend: canonical market-data schemas, indicators and rule-based setups"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "pydantic>=2.7",
+    "httpx>=0.27",
+    "defusedxml>=0.7",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
-    "httpx>=0.27",
 ]
 
 [tool.setuptools.packages.find]
