@@ -6,7 +6,7 @@ async function get<T>(path: string, params: Record<string, string | undefined> =
   if (!res.ok) {
     let detail = await res.text();
     try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
-    throw new Error(res.status === 502 ? `Market data feed unavailable: ${detail}` : `Backend returned ${res.status}: ${detail}`);
+    throw new Error(res.status === 502 ? detail : `Backend returned ${res.status}: ${detail}`);
   }
   return res.json();
 }
