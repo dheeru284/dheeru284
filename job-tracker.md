@@ -46,3 +46,15 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-29 — no applications submitted
+Only aggregator search snippets were reachable; posting pages could not be verified (Lever Jobgether Databricks posting 039b20f4 returned 404 = closed; remoteyeah.com not resolvable). No salary at or above ₹42 lakh/yr was seen for any India-remote role. India-remote salaries found were ₹15–40 LPA (e.g. ClanX Azure Pune ₹15–20 LPA, Data Hatch/Weekday ₹25–40 LPA) -> REJECT (below threshold).
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Resilinc | Staff Data Engineer (AI Solutions) | aijobs.ai / remoteyeah | REVIEW (unverified) | "Work from anywhere in India"; salary and open status unknown. Check employer careers page. |
+| Globalization Partners | Staff Data Engineer | job-boards.greenhouse.io/globalizationpartners/jobs/6330426003 | REVIEW (unverified) | India remote-first / worldwide claim; one aggregator says closed. |
+| Nagarro | Staff Engineer, Data Engineer (cloud) | aijobs.net/job/1250741 | REVIEW (unverified) | Remote India; salary unknown, services firm. |
+| Billigence | Senior Data Engineer (Azure Databricks) | builtinpune.in/job/senior-data-engineer-azure-databricks/8738671 | REVIEW (unverified) | Still listed remote India (reposted ~14 days ago); salary unknown. |
+| Jobgether (partner co.) | Databricks Engineer Senior/Lead | jobs.lever.co/jobgether/039b20f4-... | REJECT | 404, closed. |
+| CazVid | Sr DE Snowflake/Databricks, New Delhi | cazvid.com | REJECT | Deadline passed, ~$2.3–3k/yr. |
