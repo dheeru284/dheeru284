@@ -1,0 +1,32 @@
+name: OptionPulse CI
+
+on:
+  push:
+    paths: ["optionpulse/**", ".github/workflows/optionpulse-ci.yml"]
+  pull_request:
+    paths: ["optionpulse/**", ".github/workflows/optionpulse-ci.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: optionpulse/backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - run: pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: optionpulse/frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: optionpulse/frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
