@@ -46,3 +46,15 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-30 — no applications submitted
+
+Search via web-search snippets plus Greenhouse board pages. Application forms and full posting pages were not readable from this session, so nothing was applied to. Salary unverified for all rows. Nothing was fabricated.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer, Global Team (India) | job-boards.greenhouse.io/yipitdata/jobs/7140674 | REVIEW | Listed "India Remote" on the employer's Greenhouse board and open today. Salary not shown; role detail not readable. Needs your check of the posting and salary vs ₹42 lakh. Stack fit unconfirmed (Spark/SQL mentioned in aggregator copy). |
+| Weekday (client, via Workable) | Senior Data Engineer, India WFH, dated 2026-10-01 | apply.workable.com/weekday-1/jobs/view/092975708B | REVIEW | Weekday listings were under ₹42 lakh on 2026-10-07; salary unseen here. |
+| Jobgether (intermediary) | Databricks Engineer Senior/Lead; Senior Data Engineer Full Stack (Databricks) | jobs.lever.co/jobgether/... | REVIEW | Intermediary, real employer and salary unknown. One checked URL (4d426592...) now returns 404. |
+| Forbes Advisor | Senior Data Engineer | Greenhouse, India Remote, Mar 2026 | REVIEW | Old posting; may be closed. |
+| Clanx (Pune) | Senior Azure Data Engineer | jobs.clanx.ai | REJECT | ₹15–20 lakh/yr and 3 days a week in the Pune office. |
