@@ -46,3 +46,13 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-10-31 — no applications submitted
+Search-only (no browser form submission available; ATS APIs blocked, only LinkedIn reachable). Nothing verified for salary >= ₹42 lakh/yr.
+- Jobgether Lever 039b20f4… (Databricks Engineer Senior/Lead, India remote): 404, expired -> REJECT.
+- Climb AI (Ashby): still JS-rendered, unreadable -> REVIEW.
+- Data Hatch via Weekday: remote India, ₹25–40 LPA -> REJECT (below ₹42 lakh).
+- Weekday Fabric/Databricks: previously ₹20–40 LPA -> REJECT.
+- Billigence (Azure Databricks, India remote): salary unseen -> REVIEW (check employer site).
+- Maltem (Employment Hero, AU Azure/Databricks remote): India eligibility/salary unknown -> REVIEW.
+- Cazvid: $2.3–3k/month (~₹2–2.5 lakh) -> REJECT.
