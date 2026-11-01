@@ -16,3 +16,6 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Uploaded files (BNIP_STORAGE_DIR)
+backend/storage/

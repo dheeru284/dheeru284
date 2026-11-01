@@ -12,11 +12,11 @@ isn't tested isn't enforced.
 | Migration | pytest + Alembic | `upgrade head`, `downgrade base`, `upgrade head` on an empty DB; models match migrations (no autogenerate diff) | ✔ |
 | API | pytest + FastAPI `TestClient` | routes, auth/RBAC, problem+json errors | ✔ |
 | Provider contract | pytest | each provider passes the same contract tests; Ollama via an HTTP mock transport (`httpx.MockTransport`), plus an opt-in live test | ✔ (live: manual) |
-| Pipeline end-to-end | pytest, Celery eager mode, `MockLLMProvider` with scripted responses | submission → … → review → audit | ✔ (Phase 1) |
-| Invariance | pytest | speaker/party swap ⇒ identical blinded text, prompts and verdicts | ✔ (Phase 1) |
+| Pipeline end-to-end | pytest, inline dispatcher, `MockLLMProvider` + `MockSearchProvider` | submission → … → review → audit | ✔ |
+| Invariance | pytest | speaker/party swap ⇒ identical blinded text, prompts and verdicts | ✔ |
 | Frontend unit | Vitest | API client and formatters | ✔ |
 | Frontend build | `next build`, `tsc --noEmit`, ESLint | | ✔ |
-| Frontend E2E | Playwright (pre-installed Chromium) | submit → review flow | ✔ (Phase 2) |
+| Frontend E2E | Playwright | submit → review flow | manual run in Phase 1 (screenshots), CI in Phase 2 |
 | Model evaluation | `backend/evals/` scripts | golden set vs real providers | manual / scheduled |
 
 ## 2. Rules
@@ -32,20 +32,30 @@ isn't tested isn't enforced.
 5. **Every bug fix adds a regression test.**
 6. **Determinism:** fixed seeds, frozen time where timestamps matter, `temperature=0`.
 
-## 3. Principle-to-test map
+## 3. Principle-to-test map (implemented)
 
-| Principle | Test(s) |
+| Principle | Test(s) in `backend/tests/` |
 |---|---|
-| No fabricated evidence | Evidence service rejects non-substring quotes; DB-wide check that every `evidence.quote` equals the source slice. |
-| No fabricated sources | No code path outside retrieval/ingest services inserts `sources` (enforced by review); ingest test checks hash and immutability. |
-| Insufficient evidence | Claim with zero evidence ⇒ `INSUFFICIENT_EVIDENCE`, `produced_by=RULE`, no LLM call (mock records zero calls). |
-| Provenance | Every agent call creates an `ai_runs` row with provider, model, prompt_id, version and sha256 (Phase 0: `AIRunRecorder` test). |
-| No self-approval | Critic with the same `agent_name` as assessor is refused; reviewer = submitter gets `403`; no service sets `APPROVED` without a decision. |
-| Bounded loops | Critic scripted to always `REVISE` ⇒ exactly `MAX_REVISION_ROUNDS` revisions, then a `LOOP_LIMIT` review task. |
-| Speaker independence | Invariance suite: N claims × M speakers from different parties ⇒ identical assessor input hash and verdict. |
-| Audit trail | UPDATE/DELETE/TRUNCATE on `audit_events` raise; chain verification detects tampering (tested by bypassing the trigger as superuser in a scratch DB); every service mutation emits its event. |
-| Mock safety | Settings refuse mock providers in production, and in development without the explicit flag. Unscripted mock calls raise. |
-| Reproducible migrations | Migration round-trip test plus a "no pending autogenerate diff" test. |
+| **End-to-end pipeline** | `test_pipeline_e2e.py` (service level) and `test_api_e2e.py` (over HTTP): submission → extracted claim → search → evidence → ranking → assessment → critic REVISE → revised assessment → critic PASS → human review → structured result → audit trail and chain verification. MockLLM and MockSearchProvider only; no network, no paid API. |
+| Speaker independence | `test_invariance.py`: three fictional speakers from different parties give identical blinded text, assessor input hash and classification; no name or party reaches the assessor. Blinding unit tests. |
+| Never force a classification | `test_pipeline_paths.py`: no evidence ⇒ `INSUFFICIENT_EVIDENCE` by rule with zero assessor calls; opinions are not researched. |
+| No fabricated evidence | Fabricated quote rejected and audited; every stored quote equals its source slice; quote location matches whitespace differences only, never paraphrase (`test_text_utils.py`). |
+| No fabricated sources | Sources come only from search/ingest; content-hash dedupe (`test_api_registry_sources.py`). |
+| Bounded loops | Critic always REVISE ⇒ exactly `MAX_REVISION_ROUNDS` + 1 assessments, then `LOOP_LIMIT`. Invalid output retried once with the error appended. |
+| Critic independence and enforcement | PASS overridden to ESCALATE (`RULE_FLAG`) when contradicting evidence was ignored. |
+| Calibration and ranking | `test_ranking_and_calibration.py`: weights, recency, document quality, scoped/expiring authority, confidence caps. |
+| Failure handling | Unscripted assessor ⇒ `STAGE_FAILURE` review task, and the failed `ai_runs` row is kept. |
+| Human review | Four-eyes (`403`), notes required, one decision per task (`409`), NEEDS_MORE_RESEARCH → re-run → new revision. |
+| Submission types | `test_api_submissions.py`: text, URL (mocked transport), article, PDF (real generated PDF), image → NEEDS_TRANSCRIPTION → transcription, video metadata, byte-sniffed uploads, idempotency, submitter visibility. |
+| SSRF | `test_ingest.py`: blocked schemes, credentials, private/loopback/link-local/metadata IPs, private DNS answers, redirects to private addresses, size limit. |
+| Source registry | Rationale required, verification sets review date, edits reset verification, all audited. |
+| Provenance | Every agent call recorded with provider, model, prompt id/version/sha256; `GET /ai-runs/{id}`. |
+| Audit trail | Append-only triggers, tamper detection, required actions present for a full run. |
+| Migrations | Round trip, no model drift, and **every enum CHECK matches its Python enum** (`test_enum_constraints.py`). |
+| Mock safety | Mocks and fixtures refused in production and without the explicit flag in development; unscripted mock calls raise. |
+
+All test data is fictional (`tests/scenario.py`: "Riverland" and its statistics office). The
+tests never assert facts about real places, people or statistics.
 
 ## 4. Running tests
 

@@ -26,7 +26,7 @@ from app.models import (
     Submission,
 )
 from app.models.claims import MAX_SUBMISSION_CHARS
-from tests.factories import make_human_claim, make_submission, make_user
+from tests.factories import claim_kwargs, make_human_claim, make_submission, make_user
 
 
 def expect_integrity_error(session, obj):
@@ -64,14 +64,7 @@ def test_submission_length_limit(db_session):
 def test_claim_needs_an_author(db_session):
     user = make_user(db_session)
     sub = make_submission(db_session, user)
-    orphan = Claim(
-        submission_id=sub.id,
-        text="t",
-        normalized_text="t",
-        claim_type="FACTUAL",
-        checkworthy=True,
-        language="en",
-    )
+    orphan = Claim(**claim_kwargs(sub))
     expect_integrity_error(db_session, orphan)
 
 
@@ -81,10 +74,11 @@ def test_claim_type_check_constraint_rejects_unknown_values(db_session):
     with pytest.raises(IntegrityError), db_session.begin_nested():
         db_session.execute(
             text(
-                "INSERT INTO claims (id, submission_id, text, normalized_text, claim_type,"
-                " checkworthy, language, status, created_by_id)"
-                " VALUES (gen_random_uuid(), :s, 't', 't', 'PROPAGANDA', true, 'en',"
-                " 'EXTRACTED', :u)"
+                "INSERT INTO claims (id, submission_id, text, normalized_text, subject,"
+                " predicate, object, entities, original_source, claim_type, checkworthy,"
+                " language, status, created_by_id, extracted_at)"
+                " VALUES (gen_random_uuid(), :s, 't', 't', 's', 'p', 'o', '[]', '{}',"
+                " 'PROPAGANDA', true, 'en', 'EXTRACTED', :u, now())"
             ),
             {"s": sub.id, "u": user.id},
         )
@@ -108,6 +102,9 @@ def test_evidence_needs_exactly_one_author(db_session):
         quote_char_end=28,
         stance=Stance.SUPPORTS,
         stance_rationale="r",
+        directness="DIRECT",
+        relevance=0.5,
+        lexical_relevance=0.5,
     )
     expect_integrity_error(db_session, no_author)
 
@@ -118,9 +115,11 @@ def test_rule_assessment_has_no_ai_run_and_agent_assessment_needs_one(db_session
     ok = Assessment(
         claim_id=claim.id,
         revision=0,
-        verdict=Verdict.INSUFFICIENT_EVIDENCE,
-        confidence="HIGH",
-        rationale="No evidence was found.",
+        classification=Verdict.INSUFFICIENT_EVIDENCE,
+        confidence=0.0,
+        summary="No evidence was found.",
+        reasoning="No evidence was found.",
+        recommended_action="GATHER_MORE_EVIDENCE",
         produced_by=ProducedBy.RULE,
     )
     db_session.add(ok)
@@ -128,9 +127,11 @@ def test_rule_assessment_has_no_ai_run_and_agent_assessment_needs_one(db_session
     bad = Assessment(
         claim_id=claim.id,
         revision=1,
-        verdict=Verdict.TRUE,
-        confidence="HIGH",
-        rationale="r",
+        classification=Verdict.TRUE,
+        confidence=0.0,
+        summary="r",
+        reasoning="r",
+        recommended_action="GATHER_MORE_EVIDENCE",
         produced_by=ProducedBy.AGENT,
     )
     expect_integrity_error(db_session, bad)
@@ -144,9 +145,11 @@ def test_every_verdict_is_accepted_by_the_database(db_session):
             Assessment(
                 claim_id=claim.id,
                 revision=i,
-                verdict=verdict,
-                confidence="LOW",
-                rationale="r",
+                classification=verdict,
+                confidence=0.0,
+                summary="r",
+                reasoning="r",
+                recommended_action="GATHER_MORE_EVIDENCE",
                 produced_by=ProducedBy.RULE,
             )
         )
@@ -160,9 +163,11 @@ def test_review_decision_rules(db_session):
     assessment = Assessment(
         claim_id=claim.id,
         revision=0,
-        verdict=Verdict.INSUFFICIENT_EVIDENCE,
-        confidence="HIGH",
-        rationale="r",
+        classification=Verdict.INSUFFICIENT_EVIDENCE,
+        confidence=0.0,
+        summary="r",
+        reasoning="r",
+        recommended_action="GATHER_MORE_EVIDENCE",
         produced_by=ProducedBy.RULE,
     )
     db_session.add(assessment)
@@ -176,14 +181,14 @@ def test_review_decision_rules(db_session):
     db_session.add(task)
     db_session.flush()
 
-    # AMEND needs both a final verdict and notes.
+    # NEEDS_MORE_RESEARCH needs notes.
     expect_integrity_error(
         db_session,
         ReviewDecision(
             review_task_id=task.id,
             reviewer_id=reviewer.id,
-            decision=ReviewDecisionType.AMEND,
-            final_verdict=Verdict.UNVERIFIED,
+            decision=ReviewDecisionType.NEEDS_MORE_RESEARCH,
+            final_classification=Verdict.UNVERIFIED,
         ),
     )
     # APPROVE needs a final verdict.
@@ -197,7 +202,7 @@ def test_review_decision_rules(db_session):
         review_task_id=task.id,
         reviewer_id=reviewer.id,
         decision=ReviewDecisionType.APPROVE,
-        final_verdict=Verdict.INSUFFICIENT_EVIDENCE,
+        final_classification=Verdict.INSUFFICIENT_EVIDENCE,
     )
     db_session.add(good)
     db_session.flush()

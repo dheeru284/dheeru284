@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.domain.state import InvalidTransition
 from app.schemas.problem import Problem
+from app.services.errors import DomainError
 
 PROBLEM_BASE = "https://bnip.local/problems/"
 MEDIA_TYPE = "application/problem+json"
@@ -65,3 +66,7 @@ def install_error_handlers(app: FastAPI) -> None:
             str(exc),
             type=PROBLEM_BASE + "invalid-transition",
         )
+
+    @app.exception_handler(DomainError)
+    async def domain_error(request: Request, exc: DomainError) -> JSONResponse:
+        return _problem(request, exc.status_code, exc.title, exc.detail)

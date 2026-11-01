@@ -19,6 +19,8 @@ from app.core.hashing import sha256_text
 DEFAULT_PROMPT_ROOT = Path(__file__).resolve().parent.parent / "prompts"
 _PLACEHOLDER = re.compile(r"\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}")
 _VERSION = re.compile(r"^v\d+$")
+# Separates the system message from the user message inside a prompt file.
+USER_MARKER = "\n@@USER@@\n"
 
 
 class PromptError(Exception):
@@ -46,6 +48,14 @@ class PromptTemplate:
                 f"{self.prompt_id}/{self.version}: missing={sorted(missing)} extra={sorted(extra)}"
             )
         return _PLACEHOLDER.sub(lambda m: variables[m.group(1)], self.body)
+
+    def render_messages(self, **variables: str) -> tuple[str, str]:
+        """Render to (system, user). The file must contain the @@USER@@ marker line."""
+        rendered = self.render(**variables)
+        if USER_MARKER not in rendered:
+            raise PromptError(f"{self.prompt_id}/{self.version}: missing @@USER@@ marker")
+        system, user = rendered.split(USER_MARKER, 1)
+        return system.strip(), user.strip()
 
 
 def parse_prompt_file(path: Path) -> PromptTemplate:

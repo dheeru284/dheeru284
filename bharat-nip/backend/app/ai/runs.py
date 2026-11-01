@@ -10,8 +10,9 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.ai.prompts import PromptTemplate
+from app.audit.service import AuditService
 from app.core.hashing import sha256_json
-from app.domain.enums import AIRunStatus
+from app.domain.enums import ActorType, AIRunStatus
 from app.models.ai import AIRun
 from app.providers.llm.base import LLMProvider, LLMRequest, LLMResponse
 
@@ -64,4 +65,22 @@ class AIRunRecorder:
         )
         self.session.add(run)
         self.session.flush()
+        AuditService(self.session).record(
+            actor_type=ActorType.AGENT,
+            actor_id=agent_name,
+            action="ai_run.recorded",
+            entity_type="ai_run",
+            entity_id=run.id,
+            payload={
+                "agent_version": agent_version,
+                "provider": run.provider,
+                "model": run.model,
+                "prompt_id": run.prompt_id,
+                "prompt_version": run.prompt_version,
+                "prompt_sha256": run.prompt_sha256,
+                "status": run.status.value,
+                "attempt": attempt,
+                "error": error,
+            },
+        )
         return run

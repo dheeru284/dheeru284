@@ -7,7 +7,7 @@ from sqlalchemy import CheckConstraint, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, created_at_col, str_enum, updated_at_col, uuid_pk
-from app.domain.enums import ReviewDecisionType, ReviewReason, ReviewTaskStatus, Verdict
+from app.domain.enums import Classification, ReviewDecisionType, ReviewReason, ReviewTaskStatus
 
 
 class ReviewTask(Base):
@@ -15,8 +15,9 @@ class ReviewTask(Base):
 
     id: Mapped[uuid.UUID] = uuid_pk()
     claim_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("claims.id"), index=True)
-    assessment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("assessments.id"))
+    assessment_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("assessments.id"))
     reason: Mapped[ReviewReason] = mapped_column(str_enum(ReviewReason, 30, "reason"))
+    reason_detail: Mapped[str | None] = mapped_column(Text)
     priority: Mapped[int] = mapped_column(Integer)
     status: Mapped[ReviewTaskStatus] = mapped_column(
         str_enum(ReviewTaskStatus, 20, "status"), default=ReviewTaskStatus.OPEN, index=True
@@ -32,11 +33,11 @@ class ReviewDecision(Base):
     __tablename__ = "review_decisions"
     __table_args__ = (
         CheckConstraint(
-            "decision NOT IN ('APPROVE', 'AMEND') OR final_verdict IS NOT NULL",
-            name="final_verdict_required",
+            "decision <> 'APPROVE' OR final_classification IS NOT NULL",
+            name="final_classification_required",
         ),
         CheckConstraint(
-            "decision NOT IN ('AMEND', 'REJECT') OR (notes IS NOT NULL AND notes <> '')",
+            "decision = 'APPROVE' OR (notes IS NOT NULL AND notes <> '')",
             name="notes_required",
         ),
     )
@@ -47,6 +48,8 @@ class ReviewDecision(Base):
     decision: Mapped[ReviewDecisionType] = mapped_column(
         str_enum(ReviewDecisionType, 30, "decision")
     )
-    final_verdict: Mapped[Verdict | None] = mapped_column(str_enum(Verdict, 30, "final_verdict"))
+    final_classification: Mapped[Classification | None] = mapped_column(
+        str_enum(Classification, 30, "final_classification")
+    )
     notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = created_at_col()

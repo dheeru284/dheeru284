@@ -2,151 +2,128 @@
 
 ## 1. Design stance
 
-Agents are **narrow functions with an LLM inside**, not autonomous actors.
-Each agent takes a typed input and returns a typed proposal. It has no tools,
-no database access and no network access beyond its provider call. A
-deterministic orchestrator decides what happens next, and services validate and
-persist proposals. This keeps every step testable, bounded and auditable.
+Agents are **narrow functions with an LLM inside**, not autonomous actors. Each takes a typed
+input (a rendered, versioned prompt) and returns a typed proposal. Agents have no tools, no
+database access and no network access beyond their provider call. A deterministic orchestrator
+decides what happens next, and services validate proposals before persisting them.
 
 ```
-           ┌──────────── deterministic orchestrator (app/pipeline) ─────────────┐
-           │  state table · attempt limits · revision bound · review routing    │
-           └──────┬─────────────┬──────────────┬──────────────┬─────────────────┘
-                  ▼             ▼              ▼              ▼
-          ClaimExtractor  EvidenceAnalyst   Assessor        Critic
-                  │             │              │              │
-                  └─────────────┴──── LLMProvider ────────────┘
-                                         │
-                                     ai_runs (every call)
+        deterministic orchestrator (app/pipeline/orchestrator.py)
+        stage jobs · attempt limits · revision bound · review routing
+           │            │                 │              │
+   ClaimExtractor  EvidenceAnalyst     Assessor   FactCheckCriticAgent
+           └────────────┴────── LLMProvider ─────────────┘
+                                   │
+                         ai_runs + audit (every attempt)
 ```
 
-## 2. Agents (Milestone 1)
+## 2. Agents (Phase 1)
 
-| Agent | `agent_name` | Input | Output schema | Persisted as |
+| Agent (`agent_name`) | Prompt | Input | Output | Persisted after validation as |
 |---|---|---|---|---|
-| Claim extractor | `claim_extractor` | submission text, language | `ExtractedClaims{claims:[{text, normalized_text, claim_type, checkworthy}]}` | `claims` |
-| Evidence analyst | `evidence_analyst` | blinded claim, list of chunks (id + text) | `EvidenceProposals{items:[{chunk_id, quote, stance, rationale}]}` | `evidence` (after quote verification) |
-| Assessor | `assessor` | blinded claim, statement date, ranked evidence (id, quote, stance, score, publisher tier, source type, date) | `AssessmentProposal{verdict, confidence, rationale, missing_context, cited_evidence_ids}` | `assessments`, `assessment_citations` |
-| Critic | `critic` | blinded claim, evidence, assessment proposal, verdict definitions | `CritiqueProposal{outcome, checks:[{check, passed, detail}], summary}` | `critiques` |
+| `claim_extractor` | `claim_extractor/v1` | submission text (as a data block), language, speaker name for blinding | claims: text, normalized_text, subject/predicate/object, claim_type, checkworthy, time_reference, claim_date, location, entities | `claims` |
+| `evidence_analyst` | `evidence_analyst/v1` | blinded claim, top passages labelled C1..Cn | items: passage label, verbatim quote, stance, directness, relevance, rationale | `evidence` |
+| `assessor` | `assessor/v1` | blinded claim, time/place, statement date, ranked evidence labelled E1..En (stance, directness, rank score, authority, primary, date, quote) and, on revision, the critic's objections | classification, confidence, summary, reasoning, cited labels, missing information, recommended action | `assessments` + citations |
+| `fact_check_critic` | `fact_check_critic/v1` | blinded claim, the proposed assessment (output only), ALL usable evidence, deterministic findings | outcome, 8 checks, counter-argument, suggested classification, summary | `critiques` |
 
-Not agents: **retrieval** (provider + SQL), **ranking** (deterministic scorer
-`rank-v1`), **orchestration** and **review routing** (rules).
+Not agents: **search** (providers + SQL), **source snapshotting**, **ranking** (`rank-v2`),
+**confidence calibration**, **deterministic critic findings**, **orchestration** and **review
+routing**. These are all plain, tested code.
+
+Labels (C1, E1, ...) are local to one prompt. The model never sees or emits database IDs, and
+services map labels back to IDs. An unknown label is invalid output.
 
 ## 3. Speaker independence ("attribution blinding")
 
-1. The extractor produces `normalized_text`, in which names of people,
-   parties and organizations *making* the claim are replaced with neutral
-   placeholders (`[SPEAKER]`, `[ORGANIZATION]`). Entities that are the
-   *subject* of a checkable fact stay, because removing them would make the
-   claim uncheckable. Example: "[SPEAKER] said the state's GDP grew 9% in 2023".
-2. A deterministic post-pass also replaces any known `entities.name` of the
-   attributed speaker that remains in `normalized_text`.
-3. Assessor and critic prompts are built only from `normalized_text`, the
-   statement date and evidence. The prompt builder has no access to
-   `speaker_entity_id`. This is enforced by the input schema, which has no
-   speaker field.
-4. The critic runs an `attribution_leakage` check: does the rationale reason
-   from who said it rather than from evidence?
-5. **Invariance tests** (see TESTING_STRATEGY) feed the same claim with
-   different speakers or parties and require identical normalized text, prompts
-   and verdicts.
-
-Evidence *about* a speaker's track record is never used as evidence for a claim.
+1. The extractor writes `normalized_text` with the claim's maker replaced by `[SPEAKER]`.
+   Entities the claim is *about* stay.
+2. A deterministic post-pass (`app/domain/text.py::blind`) replaces any remaining SPEAKER-role
+   entity name, and the submission's speaker entity name (case-insensitive, whole words, possessives).
+3. Search queries are built from the blinded text and the triple only (`build_queries`), so the
+   speaker never reaches a search engine.
+4. Assessor and critic prompts are built only from `normalized_text`, time, place, statement date
+   and evidence. There is no speaker field to fill.
+5. The critic checks `attribution_leakage`.
+6. **Invariance test** (`tests/test_invariance.py`): the same claim from three fictional speakers of
+   different parties yields identical blinded text, an identical assessor input hash
+   (`ai_runs.input_sha256`) and the same classification, and no name or party appears in any
+   assessor message.
 
 ## 4. Prompts
 
-- Stored at `backend/app/prompts/<prompt_id>/<version>.md`, with front-matter
-  (`prompt_id`, `version`, `agent`, `description`).
-- Loaded through `PromptRegistry`, which computes `sha256` of the exact file text.
-- Rendering uses explicit named variables; untrusted text (submissions,
-  source chunks) is wrapped in clearly delimited blocks
-  (`<<<SOURCE id=… >>> … <<<END SOURCE>>>`), and the system prompt tells the
-  model that text inside these blocks is data, never instructions.
-- Any change to prompt text needs a new version file. Old versions stay so
-  that historical `ai_runs` stay interpretable.
+`backend/app/prompts/<prompt_id>/<version>.md`: YAML front-matter (`prompt_id`, `version`,
+`agent`, `description`), the system prompt, a `@@USER@@` marker line, and the user template.
+`PromptRegistry` hashes the exact file bytes (`ai_runs.prompt_sha256`). Rendering is strict (no
+missing or extra variables) and doesn't re-expand values. Untrusted text is wrapped by
+`wrap_untrusted` in `<<<KIND id=…>>> … <<<END KIND>>>` blocks, with look-alike delimiters
+neutralised. Prompt text is never edited in place: changes go in a new version file.
 
-## 5. Provider abstraction
+## 5. Providers
 
 ```python
-class LLMProvider(Protocol):
-    name: str                         # "ollama", "mock", ...
-    def complete(self, request: LLMRequest) -> LLMResponse: ...
-    def health(self) -> ProviderHealth: ...
-
-class EmbeddingProvider(Protocol):
-    name: str
-    dimensions: int
-    def embed(self, texts: list[str]) -> EmbeddingResult: ...
-    def health(self) -> ProviderHealth: ...
+class LLMProvider(Protocol):        # name, model, is_mock; complete(LLMRequest); health()
+class EmbeddingProvider(Protocol):  # name, model, dimensions, is_mock; embed(texts); health()
+class SearchProvider(Protocol):     # name, is_mock; search(query, limit, *, session); health()
 ```
 
-- `LLMRequest`: messages, `prompt_id` (lets the mock match scripts; real providers ignore it), temperature, max_tokens, seed, optional
-  JSON-schema for structured output.
-- `LLMResponse`: text, provider, model, token usage, latency.
-- Implementations: `OllamaLLMProvider` (HTTP `/api/chat`, with `format=<json schema>`),
-  `MockLLMProvider`. Embeddings: `OllamaEmbeddingProvider` (`/api/embed`),
-  `MockEmbeddingProvider`.
-- Future `OpenAIProvider`, `AnthropicProvider`, `GeminiProvider` implement the
-  same protocol and are added to `providers/registry.py`. Nothing else changes.
+| Kind | Implementations | Selected by |
+|---|---|---|
+| LLM | `OllamaLLMProvider` (`/api/chat`, JSON-schema `format`, seed, temperature 0), `MockLLMProvider` | `BNIP_LLM_PROVIDER` |
+| Critic LLM | same provider; optionally a different Ollama model for independence | `BNIP_OLLAMA_CRITIC_MODEL` |
+| Embeddings | `OllamaEmbeddingProvider`, `MockEmbeddingProvider` | `BNIP_EMBEDDING_PROVIDER` |
+| Search | `LocalCorpusSearchProvider` (PostgreSQL full-text over ingested sources), `SearxngSearchProvider` (configurable web search via a self-hosted SearXNG), `MockSearchProvider` | `BNIP_SEARCH_PROVIDERS` (list; all are queried) |
 
-### 5.1 The mock provider
-`MockLLMProvider` is **test infrastructure**, not a fallback.
-- It only returns responses that were explicitly scripted (keyed by
-  `prompt_id`, optionally matched on input). An unscripted call raises
-  `MockResponseNotScripted`, so it can never invent an answer silently.
-- `MockEmbeddingProvider` produces deterministic hash-based vectors. These
-  are useful for plumbing tests and meaningless semantically, which is documented in code.
-- Settings refuse mock providers outside `BNIP_ENV=test` unless
-  `BNIP_ALLOW_MOCK_PROVIDERS=true`, and always in `production`.
-- Every mock output is recorded with `provider="mock"`, and the UI badges it.
+A search hit is either a URL, which the pipeline fetches through `SafeFetcher` (SSRF-protected)
+and snapshots, or content the provider already holds verbatim (local corpus, mock). Search
+providers cannot create sources themselves. Future OpenAI / Anthropic / Gemini / Brave providers
+implement the same protocols and are registered in `providers/registry.py`.
 
-## 6. The agent call contract (`app/agents/runner.py`, Phase 1)
+### 5.1 Mock providers
+`MockLLMProvider` and `MockSearchProvider` are **test infrastructure**. They return only
+explicitly scripted responses and raise on anything unscripted. A scripted response may be a
+function of the request: tests use this to find which passage label holds a known document.
+`BNIP_MOCK_FIXTURES_PATH` loads scripts from JSON for local demos (`backend/fixtures/demo_mock.json`,
+entirely fictional). Settings refuse mocks and fixtures in production, and in development without
+`BNIP_ALLOW_MOCK_PROVIDERS=true`. Every mock output is recorded with `provider="mock"`, and the UI
+shows a MOCK badge.
 
-For every agent call:
-1. Render the prompt, then compute `prompt_sha256` and `input_sha256`.
-2. Call the provider with `temperature=0` and a fixed seed by default.
-3. Parse the output into the agent's Pydantic schema.
-4. Record an `ai_runs` row with `status` = `SUCCEEDED` / `INVALID_OUTPUT` / `FAILED`.
-5. On `INVALID_OUTPUT`, retry with the validation error appended, up to
-   `max_attempts` (default 2) for that call. Each attempt is its own `ai_runs` row.
-6. Return the validated proposal or raise `AgentFailed`. The orchestrator then
-   marks the job failed or retries the stage.
+## 6. The agent call contract (`app/agents/runner.py`)
 
-Step 4 is done by `AIRunRecorder`, which exists in Phase 0, so provenance
-recording is in place before any agent ships.
+render → `provider.complete` (schema-constrained) → parse JSON → Pydantic validation → semantic
+validation → `AIRunRecorder.record` (one `ai_runs` row and one `ai_run.recorded` audit event per
+attempt) → on invalid output, retry with the error appended, up to 2 attempts → validated output
+or `AgentFailed`. Provider failures are recorded as `FAILED` runs and are never retried silently.
 
-## 7. Guardrails (deterministic, after the agent, before persistence)
+## 7. Guardrails (deterministic)
 
 | Stage | Guardrail |
 |---|---|
-| Extraction | ≥1 claim; claim text must be grounded in the submission (token overlap check); `claim_type` in the enum. |
-| Evidence | `quote` must be an exact substring of the chunk's source. Offsets are computed by the service, never trusted from the model. `chunk_id` must be one that was offered. Failures are logged as `evidence.rejected` audit events. |
-| Assessment | No usable evidence ⇒ `INSUFFICIENT_EVIDENCE`, produced by `RULE` with no LLM call. Cited IDs ⊆ the claim's evidence. Verdicts that need evidence need ≥1 citation. Non-checkable claim types map to `OPINION` / `PREDICTION` / `SATIRE` by rule. |
-| Critique | The critic's `agent_name` must differ from the assessment's. The required checks must all be present. |
-| Review | Only humans. Reviewer ≠ submitter. One decision per task. |
+| Content | No machine-readable text (image without OCR, scanned PDF) ⇒ `NEEDS_TRANSCRIPTION`; the system never guesses text. |
+| Extraction | Claims must be grounded in the material (content-term overlap ≥ 0.5) and are de-duplicated. Rejections are audited. |
+| Search | The claim's own original URL is skipped (not independent evidence). Every query and result is recorded. |
+| Evidence | Passage labels must be ones offered. The quote is located verbatim (exact, or identical words with only whitespace differences); the stored quote is the source's own slice. Anything else is rejected and audited. |
+| Assessment | Non-checkable types ⇒ OPINION / PREDICTION / SATIRE by rule. No usable evidence ⇒ `INSUFFICIENT_EVIDENCE` by rule with **no LLM call**. Cited labels must exist. TRUE/MOSTLY_TRUE must cite a SUPPORTS item; FALSE must cite a REFUTES item; affirmative classifications need ≥1 citation. The assessor may not output OPINION/PREDICTION/SATIRE. |
+| Calibration | Confidence caps, recorded in `guardrails`: non-determination ≤ 0.5; fewer than 2 independent origins ≤ 0.6; no primary source ≤ 0.75; only unassessed/limited authority ≤ 0.6; high-ranked contrary evidence ≤ 0.5. |
+| Critique | Critic identity ≠ assessor identity (`SelfReviewError`). All 8 checks exactly once; PASS only if every check passed. A critic PASS with a HIGH deterministic finding becomes ESCALATE (`RULE_FLAG`). |
+| Review | Only humans decide. Reviewer ≠ submitter. One decision per task. Notes required for REJECT, NEEDS_MORE_RESEARCH, or changing the classification. |
+
+### 7.1 Deterministic critic findings
+`contradictory_evidence` (HIGH: uncited opposite-stance evidence with rank ≥ 0.5),
+`outdated_evidence` (MEDIUM: cited evidence > 5 years older than the claim's reference date),
+`source_quality` (MEDIUM: single origin, or only unassessed/limited authority),
+`unsupported_conclusions` (HIGH: confidence > 0.7 while the best cited rank is < 0.4).
 
 ## 8. Bounded loops and escalation
 
 | Loop | Bound | On exhaustion |
 |---|---|---|
-| Structured-output retry per agent call | 2 attempts | stage attempt fails |
-| Stage attempts (`pipeline_jobs.max_attempts`) | 3 | claim → `FAILED` → review task `STAGE_FAILURE` |
-| Assessor ↔ critic revisions | `BNIP_MAX_REVISION_ROUNDS` (2) | review task `LOOP_LIMIT` |
-| Critic `ESCALATE` | immediate | review task `CRITIC_ESCALATION` |
+| Invalid-output retry per agent call | 2 attempts | stage fails |
+| Stage retry (transient provider errors only) | 2 attempts | claim `FAILED` → review `STAGE_FAILURE` |
+| Assessor ↔ critic revisions | `BNIP_MAX_REVISION_ROUNDS` (default 2) | review `LOOP_LIMIT` |
+| Critic `ESCALATE` | immediate | review `CRITIC_ESCALATION` (or `RULE_FLAG` if overridden) |
 
-An agent never approves its own work. The only terminal "accepted" state,
-`APPROVED`, is reachable only through a `review_decisions` row written by a human user.
+## 9. Evaluation (outside CI)
 
-## 9. Required critic checks (`critic` prompt v1)
-
-`citation_validity`, `verdict_evidence_consistency`, `overclaiming`,
-`missing_context`, `attribution_leakage`, `verdict_definition_compliance`,
-`insufficient_evidence_honesty` (did the assessor claim certainty that the
-evidence can't support?).
-
-## 10. Evaluation (outside CI)
-
-A golden set of claims with human-agreed verdicts (`backend/evals/`, Phase 1d)
-is run against real providers to compare models and prompt versions. Results
-are stored per prompt version; a prompt version is promoted only if it doesn't
-regress verdict agreement or the invariance score.
+A golden set of claims with human-agreed classifications is planned for Phase 2. It will be run
+against real providers per prompt version, and a prompt version is promoted only if it doesn't
+regress agreement or invariance.

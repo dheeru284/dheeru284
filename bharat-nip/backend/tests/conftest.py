@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from alembic import command  # noqa: E402
 from app.api import deps  # noqa: E402
+from app.core.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.providers.embeddings.mock import MockEmbeddingProvider  # noqa: E402
 from app.providers.llm.mock import MockLLMProvider  # noqa: E402
@@ -65,6 +66,20 @@ def db_session(engine: Engine) -> Iterator[Session]:
 
 
 @pytest.fixture
+def settings(tmp_path) -> Settings:
+    return Settings(
+        _env_file=None,
+        env="test",
+        database_url=TEST_DATABASE_URL,
+        llm_provider="mock",
+        embedding_provider="mock",
+        search_providers=["mock"],
+        storage_dir=tmp_path / "storage",
+        pipeline_execution="inline",
+    )
+
+
+@pytest.fixture
 def mock_llm() -> MockLLMProvider:
     return MockLLMProvider()
 
@@ -83,4 +98,39 @@ def client(
     app.dependency_overrides[deps.get_llm_provider_dep] = lambda: mock_llm
     app.dependency_overrides[deps.get_embedding_provider_dep] = lambda: mock_embeddings
     with TestClient(app) as c:
+        yield c
+
+
+@pytest.fixture
+def world(db_session):
+    from tests import scenario
+
+    return scenario.make_world(db_session)
+
+
+@pytest.fixture
+def api(db_session, settings, world):
+    """A TestClient wired to the real DB session, the scripted mock providers and an
+    inline pipeline dispatcher, plus helpers to log in as the scenario's users."""
+    from app.pipeline.dispatch import InlineDispatcher
+    from tests import scenario
+
+    app = create_app()
+    ctx = scenario.make_context(db_session, settings, world)
+    app.dependency_overrides[deps.get_db] = lambda: db_session
+    app.dependency_overrides[deps.get_settings_dep] = lambda: settings
+    app.dependency_overrides[deps.get_dispatcher] = lambda: InlineDispatcher(ctx)
+    app.dependency_overrides[deps.get_llm_provider_dep] = lambda: world.llm
+    with TestClient(app) as c:
+
+        def login(user):
+            r = c.post(
+                "/api/v1/auth/token", json={"email": user.email, "password": scenario.PASSWORD}
+            )
+            assert r.status_code == 200, r.text
+            return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+        c.login = login
+        c.world = world
+        c.ctx = ctx
         yield c

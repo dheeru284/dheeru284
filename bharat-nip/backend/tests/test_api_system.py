@@ -5,7 +5,7 @@ from app.core.config import Settings
 def test_liveness(client):
     r = client.get("/api/v1/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "version": "0.1.0"}
+    assert r.json() == {"status": "ok", "version": "0.2.0"}
 
 
 def test_readiness_ok_with_real_db_and_redis(client):

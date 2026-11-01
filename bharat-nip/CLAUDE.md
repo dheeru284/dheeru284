@@ -9,7 +9,8 @@ communications platform. Read [README.md](README.md), then the design docs it li
 **The design docs are the source of truth.** If code and docs disagree, fix one of
 them in the same change.
 
-Current phase: **Phase 0 complete** (foundation). Next: Phase 1a in [ROADMAP.md](ROADMAP.md).
+Current phase: **Phase 1 complete** (evidence pipeline). Next: Phase 2 in [ROADMAP.md](ROADMAP.md).
+Do not start narrative generation or publishing until the roadmap says so and all tests pass.
 
 ## Non-negotiable rules
 
@@ -33,7 +34,8 @@ Current phase: **Phase 0 complete** (foundation). Next: Phase 1a in [ROADMAP.md]
 
 - Backend: Python 3.12+, FastAPI, Pydantic v2, SQLAlchemy 2 (sync, psycopg 3), Alembic, Celery + Redis. Managed with `uv`.
 - DB: PostgreSQL 16 + pgvector (768-dim embeddings).
-- AI: `LLMProvider` / `EmbeddingProvider` protocols; Ollama and scripted mock implementations.
+- AI: `LLMProvider` / `EmbeddingProvider` / `SearchProvider` protocols. Ollama, SearXNG, local corpus, and scripted mocks.
+- Pipeline: `app/pipeline/orchestrator.py` (deterministic). Agents are in `app/agents/definitions.py`, prompts in `app/prompts/`.
 - Frontend: Next.js 16 (App Router, `cacheComponents` on), React 19, TypeScript, Tailwind v4, shadcn/ui conventions. React Flow and Recharts get added in Phases 2 and 4.
 - **Next.js 16 differs from older versions.** Read `frontend/AGENTS.md` and the docs in `frontend/node_modules/next/dist/docs/` before writing frontend code.
 
@@ -61,6 +63,9 @@ Review it by hand, make sure `downgrade()` works, and confirm `test_migrations.p
 - Business logic lives in `app/services` (session-in, no HTTP, no Celery), so routes and tasks stay thin.
 - Prompts live at `app/prompts/<id>/<vN>.md`. Never edit a released version; add a new one.
 - DB tests use the real `bnip_test` database (transaction rollback per test). Don't mock SQLAlchemy.
+- Pipeline tests script `MockLLMProvider` / `MockSearchProvider` explicitly (see `tests/scenario.py`). Test data must be fictional: no real statistics.
+- Enum value changes need a migration that rewrites the CHECK constraint; `test_enum_constraints.py` catches misses.
+- Agents only see local labels (C1, E1), never DB IDs. Evidence quotes are stored from the source text, never from model output.
 - Add a regression test with every bug fix. Keep the app runnable and `make check` green after every phase.
 
 ## Environment variables

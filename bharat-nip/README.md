@@ -8,10 +8,11 @@ The system can conclude `TRUE`, `MOSTLY_TRUE`, `MISLEADING`, `OUT_OF_CONTEXT`,
 `FALSE`, `UNVERIFIED`, `INSUFFICIENT_EVIDENCE`, `OPINION`, `PREDICTION` or
 `SATIRE`. It says so explicitly when evidence is insufficient.
 
-**Status: Phase 0 (foundation).** The design is complete. There is a runnable
-backend and frontend skeleton, the full Milestone 1 database schema, provider
-abstractions, prompt versioning, AI-run provenance and a hash-chained audit log.
-The claim pipeline itself is Phase 1. See [ROADMAP.md](ROADMAP.md).
+**Status: Phase 1 (evidence pipeline) complete.** Submit text, URLs, articles, images, PDFs or
+video metadata. The system extracts structured claims, searches for evidence, ranks it, proposes
+a classification, has an independent critic try to disprove it, and sends every claim to a human
+reviewer. Every step is audited. Social-media publishing is deliberately not built (see
+[ROADMAP.md](ROADMAP.md)).
 
 ## Design documents
 
@@ -45,6 +46,33 @@ make dev-web      # terminal 3: http://localhost:3000
 
 make check        # everything CI runs
 ```
+
+Create the first admin:
+```bash
+cd backend && uv run python -m app.cli create-user --email you@example.org --name "You" --role ADMIN
+```
+
+### Try it without a language model (fictional demo, mock providers)
+
+```bash
+cd backend
+export BNIP_ALLOW_MOCK_PROVIDERS=true BNIP_LLM_PROVIDER=mock BNIP_EMBEDDING_PROVIDER=mock \
+       BNIP_SEARCH_PROVIDERS='["local_corpus"]' \
+       BNIP_MOCK_FIXTURES_PATH=$PWD/fixtures/demo_mock.json BNIP_DEMO_PASSWORD=choose-a-password
+uv run python -m app.cli seed-demo   # fictional users, registry entry and source
+# then run dev-api / dev-worker (same env) and dev-web; sign in as analyst@demo.example
+```
+Then submit, for example: *At a rally on 2 March 2024, Minister Asha Verma said: "Riverland's
+literacy rate rose to 81 percent in 2023." She added that the government was proud of its
+schools.* (Riverland and its statistics are fictional.) Search runs for real over the local corpus;
+the agents' answers are scripted, recorded with provider `mock`, and shown with a **MOCK** badge.
+
+### Real models and web search
+- LLM: `BNIP_LLM_PROVIDER=ollama` with `make ollama-pull` (llama3.1:8b, nomic-embed-text).
+  `BNIP_OLLAMA_CRITIC_MODEL` can give the critic a different model.
+- Web search: run a [SearXNG](https://docs.searxng.org) instance with JSON output enabled and set
+  `BNIP_SEARCH_PROVIDERS='["local_corpus","searxng"]' BNIP_SEARXNG_URL=http://localhost:8888`.
+- Local corpus: analysts add documents with `POST /api/v1/sources`.
 
 For real AI output: `make ollama-up && make ollama-pull` (or a host-installed
 Ollama). Without Ollama the API still runs, and `/api/v1/health/ready` reports the

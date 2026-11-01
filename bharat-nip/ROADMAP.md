@@ -4,7 +4,7 @@ Each phase ends with a runnable application, green tests, reproducible
 migrations and updated docs. A phase doesn't start until the previous one meets
 its exit criteria ([TESTING_STRATEGY](TESTING_STRATEGY.md) §6).
 
-## Phase 0 — Foundation ✅ (this change)
+## Phase 0 — Foundation ✅
 - Design documents (the eight in this folder).
 - Backend skeleton: FastAPI app factory, settings with mock-provider guards,
   SQLAlchemy models for the full Milestone 1 schema, initial Alembic migration
@@ -27,23 +27,34 @@ Phase 0 notes:
 - `docker-compose.yml` has not been exercised in the build sandbox (no Docker
   daemon there). Development used host-installed Postgres 16 + pgvector 0.6 and Redis 7.
 
-## Phase 1 — Milestone 1: evidence pipeline (backend)
-- **1a Submission and extraction:** auth and RBAC, users, submissions API, Celery
-  orchestration, `claim_extractor` agent v1, blinding post-pass, audit events.
-- **1b Sources and evidence:** entities and publishers APIs, source ingest with
-  chunking and embeddings, `LocalCorpusProvider` hybrid retrieval,
-  `evidence_analyst` agent v1 with quote verification.
-- **1c Ranking and assessment:** `rank-v1` scorer, `assessor` agent v1 with guardrails.
-- **1d Critic and human review:** `critic` agent v1, bounded revision loop,
-  review-task routing, review API with the four-eyes rule, audit verification
-  endpoint, invariance test suite, golden-set eval harness.
+## Phase 1 — Milestone 1: evidence pipeline ✅
+- Auth (Argon2 + JWT), roles, object-level access, admin CLI.
+- Submission of text, URL (SSRF-safe fetch), article, image, PDF and video metadata; byte-sniffed
+  uploads; human transcription when there is no machine-readable text.
+- Claim extraction into structured, blinded, grounded claims.
+- Source registry (scoped, verified, expiring authority; not a true/false list).
+- `SearchProvider` abstraction: mock, SearXNG (configurable web search), local corpus.
+- Evidence with verbatim-quote verification; `rank-v2` seven-factor ranking.
+- Assessment with rules, validation and confidence calibration; structured fact-check result.
+- Independent `FactCheckCriticAgent` with deterministic findings and enforced overrides; bounded revision loop.
+- Human review (PENDING_REVIEW / APPROVED / REJECTED / NEEDS_MORE_RESEARCH) with the four-eyes rule; re-research.
+- Audit events for every step, including agent executions.
+- Celery orchestration with per-stage jobs; inline mode for tests.
+- Web UI: sign in, submit (all types), submission and claim pages with result, evidence, critic,
+  searches, stages and audit trail, review queue and decision form.
+- 132 backend tests, including HTTP and service-level end-to-end tests with mocks only.
 
-Exit: the full pipeline end-to-end in CI with the mock provider, and manually with Ollama.
+Phase 1 notes and known limits:
+- OCR needs `tesseract` on the server. Without it, image submissions ask for a transcription.
+- Embeddings are not populated yet; retrieval is lexical (full-text) plus agent relevance.
+- SearXNG integration is tested against a mocked HTTP transport; a live instance has not been
+  exercised in the build sandbox.
+- No live Ollama run happened in the build sandbox (no model server there). The Ollama provider
+  is contract-tested with a mocked transport.
 
-## Phase 2 — Milestone 1 UI
-Submission form, claims list, claim detail with a React Flow pipeline graph,
-evidence and provenance view, review queue and decision screen, audit viewer.
-Playwright E2E for submit → review.
+## Phase 2 — Retrieval quality, evaluation and UI depth
+Embeddings and hybrid retrieval, a golden-set evaluation harness with live Ollama runs, a React
+Flow pipeline graph, registry/source management screens, an audit viewer, and Playwright E2E in CI.
 
 ## Phase 3 — Hardening
 OIDC SSO, rate limiting, DB role separation for audit, structured logging and

@@ -12,8 +12,10 @@
 
 ## 2. Application security controls
 
-- **Authentication** (Phase 1a): local accounts, Argon2id, JWT (HS256 in
-  development; asymmetric keys in production), 30-minute expiry. OIDC in Phase 3.
+- **Authentication** (implemented): local accounts, Argon2id hashing (minimum 10 characters), HS256 JWTs
+  (`BNIP_JWT_EXPIRY_MINUTES`, default 60). The web app keeps the token in an httpOnly, SameSite=Lax
+  cookie (Secure in production) and calls the API server-side, so browser JavaScript never sees it.
+  OIDC and asymmetric keys come in Phase 3.
 - **Authorization:** role checks as FastAPI dependencies on every route, plus
   object-level checks (owners only see their own submissions; reviewer ≠ submitter).
 - **Input validation:** Pydantic schemas with length limits on every field;
@@ -26,9 +28,15 @@
   `BNIP_ENV=production`, or startup fails.
 - **SQL:** SQLAlchemy only, never string-built SQL. Vector and full-text
   queries use bound parameters.
-- **Outbound fetching** (when URL retrieval arrives): scheme allowlist
-  (`https`), block private/link-local/loopback ranges after DNS resolution,
-  size and time limits, no redirects to blocked ranges.
+- **Outbound fetching** (implemented, `app/ingest/fetcher.py`): HTTPS only by default, no
+  credentials in URLs, every hop's host resolved and refused if any address is private, loopback,
+  link-local (including cloud metadata), multicast or reserved; redirects followed manually and
+  re-validated (max 5); 5 MB and 15 s limits. **Known limitation:** DNS is resolved before
+  connecting, so a DNS-rebinding race is possible. Production should route fetches through an egress
+  proxy that enforces the same policy.
+- **Uploads:** type is sniffed from the bytes (PDF/PNG/JPEG/GIF/WEBP only, ≤ 15 MB) and files are
+  stored by sha256 outside the web root. Files are never executed or rendered server-side. PDFs are
+  parsed with pypdf, and OCR (when installed) runs as a subprocess with a timeout.
 - **Dependencies:** `uv.lock` and `package-lock.json` committed; `pip-audit`
   and `npm audit` in CI (Phase 3).
 
@@ -41,8 +49,11 @@
   the critic, and a human.
 - **Output validation:** strict Pydantic schemas; invalid output is recorded
   and retried with a bound, never coerced.
-- **Hallucinated sources and citations:** impossible by construction. Agents
-  can only reference IDs they were given, and quotes must be verbatim.
+- **Hallucinated sources and citations:** prevented by construction. Agents reference only local
+  labels they were given (C1, E1), which are mapped back to IDs by code. Quotes must be found
+  verbatim in the stored source, and the stored text is what gets saved.
+- **Speaker bias:** attribution is blinded out of search, assessment and critique; covered by the
+  invariance test.
 - **Provenance:** every call recorded in `ai_runs`. This lets us find every
   output affected by a model or prompt issue.
 - **Mock provider:** refused in production; visibly labeled elsewhere.
@@ -74,7 +85,9 @@ add them must be rejected.
 5. **No suppression tooling.** The platform doesn't build mass-reporting,
    harassment or doxxing features.
 6. **No partisan rules.** No code, prompt or configuration may condition
-   verdicts, rankings or tiers on political affiliation.
+   classifications, rankings or registry authority on political affiliation. The source registry has
+   no political field. `POLITICAL_PARTY` is only a *category* (what kind of origin it is) and gets no
+   automatic penalty or bonus.
 
 ## 6. Data protection
 

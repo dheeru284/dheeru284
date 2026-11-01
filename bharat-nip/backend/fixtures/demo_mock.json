@@ -1,0 +1,89 @@
+{
+  "_comment": "Scripted mock responses for a local demo with BNIP_LLM_PROVIDER=mock and BNIP_SEARCH_PROVIDERS=[\"local_corpus\"]. Everything is fictional (Riverland does not exist). Outputs are recorded with provider 'mock' and shown with a MOCK badge. Never used in production (settings refuse it).",
+  "llm": [
+    {
+      "prompt_id": "claim_extractor",
+      "when_contains": "literacy",
+      "response": {
+        "claims": [
+          {
+            "text": "Riverland's literacy rate rose to 81 percent in 2023.",
+            "normalized_text": "[SPEAKER] said that Riverland's literacy rate rose to 81 percent in 2023.",
+            "subject": "Riverland's literacy rate",
+            "predicate": "rose to",
+            "object": "81 percent in 2023",
+            "claim_type": "FACTUAL",
+            "checkworthy": true,
+            "time_reference": "2023",
+            "claim_date": null,
+            "location": "Riverland",
+            "entities": [
+              {"name": "Asha Verma", "type": "PERSON", "role": "SPEAKER"},
+              {"name": "Riverland", "type": "PLACE", "role": "SUBJECT"}
+            ]
+          },
+          {
+            "text": "The government was proud of its schools.",
+            "normalized_text": "[SPEAKER] said the government was proud of its schools.",
+            "subject": "the government",
+            "predicate": "was proud of",
+            "object": "its schools",
+            "claim_type": "OPINION",
+            "checkworthy": false,
+            "time_reference": null,
+            "claim_date": null,
+            "location": "Riverland",
+            "entities": [{"name": "Asha Verma", "type": "PERSON", "role": "SPEAKER"}]
+          }
+        ]
+      }
+    },
+    {
+      "prompt_id": "evidence_analyst",
+      "response": {
+        "items": [
+          {
+            "chunk": "C1",
+            "quote": "the state literacy rate was 81.2 percent in 2023, up from 78.4 percent in 2021",
+            "stance": "SUPPORTS",
+            "directness": "DIRECT",
+            "relevance": 0.95,
+            "rationale": "The official bulletin reports 81.2 percent for 2023, a rise from 2021."
+          }
+        ]
+      }
+    },
+    {
+      "prompt_id": "assessor",
+      "response": {
+        "classification": "TRUE",
+        "confidence": 0.9,
+        "summary": "The official bulletin puts Riverland's 2023 literacy rate at 81.2 percent, up from 78.4 percent in 2021.",
+        "reasoning": "E1, from the Riverland Statistics Office, reports 81.2 percent in 2023 and 78.4 percent in 2021. The claim's 81 percent is a fair rounding and the rate did rise.",
+        "cited_evidence": ["E1"],
+        "missing_information": ["An independent survey corroborating the official estimate"],
+        "recommended_action": "CONFIRM_IN_REVIEW"
+      }
+    },
+    {
+      "prompt_id": "fact_check_critic",
+      "response": {
+        "outcome": "PASS",
+        "checks": [
+          {"check": "source_quality", "passed": true, "detail": "Official statistics office, primary data.", "evidence": ["E1"]},
+          {"check": "outdated_evidence", "passed": true, "detail": "Bulletin covers 2023.", "evidence": []},
+          {"check": "cherry_picking", "passed": true, "detail": "Only one item retrieved; nothing ignored.", "evidence": []},
+          {"check": "missing_context", "passed": true, "detail": "Rounding is noted.", "evidence": []},
+          {"check": "incorrect_interpretation", "passed": true, "detail": "Quote read correctly.", "evidence": []},
+          {"check": "contradictory_evidence", "passed": true, "detail": "No contradicting evidence retrieved.", "evidence": []},
+          {"check": "unsupported_conclusions", "passed": true, "detail": "Conclusions follow from E1.", "evidence": []},
+          {"check": "attribution_leakage", "passed": true, "detail": "Reasoning does not refer to the speaker.", "evidence": []}
+        ],
+        "counter_argument": "The determination rests on a single official source; without independent corroboration a reader must trust one estimate.",
+        "suggested_classification": null,
+        "summary": "Holds up, but rests on a single source."
+      }
+    }
+  ],
+  "search": []
+}

@@ -9,11 +9,13 @@ npm run dev                  # http://localhost:3000
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Phase 0 shows live backend readiness only. Product screens arrive in Phase 2
-(see ../ROADMAP.md). React Flow and Recharts are added in the phases that use them.
+Pages: `/login`, `/submit` (all submission types), `/submissions/[id]`, `/claims`, `/claims/[id]`
+(fact-check result, evidence, critic, searches, stages, audit trail, review form) and `/review`.
+Data is fetched server-side with the user's JWT from an httpOnly cookie; mutations are server
+actions (`src/app/actions.ts`). React Flow and Recharts arrive in the phases that use them.
 
 shadcn/ui: `components.json` is configured, so `npx shadcn add <component>` works
-wherever ui.shadcn.com is reachable. The Phase 0 `badge` and `card` components were
+wherever ui.shadcn.com is reachable. The UI components in `src/components/ui` were
 written by hand to the same conventions, because the registry was unreachable from
 the build sandbox.
 

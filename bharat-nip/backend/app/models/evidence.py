@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, created_at_col, str_enum, uuid_pk
-from app.domain.enums import Stance
+from app.domain.enums import Directness, Stance
 
 
 class Evidence(Base):
@@ -22,6 +22,7 @@ class Evidence(Base):
         CheckConstraint(
             "(extracted_by_ai_run_id IS NULL) <> (created_by_id IS NULL)", name="author"
         ),
+        CheckConstraint("relevance >= 0 AND relevance <= 1", name="relevance_range"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
@@ -31,8 +32,14 @@ class Evidence(Base):
     quote: Mapped[str] = mapped_column(Text)
     quote_char_start: Mapped[int] = mapped_column(Integer)
     quote_char_end: Mapped[int] = mapped_column(Integer)
+    # Support / contradiction relationship to the claim.
     stance: Mapped[Stance] = mapped_column(str_enum(Stance, 20, "stance"))
     stance_rationale: Mapped[str] = mapped_column(Text)
+    directness: Mapped[Directness] = mapped_column(str_enum(Directness, 20, "directness"))
+    # relevance = mean(lexical, agent); both inputs kept for transparency.
+    relevance: Mapped[float] = mapped_column(Float)
+    lexical_relevance: Mapped[float] = mapped_column(Float)
+    agent_relevance: Mapped[float | None] = mapped_column(Float)
     extracted_by_ai_run_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("ai_runs.id"))
     created_by_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = created_at_col()

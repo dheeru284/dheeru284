@@ -1,26 +1,25 @@
 """Allowed claim status transitions (DATABASE_DESIGN.md §4).
 
-Services must call :func:`assert_transition` before changing ``claims.status``.
+Services must go through :func:`assert_transition` before changing ``claims.status``.
 """
 
 from __future__ import annotations
 
 from app.domain.enums import ClaimStatus as S
+from app.domain.enums import ReviewStatus
 
 CLAIM_TRANSITIONS: dict[S, frozenset[S]] = {
     # Non-checkable claims (OPINION/PREDICTION/SATIRE) go straight to ASSESSING.
-    S.EXTRACTED: frozenset({S.RETRIEVING, S.ASSESSING, S.FAILED}),
-    S.RETRIEVING: frozenset({S.EVIDENCE_READY, S.FAILED}),
-    S.EVIDENCE_READY: frozenset({S.ASSESSING, S.RETRIEVING, S.FAILED}),
-    S.ASSESSING: frozenset({S.CRITIQUING, S.FAILED}),
+    S.EXTRACTED: frozenset({S.RESEARCHING, S.ASSESSING, S.FAILED}),
+    S.RESEARCHING: frozenset({S.ASSESSING, S.FAILED}),
+    # ASSESSING -> PENDING_REVIEW: rule-produced assessments skip the critic.
+    S.ASSESSING: frozenset({S.CRITIQUING, S.PENDING_REVIEW, S.FAILED}),
     # CRITIQUING -> ASSESSING is the bounded REVISE loop.
-    S.CRITIQUING: frozenset({S.ASSESSING, S.NEEDS_REVIEW, S.FAILED}),
-    S.NEEDS_REVIEW: frozenset({S.IN_REVIEW}),
-    # IN_REVIEW -> NEEDS_REVIEW: reviewer released the task.
-    # IN_REVIEW -> EVIDENCE_READY: REQUEST_MORE_EVIDENCE.
-    S.IN_REVIEW: frozenset({S.APPROVED, S.REJECTED, S.EVIDENCE_READY, S.NEEDS_REVIEW}),
+    S.CRITIQUING: frozenset({S.ASSESSING, S.PENDING_REVIEW, S.FAILED}),
+    S.PENDING_REVIEW: frozenset({S.APPROVED, S.REJECTED, S.NEEDS_MORE_RESEARCH}),
+    S.NEEDS_MORE_RESEARCH: frozenset({S.RESEARCHING}),
     # A failed claim always goes to a human.
-    S.FAILED: frozenset({S.NEEDS_REVIEW}),
+    S.FAILED: frozenset({S.PENDING_REVIEW}),
     S.APPROVED: frozenset(),
     S.REJECTED: frozenset(),
 }
@@ -42,3 +41,12 @@ def can_transition(current: S, target: S) -> bool:
 def assert_transition(current: S, target: S) -> None:
     if not can_transition(current, target):
         raise InvalidTransition(current, target)
+
+
+def review_status_for(status: S) -> ReviewStatus:
+    return {
+        S.PENDING_REVIEW: ReviewStatus.PENDING_REVIEW,
+        S.APPROVED: ReviewStatus.APPROVED,
+        S.REJECTED: ReviewStatus.REJECTED,
+        S.NEEDS_MORE_RESEARCH: ReviewStatus.NEEDS_MORE_RESEARCH,
+    }.get(status, ReviewStatus.NOT_READY)

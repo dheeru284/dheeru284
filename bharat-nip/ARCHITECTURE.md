@@ -1,6 +1,6 @@
 # Architecture — Bharat Narrative Intelligence Platform (BNIP)
 
-Status: Phase 0 (foundation). This document is the source of truth for system
+Status: Phase 1 (evidence pipeline) complete. This document is the source of truth for system
 structure. If code and this document disagree, fix one of them in the same change.
 
 Related documents: [PRODUCT_REQUIREMENTS](PRODUCT_REQUIREMENTS.md) ·
@@ -57,18 +57,19 @@ independent of who made them.
                   └───┬───────────────┬──────────┘
                       │               │
           ┌───────────▼───┐   ┌───────▼────────────────┐
-          │ LLM provider  │   │ Source retrieval       │
-          │ (Ollama, mock │   │ provider (local corpus │
-          │  future: API) │   │  first; web later)     │
+          │ LLM provider  │   │ Search providers       │
+          │ (Ollama, mock │   │ (local corpus, SearXNG │
+          │  future: API) │   │  web search, mock)     │
           └───────────────┘   └────────────────────────┘
 ```
 
 ## 4. Components
 
 ### 4.1 Frontend (`frontend/`)
-Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui. React Flow
-renders the per-claim pipeline graph (Phase 2); Recharts renders aggregate
-dashboards (Phase 4). The frontend shows only data the backend actually holds:
+Next.js 16 (App Router, Cache Components), React, TypeScript, Tailwind CSS, shadcn/ui
+conventions. Server components call the API with the user's JWT, held in an httpOnly cookie and
+never exposed to browser JavaScript; mutations are server actions. React Flow will render the
+per-claim pipeline graph (Phase 2) and Recharts aggregate dashboards (Phase 4). The frontend shows only data the backend actually holds:
 no placeholder verdicts, no simulated progress. Any output produced by the
 mock provider carries a visible "MOCK" badge.
 
@@ -94,13 +95,21 @@ effects: agents return structured proposals; services validate and persist
 them. See [AI_AGENT_ARCHITECTURE](AI_AGENT_ARCHITECTURE.md).
 
 ### 4.6 Providers (`backend/app/providers`)
-- `llm/`: `LLMProvider` protocol; `OllamaLLMProvider`, `MockLLMProvider`.
+- `llm/`: `LLMProvider` protocol; `OllamaLLMProvider`, `MockLLMProvider` (scripted).
 - `embeddings/`: `EmbeddingProvider` protocol; `OllamaEmbeddingProvider`, `MockEmbeddingProvider`.
-- `retrieval/`: `SourceRetrievalProvider` protocol; `LocalCorpusProvider` (Phase 1).
+- `search/`: `SearchProvider` protocol; `LocalCorpusSearchProvider` (PostgreSQL full-text over
+  ingested sources), `SearxngSearchProvider` (configurable web search via self-hosted SearXNG),
+  `MockSearchProvider` (scripted).
+- `fixtures.py`: loads scripted mock responses from JSON for local demos (never in production).
 
-Future OpenAI / Anthropic / Gemini providers implement the same protocol and
-are registered in `providers/registry.py`. No stub classes are created for them
-until they are implemented.
+Future OpenAI / Anthropic / Gemini / commercial-search providers implement the same protocols and
+are registered in `providers/registry.py`. No stub classes are created before they are implemented.
+
+### 4.6a Ingestion (`backend/app/ingest`)
+`SafeFetcher` (SSRF-protected HTTP: scheme allowlist, every hop resolved and checked against
+private ranges, manual redirects, size and time limits) and extractors for HTML (title,
+publisher, publication date, main text), PDF text layers (pypdf), and optional OCR (local
+`tesseract` if installed). Uploaded files are type-sniffed from their bytes and stored by sha256.
 
 ### 4.7 Audit (`backend/app/audit`)
 `AuditService.record(...)` appends a hash-chained event inside the caller's
@@ -111,35 +120,40 @@ together. `AuditService.verify_chain()` recomputes the chain.
 Celery app with Redis as broker and result backend. Tasks are idempotent per
 `pipeline_jobs.id` and delegate to services.
 
-## 5. Milestone 1 data flow
+## 5. Milestone 1 data flow (implemented)
 
 ```
-POST /submissions
-  │  (audit: submission.created)
+POST /submissions (text, URL, article, image, PDF, video metadata)   audit: submission.created
   ▼
-[EXTRACTION]   ClaimExtractor agent → claims (type: FACTUAL / OPINION / PREDICTION / SATIRE / UNCLEAR)
+[CONTENT]      text from user input, fetched page (HTML/PDF), PDF text layer, OCR, or a human
+               transcription; none available ⇒ NEEDS_TRANSCRIPTION (never guessed)
   ▼
-[RETRIEVAL]    LocalCorpusProvider: vector + keyword search over source_chunks → retrieval_results
+[EXTRACTION]   claim_extractor → atomic claims (subject/predicate/object, time, location,
+               entities, original source); grounding check; speaker blinding
+  ▼  per claim:
+[SEARCH]       every configured SearchProvider × deterministic queries from the blinded claim →
+               search_queries/results; hits fetched (SafeFetcher) or provided → immutable sources
   ▼
-[EVIDENCE]     EvidenceAnalyst agent proposes (chunk, quote, stance);
-               service verifies the quote is an exact substring → evidence
+[EVIDENCE]     top passages (lexical relevance) → evidence_analyst → verbatim quote located in
+               the stored source → evidence (stance, directness, relevance)
   ▼
-[RANKING]      Deterministic, versioned scorer → evidence_rankings
+[RANKING]      rank-v2: authority, primary source, relevance, recency, directness,
+               corroboration, document quality → evidence_rankings
   ▼
-[ASSESSMENT]   Assessor agent (blinded claim + ranked evidence) → assessment + citations
-               guardrails: no evidence ⇒ INSUFFICIENT_EVIDENCE; citations must be this claim's evidence
+[ASSESSMENT]   rules first (non-checkable ⇒ OPINION/PREDICTION/SATIRE; no evidence ⇒
+               INSUFFICIENT_EVIDENCE, no LLM); else assessor + validation + confidence calibration
   ▼
-[CRITIQUE]     Critic agent (different identity) → PASS / REVISE / ESCALATE
-               REVISE ⇒ back to ASSESSMENT (max 2 revisions), then ESCALATE
+[CRITIQUE]     fact_check_critic (independent) + deterministic findings → PASS / REVISE / ESCALATE
+               REVISE ⇒ ASSESSMENT again (≤ BNIP_MAX_REVISION_ROUNDS), then LOOP_LIMIT
   ▼
-[REVIEW]       review_task (always, in M1) → human decision APPROVE / AMEND / REJECT / REQUEST_MORE_EVIDENCE
+[REVIEW_ROUTING] review task (always) → PENDING_REVIEW
   ▼
-claim APPROVED / REJECTED     (every transition writes an audit event)
+human decision: APPROVED / REJECTED / NEEDS_MORE_RESEARCH (→ re-research → new revision)
 ```
-
-Non-checkable claims (OPINION, PREDICTION, SATIRE) skip retrieval and evidence.
-They get an assessment with the matching verdict straight from classification,
-then go through critique and human review like any other claim.
+Every stage is a `pipeline_jobs` row, every LLM call an `ai_runs` row, and every state change an
+audit event. A failing stage keeps its records and sends the claim to a human (`STAGE_FAILURE`).
+Rule-produced assessments skip the critic (there is no agent reasoning to challenge) but still
+go to a human.
 
 ## 6. Repository layout
 
@@ -148,29 +162,32 @@ bharat-nip/
 ├── *.md                      design documents
 ├── docker-compose.yml        postgres+pgvector, redis, optional ollama
 ├── infra/                    database init script
-├── Makefile                  common developer commands
-├── .env.example
+├── Makefile                  developer commands
 ├── backend/
-│   ├── pyproject.toml        uv-managed
-│   ├── alembic.ini, alembic/ migrations
+│   ├── pyproject.toml, uv.lock
+│   ├── alembic/versions/     0001 baseline, 0002 phase 1
+│   ├── fixtures/             fictional mock fixtures for local demos
 │   ├── app/
 │   │   ├── main.py           FastAPI app factory
-│   │   ├── core/             config, logging, hashing
+│   │   ├── cli.py            create-user, seed-demo
+│   │   ├── core/             config, security (Argon2, JWT), hashing, logging
 │   │   ├── db/               engine, session, base
-│   │   ├── domain/           enums and shared value types
+│   │   ├── domain/           enums, claim state machine, text utilities (blinding, relevance, chunking, quote location)
 │   │   ├── models/           SQLAlchemy models
 │   │   ├── schemas/          Pydantic API schemas
-│   │   ├── api/              routers
-│   │   ├── services/         business logic
-│   │   ├── pipeline/         state machine (Phase 1)
-│   │   ├── agents/           agent definitions (Phase 1)
+│   │   ├── api/              routers, auth dependencies, access rules, problem+json
+│   │   ├── services/         submissions, content, extraction, registry, sources, research,
+│   │   │                     ranking, assessment, critic, review, factcheck, users, storage
+│   │   ├── pipeline/         orchestrator, context, dispatch (Celery / inline)
+│   │   ├── agents/           agent runner and definitions
 │   │   ├── ai/               PromptRegistry, AIRunRecorder
-│   │   ├── prompts/          versioned prompt files
-│   │   ├── providers/        llm / embeddings / retrieval
-│   │   ├── audit/            audit service
+│   │   ├── prompts/          claim_extractor, evidence_analyst, assessor, fact_check_critic (v1)
+│   │   ├── providers/        llm / embeddings / search / fixtures / registry
+│   │   ├── ingest/           SafeFetcher, HTML/PDF/OCR extraction
+│   │   ├── audit/            hash-chained audit service
 │   │   └── workers/          Celery app and tasks
 │   └── tests/
-└── frontend/                 Next.js app
+└── frontend/                 Next.js: login, submit, submissions, claims, claim detail, review
 ```
 
 ## 7. Key technology decisions
@@ -198,11 +215,20 @@ All configuration comes from environment variables (prefix `BNIP_`), loaded by
 | `BNIP_REDIS_URL` | `redis://localhost:6379/0` | |
 | `BNIP_LLM_PROVIDER` | `ollama` | `ollama` or `mock` |
 | `BNIP_EMBEDDING_PROVIDER` | `ollama` | `ollama` or `mock` |
-| `BNIP_ALLOW_MOCK_PROVIDERS` | `false` | Must be `true` to use a mock provider outside `test`. In `production`, mock providers are refused regardless. |
+| `BNIP_ALLOW_MOCK_PROVIDERS` | `false` | Must be `true` to use any mock provider (LLM, embeddings, search) outside `test`. In `production`, mocks are refused regardless. |
 | `BNIP_OLLAMA_BASE_URL` | `http://localhost:11434` | |
 | `BNIP_OLLAMA_MODEL` | `llama3.1:8b` | |
 | `BNIP_OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text` | Must produce 768-dim vectors |
+| `BNIP_OLLAMA_CRITIC_MODEL` | (same as `BNIP_OLLAMA_MODEL`) | Optional separate model for the critic |
 | `BNIP_MAX_REVISION_ROUNDS` | `2` | Assessor↔critic loop bound |
+| `BNIP_SEARCH_PROVIDERS` | `["local_corpus"]` | Any of `local_corpus`, `searxng`, `mock` |
+| `BNIP_SEARXNG_URL` | — | Required when `searxng` is enabled |
+| `BNIP_FETCH_ALLOW_HTTP` | `false` | HTTPS-only fetching by default |
+| `BNIP_FETCH_MAX_BYTES` / `BNIP_FETCH_TIMEOUT_SECONDS` | `5000000` / `15` | Fetch limits |
+| `BNIP_STORAGE_DIR` | `backend/storage` | Uploaded files |
+| `BNIP_PIPELINE_EXECUTION` | `celery` | `celery` or `inline` |
+| `BNIP_MOCK_FIXTURES_PATH` | — | Scripted mock responses (non-production) |
+| `BNIP_JWT_SECRET` / `BNIP_JWT_EXPIRY_MINUTES` | dev secret / `60` | The secret is required (≥32 chars) in production |
 
 ## 9. Runnability guarantee
 

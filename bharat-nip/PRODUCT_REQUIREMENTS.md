@@ -53,73 +53,78 @@ prompts and of reviewer guidance; changing them requires a prompt version bump.
 | `PREDICTION` | A statement about the future that can't yet be checked. | Determined from classification; may be re-checked later. |
 | `SATIRE` | Intended as parody or humour, and identifiable as such. | Classification plus context (e.g. a known satire publisher). |
 
-Each assessment also carries a **confidence** of `LOW`, `MEDIUM` or `HIGH`.
-These are deliberately coarse categories; the system does not report fake
-precision like "87.3% true".
+Each assessment carries a **confidence** between 0 and 1: how strongly the evidence supports the
+classification. It is capped deterministically by what the evidence can bear (for example, at most
+0.6 when only one independent origin is cited), and both the agent's raw value and the applied caps
+are shown. A confidence of 0 means no evidential determination was made (rule-based
+INSUFFICIENT_EVIDENCE, OPINION, PREDICTION, SATIRE).
 
-## 5. Milestone 1: the evidence pipeline (functional requirements)
+The system **never forces a classification**: without usable evidence the result is
+INSUFFICIENT_EVIDENCE, decided by rule without calling an LLM.
 
-**FR-1 Submission.** An authenticated user submits text (required, up to 20,000
-characters) with optional source URL, statement date, speaker (an existing
-entity), language (default `en`) and context note. An `Idempotency-Key` header
-prevents duplicate submissions.
+## 5. Milestone 1: the evidence pipeline (implemented in Phase 1)
 
-**FR-2 Claim extraction.** The system splits a submission into one or more
-atomic claims and classifies each as `FACTUAL`, `OPINION`, `PREDICTION`,
-`SATIRE` or `UNCLEAR`, with a check-worthiness flag. Analysts can edit or add
-claims manually; manual edits are audited and marked as human-authored.
+**FR-1 Submission.** An authenticated user submits one of:
+- **text claim**, **article** (body plus optional headline, publisher, URL), **URL** (fetched
+  server-side over HTTPS with SSRF protection; HTML and PDF are extracted);
+- **image** or **PDF** upload (type checked from the file bytes; PDF text layer extracted; images
+  use OCR when the server has `tesseract`, otherwise a human transcription is requested);
+- **video metadata** (platform, URL, title, description, uploader, date, and a submitter-supplied
+  transcript; video is never downloaded).
 
-**FR-3 Source corpus and retrieval.** Analysts ingest sources (title, URL,
-publisher, type, published date, full text). The system stores an immutable
-snapshot with a SHA-256 hash, splits it into chunks, and embeds them. For each
-checkable claim the system retrieves candidate chunks (vector similarity plus
-keyword search) and records every retrieval result with its score and query.
+Optional fields: speaker entity, statement date, language, context note. An `Idempotency-Key`
+prevents duplicates. When no machine-readable text exists, the submission is marked
+`NEEDS_TRANSCRIPTION`. The system does not guess text.
 
-**FR-4 Evidence records.** From the retrieved chunks the system proposes
-evidence: an exact quote, its offsets in the source, its stance (`SUPPORTS`,
-`REFUTES`, `MIXED`, `CONTEXT`, `NOT_RELEVANT`) and a one-sentence rationale.
-Quotes that are not exact substrings of the stored snapshot are rejected and
-the rejection is logged. Analysts can add evidence manually, under the same
-quote-verification rule.
+**FR-2 Claim extraction.** Material becomes atomic claims, each with: claim ID, text, subject,
+predicate, object, time reference and exact date (only if stated), location, entities (with role
+speaker / subject / mentioned), original source (submission, type, URL, title, publisher), claim
+type, check-worthiness, and `extracted_at`. Claims not grounded in the material are rejected and
+audited. The speaker is blinded out of the text used by search, assessment and critique.
 
-**FR-5 Evidence ranking.** Evidence is scored by a deterministic, versioned
-function of publisher reliability tier, source type (primary vs secondary),
-retrieval relevance, recency relative to the statement date, and independence
-(duplicates from the same publisher are discounted). Score components are
-stored and shown. Reliability tiers are set by admins against a published
-methodology (transparency, corrections policy, primary-data status), **never
-by political alignment**, and every tier change is audited with a rationale.
+**FR-3 Source registry.** Registry entries record category, jurisdiction, authority level,
+authority scope (topics), default source type, primary or secondary status, and verification
+metadata (status, method, notes, verifier, date, review-due date). It is **not** a permanent
+true/false publisher list: authority is scoped and time-limited, requires a written rationale,
+counts only while verified and in date, resets on substantive edits, influences ranking (never a
+verdict directly), and never uses political alignment as a criterion.
 
-**FR-6 Factual assessment.** The assessor agent receives the *blinded* claim
-text, the statement date, and ranked evidence. It returns a verdict,
-confidence, rationale, missing-context note, and the evidence IDs it relied
-on. Guardrails:
-- a checkable claim with no `SUPPORTS`/`REFUTES`/`MIXED`/`CONTEXT` evidence → `INSUFFICIENT_EVIDENCE`, without calling the LLM;
-- every cited ID must belong to this claim's evidence, or the output is invalid;
-- `TRUE`, `MOSTLY_TRUE`, `FALSE`, `MISLEADING` and `OUT_OF_CONTEXT` require at least one citation.
+**FR-4 Evidence retrieval.** Behind a `SearchProvider` interface: a mock provider (tests), a
+configurable web search provider (self-hosted SearXNG), and the local corpus of documents analysts
+ingest. Every query, result and fetch is recorded. Each evidence item records URL, title,
+publisher, publication date, retrieval date, content (the immutable source snapshot), source type,
+relevance, support/contradiction relationship (stance), directness, and the source's content hash.
+Quotes must be found verbatim in the stored source.
 
-**FR-7 Structured critic.** A separate critic agent checks the assessment
-against a fixed checklist: citation validity, verdict–evidence consistency,
-overclaiming, missing context, attribution leakage (did speaker identity
-influence the reasoning?), and verdict-definition compliance. Outcome: `PASS`,
-`REVISE` (with specific issues) or `ESCALATE`. `REVISE` loops back to the
-assessor at most `MAX_REVISION_ROUNDS` times (default 2); then it escalates.
+**FR-5 Evidence ranking.** Deterministic `rank-v2` with seven factors (source authority,
+primary-source status, relevance, recency, directness, corroboration across independent origins,
+document quality), with weights and every component stored and shown.
 
-**FR-8 Human review.** Every assessment creates a review task. Escalations,
-`LOW` confidence, `INSUFFICIENT_EVIDENCE` and `UNVERIFIED` get higher priority.
-A reviewer sees the claim, the evidence with source links, the assessment, the
-critique and the AI provenance. They decide `APPROVE`, `AMEND` (choose a
-different verdict, with a required note), `REJECT`, or `REQUEST_MORE_EVIDENCE`.
-The person who made the submission cannot decide its review.
+**FR-6 Classification.** One of the ten classifications in §4, with the guardrails in
+AI_AGENT_ARCHITECTURE §7.
 
-**FR-9 Audit log.** Every state change (submission, extraction, retrieval,
-evidence accept/reject, ranking, assessment, critique, review decision,
-tier change, user/role change) writes an append-only, hash-chained audit event
-in the same transaction. Admins can verify the chain.
+**FR-7 Result.** A structured JSON result: `classification`, `confidence`, `summary`,
+`reasoning`, `supporting_evidence`, `contradicting_evidence`, `missing_information`,
+`recommended_action`, plus provenance, guardrails, critic output and review status (API_DESIGN §3).
 
-**FR-10 Provenance view.** For any assessment, a user with access can see the
-full chain: claim → evidence → source chunk → source snapshot, and every
-`ai_run` with its provider, model, prompt ID/version/hash and parameters.
+**FR-8 Critic.** An independent `FactCheckCriticAgent` tries to disprove the assessment. It checks
+source quality, outdated evidence, cherry-picking, missing context, incorrect interpretation,
+contradictory evidence, unsupported conclusions and attribution leakage. Deterministic findings
+are computed first and enforced: a PASS that ignores a high-severity finding is escalated.
+REVISE loops back to the assessor at most `MAX_REVISION_ROUNDS` times.
+
+**FR-9 Human review.** Review status is one of `PENDING_REVIEW`, `APPROVED`, `REJECTED`,
+`NEEDS_MORE_RESEARCH`. Every claim reaches a human. Escalations and stage failures get top
+priority. Reviewers cannot decide on their own submissions. Changing the classification,
+rejecting, or requesting more research requires notes. NEEDS_MORE_RESEARCH can be re-run by an
+analyst, producing a new assessment revision.
+
+**FR-10 Audit trail.** Append-only, hash-chained events for every claim, source, search,
+evidence decision, agent execution, assessment, critic result, revision and human decision,
+written in the same transaction as the change. Admins can verify the chain.
+
+**FR-11 Provenance view.** For any result, the claim → evidence → source snapshot chain and every
+agent run (provider, model, prompt ID, version and hash) are visible.
 
 ## 6. Later capabilities (not in Milestone 1)
 
@@ -138,7 +143,7 @@ Order and gating are in [ROADMAP](ROADMAP.md).
 
 | Area | Requirement |
 |---|---|
-| Traceability | 100% of approved assessments have ≥1 citation or a verdict exempt from citation (`INSUFFICIENT_EVIDENCE`, `UNVERIFIED`, `OPINION`, `PREDICTION`, `SATIRE`). |
+| Traceability | 100% of affirmative classifications (TRUE, MOSTLY_TRUE, MISLEADING, OUT_OF_CONTEXT, FALSE) cite ≥1 evidence item, enforced at validation time. |
 | Provenance | 100% of LLM outputs have an `ai_runs` row with provider, model, prompt version and hash. |
 | Reproducibility | `alembic upgrade head` from empty and `downgrade base` both succeed in CI. |
 | Runnability | `main` always passes backend and frontend test suites and builds. |
