@@ -1,0 +1,65 @@
+name: BNIP CI
+
+on:
+  push:
+    paths: ["bharat-nip/**", ".github/workflows/bnip-ci.yml"]
+  pull_request:
+    paths: ["bharat-nip/**", ".github/workflows/bnip-ci.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bharat-nip/backend
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: bnip
+          POSTGRES_PASSWORD: bnip
+          POSTGRES_DB: bnip_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bnip -d bnip_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      BNIP_TEST_DATABASE_URL: postgresql+psycopg://bnip:bnip@localhost:5432/bnip_test
+      BNIP_REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bharat-nip/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: bharat-nip/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
