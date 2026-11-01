@@ -46,3 +46,16 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-01 — no applications submitted (1 strong lead needs your input)
+
+Reachable: greenhouse.io board pages (job-boards.greenhouse.io). Not resolvable from this session: jobgether.com, jobera.com, boards-api.greenhouse.io (need allowing in network settings).
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer, Global Team (India) — Job ID 7064418 | https://job-boards.greenhouse.io/yipitdata/jobs/7064418 | REVIEW — ready to apply once you answer | Verified on employer page: remote, based in India, 6+ yrs, PySpark/Spark/SQL/Delta/Databricks required (dbt/Airflow/Snowflake nice-to-have) -> strong match (~85%). Salary NOT published; IST hours with 1–2 US-overlap days/week. Form asks: minimum yearly salary in INR, notice period/start date, employment gaps (resume shows Akamai ended Jan '26), people-management experience, years of Databricks/Snowflake & Python. I did not guess these. |
+| Billigence | Senior Data Engineer (Azure Databricks), India remote | builtin.com/job/senior-data-engineer-azure-databricks/8738671 | REVIEW | Repeated listing (also reposted via Jobgether); salary unseen. |
+| Data Hatch (via Weekday) | Senior Data Engineer, remote India, UK overlap | jobs.weekday.works/senior-data-engineer-at-data-hatch-4415815428 | REJECT | Listed ₹25–40 LPA, below ₹42 lakh minimum. |
+| Jobgether | Databricks Engineer Senior/Lead; Data Engineer Senior (contract) | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REVIEW | Intermediary/contract; real employer and salary unknown. |
+| Karat | Senior Data Engineer (India) | Greenhouse | REJECT | Bangalore-based, not remote. |
+| phData / SADA India / NinjaOne / HighLevel | Senior Data Engineer, India | search snippets | REVIEW (unverified) | India-based remote; salary and stack unseen. |
