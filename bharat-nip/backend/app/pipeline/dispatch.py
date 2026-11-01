@@ -25,6 +25,8 @@ class PipelineDispatcher(Protocol):
 
     def rerun_claim(self, claim_id: uuid.UUID) -> None: ...
 
+    def analyze_narratives(self) -> None: ...
+
 
 def build_context(session: Session, settings: Settings) -> PipelineContext:
     return PipelineContext(
@@ -49,6 +51,11 @@ class CeleryDispatcher:
 
         process_claim_task.delay(str(claim_id))
 
+    def analyze_narratives(self) -> None:
+        from app.workers.tasks import analyze_narratives_task
+
+        analyze_narratives_task.delay()
+
 
 class InlineDispatcher:
     """Runs the pipeline synchronously with the given context (and its session)."""
@@ -59,7 +66,16 @@ class InlineDispatcher:
     def submit(self, submission_id: uuid.UUID) -> None:
         self.ctx.session.commit()
         orchestrator.process_submission(self.ctx, submission_id)
+        self.analyze_narratives()
 
     def rerun_claim(self, claim_id: uuid.UUID) -> None:
         self.ctx.session.commit()
         orchestrator.process_claim(self.ctx, claim_id)
+        self.analyze_narratives()
+
+    def analyze_narratives(self) -> None:
+        from app.narratives.engine import run_engine
+
+        self.ctx.session.commit()
+        run_engine(self.ctx.session)
+        self.ctx.session.commit()

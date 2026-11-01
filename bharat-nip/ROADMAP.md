@@ -52,19 +52,44 @@ Phase 1 notes and known limits:
 - No live Ollama run happened in the build sandbox (no model server there). The Ollama provider
   is contract-tested with a mocked transport.
 
-## Phase 2 — Retrieval quality, evaluation and UI depth
-Embeddings and hybrid retrieval, a golden-set evaluation harness with live Ollama runs, a React
-Flow pipeline graph, registry/source management screens, an audit viewer, and Playwright E2E in CI.
+## Phase 2 — Narrative Intelligence Engine ✅
+Built on the verified evidence layer; design in [NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md).
+- Narrative detection (TF-IDF clustering of blinded claims across submissions), topic clustering
+  with stable topic IDs, emerging-topic detection, recurring-claim (burst) detection, claim velocity
+  and acceleration.
+- Evidence status and strength from **human-approved** fact-checks only.
+- Public-interest indicators from aggregate public data only (origins, submissions, channels,
+  analyst-recorded aggregate counts). No per-person data exists anywhere in the schema.
+- Analyst-assessed potential harm (real-world consequences; keyword signals are suggestions only),
+  uncertainty, and existing response coverage (with staleness).
+- Deterministic `rec-v1` recommendation (RESPOND / MONITOR / INVESTIGATE / CORRECT / IGNORE /
+  ESCALATE) from the six required inputs, with a stored rule trace. No persuasion or political inputs.
+- Narrative statuses EMERGING → ARCHIVED with a human-only, audited transition table.
+- Relationship graph (similar, same topic, shared subject entity, shared evidence, contradicts),
+  historical claim matching, claim history, evidence timeline.
+- Engine triggers: after each pipeline run, after review decisions, on demand, and via Celery beat.
+- UI: narrative dashboard, detail page (recommendation, metrics chart, claim history, evidence
+  timeline, status/harm/observation/response forms), React Flow graph, "seen before" on claims.
+- Tests: 186 backend (unit, engine integration, API end-to-end, neutrality and schema guards) and
+  11 frontend.
 
-## Phase 3 — Hardening
+Phase 2 notes:
+- Similarity is lexical (TF-IDF). An embedding backend can implement `SimilarityBackend` once a real
+  embedding model is configured (the mock embeddings are not semantic).
+- Public-interest reach depends on analysts or a future feed recording aggregate observations.
+  The system does not scrape platforms.
+- Thresholds were checked on fictional test data only. Calibrate them on real, approved data
+  before relying on them.
+
+## Phase 3 — Retrieval quality, evaluation and UI depth
+Embeddings and hybrid retrieval (claims and evidence), a golden-set evaluation harness with live
+Ollama runs (including narrative clustering quality), a React Flow pipeline graph per claim,
+registry/source management screens, an audit viewer, and Playwright E2E in CI.
+
+## Phase 4 — Hardening
 OIDC SSO, rate limiting, DB role separation for audit, structured logging and
 metrics (OpenTelemetry), dependency auditing, backup and restore runbook,
 external anchoring of the audit chain head.
-
-## Phase 4 — Narrative intelligence
-Cluster approved claims into narratives (embedding similarity plus human
-curation). Track narrative volume over time across ingested *public* sources.
-Recharts dashboards. Aggregate only; no individual tracking.
 
 ## Phase 5 — Communications support
 Evidence-grounded drafts (explainers, corrections, briefs) generated **only**

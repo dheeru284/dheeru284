@@ -330,3 +330,88 @@ class ActorType(StrEnum):
     USER = "USER"
     AGENT = "AGENT"
     SYSTEM = "SYSTEM"
+
+
+# --- Narrative intelligence (NARRATIVE_INTELLIGENCE.md) ----------------------------------
+
+
+class NarrativeStatus(StrEnum):
+    EMERGING = "EMERGING"
+    MONITOR = "MONITOR"
+    INVESTIGATE = "INVESTIGATE"
+    RESPOND = "RESPOND"
+    CORRECT = "CORRECT"
+    RESOLVED = "RESOLVED"
+    ARCHIVED = "ARCHIVED"
+
+
+class Recommendation(StrEnum):
+    RESPOND = "RESPOND"
+    MONITOR = "MONITOR"
+    INVESTIGATE = "INVESTIGATE"
+    CORRECT = "CORRECT"
+    IGNORE = "IGNORE"
+    ESCALATE = "ESCALATE"
+
+
+class EvidenceStatus(StrEnum):
+    VERIFIED_FALSE = "VERIFIED_FALSE"
+    VERIFIED_TRUE = "VERIFIED_TRUE"
+    CONTESTED = "CONTESTED"
+    UNRESOLVED = "UNRESOLVED"
+    PENDING_VERIFICATION = "PENDING_VERIFICATION"
+    NOT_CHECKABLE = "NOT_CHECKABLE"
+
+
+class HarmCategory(StrEnum):
+    NONE = "NONE"
+    PUBLIC_HEALTH = "PUBLIC_HEALTH"
+    PUBLIC_SAFETY = "PUBLIC_SAFETY"
+    ELECTORAL_PROCESS = "ELECTORAL_PROCESS"
+    COMMUNAL_HARMONY = "COMMUNAL_HARMONY"
+    FINANCIAL_FRAUD = "FINANCIAL_FRAUD"
+    OTHER = "OTHER"
+
+
+class HarmSeverity(StrEnum):
+    UNASSESSED = "UNASSESSED"
+    NONE = "NONE"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class NarrativeOrigin(StrEnum):
+    DETECTED = "DETECTED"
+    MANUAL = "MANUAL"
+
+
+class MembershipSource(StrEnum):
+    ENGINE = "ENGINE"
+    USER = "USER"
+
+
+class RelationType(StrEnum):
+    SIMILAR = "SIMILAR"
+    SAME_TOPIC = "SAME_TOPIC"
+    SHARES_ENTITY = "SHARES_ENTITY"
+    SHARES_EVIDENCE = "SHARES_EVIDENCE"
+    CONTRADICTS = "CONTRADICTS"
+
+
+class ObservationMetric(StrEnum):
+    """Aggregate public counts only. Never per person or per account."""
+
+    MENTIONS = "MENTIONS"
+    SHARES = "SHARES"
+    VIEWS = "VIEWS"
+    ARTICLES = "ARTICLES"
+    SEARCH_INTEREST = "SEARCH_INTEREST"
+
+
+class ResponseType(StrEnum):
+    FACT_CHECK = "FACT_CHECK"
+    CORRECTION = "CORRECTION"
+    CLARIFICATION = "CLARIFICATION"
+    CONTEXT_NOTE = "CONTEXT_NOTE"
+    EXTERNAL_FACT_CHECK = "EXTERNAL_FACT_CHECK"

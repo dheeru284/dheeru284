@@ -27,6 +27,12 @@ def create_celery() -> Celery:
         worker_prefetch_multiplier=1,
         task_track_started=True,
         result_expires=3600,
+        beat_schedule={
+            "narrative-engine": {
+                "task": "narratives.analyze",
+                "schedule": settings.narrative_interval_minutes * 60.0,
+            }
+        },
     )
     return app
 

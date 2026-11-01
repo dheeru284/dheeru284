@@ -1,6 +1,6 @@
 # Architecture — Bharat Narrative Intelligence Platform (BNIP)
 
-Status: Phase 1 (evidence pipeline) complete. This document is the source of truth for system
+Status: Phase 2 (narrative intelligence) complete. This document is the source of truth for system
 structure. If code and this document disagree, fix one of them in the same change.
 
 Related documents: [PRODUCT_REQUIREMENTS](PRODUCT_REQUIREMENTS.md) ·
@@ -111,6 +111,14 @@ private ranges, manual redirects, size and time limits) and extractors for HTML 
 publisher, publication date, main text), PDF text layers (pypdf), and optional OCR (local
 `tesseract` if installed). Uploaded files are type-sniffed from their bytes and stored by sha256.
 
+### 4.6b Narrative intelligence (`backend/app/narratives`)
+Built on the verified evidence layer ([NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md)).
+Pure modules: `similarity.py` (TF-IDF over blinded text), `metrics.py`, `recommend.py`
+(`rec-v1`, plus the status transition table). The DB-touching `engine.py` runs under an advisory
+lock and is idempotent. `service.py` holds analyst operations; `queries.py` holds read models
+(claim history, evidence timeline, graph, historical matching). The engine never reads speaker
+identity and never changes a narrative's status.
+
 ### 4.7 Audit (`backend/app/audit`)
 `AuditService.record(...)` appends a hash-chained event inside the caller's
 transaction, so the domain change and its audit event commit or roll back
@@ -184,10 +192,12 @@ bharat-nip/
 │   │   ├── prompts/          claim_extractor, evidence_analyst, assessor, fact_check_critic (v1)
 │   │   ├── providers/        llm / embeddings / search / fixtures / registry
 │   │   ├── ingest/           SafeFetcher, HTML/PDF/OCR extraction
+│   │   ├── narratives/       narrative engine, metrics, recommendation, queries
 │   │   ├── audit/            hash-chained audit service
 │   │   └── workers/          Celery app and tasks
 │   └── tests/
-└── frontend/                 Next.js: login, submit, submissions, claims, claim detail, review
+└── frontend/                 Next.js: login, submit, submissions, claims, claim detail, review,
+                              narratives dashboard/detail/graph
 ```
 
 ## 7. Key technology decisions
@@ -227,6 +237,7 @@ All configuration comes from environment variables (prefix `BNIP_`), loaded by
 | `BNIP_FETCH_MAX_BYTES` / `BNIP_FETCH_TIMEOUT_SECONDS` | `5000000` / `15` | Fetch limits |
 | `BNIP_STORAGE_DIR` | `backend/storage` | Uploaded files |
 | `BNIP_PIPELINE_EXECUTION` | `celery` | `celery` or `inline` |
+| `BNIP_NARRATIVE_INTERVAL_MINUTES` | `15` | Celery beat interval for the narrative engine (`make dev-beat`) |
 | `BNIP_MOCK_FIXTURES_PATH` | — | Scripted mock responses (non-production) |
 | `BNIP_JWT_SECRET` / `BNIP_JWT_EXPIRY_MINUTES` | dev secret / `60` | The secret is required (≥32 chars) in production |
 

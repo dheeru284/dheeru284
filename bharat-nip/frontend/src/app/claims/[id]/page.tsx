@@ -14,9 +14,19 @@ import { AutoRefresh, RerunResearchButton, ReviewForm } from "@/components/app/f
 import { Loading, PageShell } from "@/components/app/page-shell";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { humanize, isInFlight, percent } from "@/lib/format";
+import { humanize, isInFlight, percent, shortDate } from "@/lib/format";
+import type { HistoryMatch } from "@/lib/narratives";
 import { ApiError, api } from "@/lib/server-api";
-import type { Assessment, AuditEvent, ClaimDetail, FactCheck, ReviewTask, SearchQuery, User } from "@/lib/types";
+import type {
+  Assessment,
+  AuditEvent,
+  ClaimDetail,
+  Classification,
+  FactCheck,
+  ReviewTask,
+  SearchQuery,
+  User,
+} from "@/lib/types";
 
 async function optional<T>(p: Promise<T>): Promise<T | null> {
   try {
@@ -39,7 +49,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   const isAnalyst = me.role !== "SUBMITTER";
   const isReviewer = me.role === "REVIEWER" || me.role === "ADMIN";
   const { claim } = detail;
-  const [fc, assessments, searches, audit, task] = await Promise.all([
+  const [fc, assessments, searches, audit, task, matches] = await Promise.all([
     optional(api<FactCheck>(`/claims/${id}/fact-check`)),
     optional(api<Assessment[]>(`/claims/${id}/assessments`)),
     isAnalyst ? optional(api<SearchQuery[]>(`/claims/${id}/searches`)) : null,
@@ -47,6 +57,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
     isReviewer && detail.open_review_task_id
       ? optional(api<ReviewTask>(`/review-tasks/${detail.open_review_task_id}`))
       : null,
+    isAnalyst ? optional(api<HistoryMatch[]>(`/claims/${id}/history`)) : null,
   ]);
 
   return (
@@ -92,6 +103,39 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         </Card>
       )}
 
+      {matches && matches.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Seen before</CardTitle>
+            <CardDescription>
+              Earlier similar claims (historical matching). Reuse verified work, but each claim is still decided by a reviewer.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid gap-2 text-sm">
+              {matches.map((h) => (
+                <li key={h.claim_id} className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{shortDate(h.seen_at)}</span>
+                  {h.approved_classification ? (
+                    <ClassificationBadge value={h.approved_classification as Classification} />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">not yet approved</span>
+                  )}
+                  <Link href={`/claims/${h.claim_id}`} className="min-w-0 flex-1 underline-offset-2 hover:underline">
+                    {h.text}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">similarity {h.similarity.toFixed(2)}</span>
+                  {h.narrative_id && (
+                    <Link href={`/narratives/${h.narrative_id}`} className="text-xs underline">
+                      narrative
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
       {fc ? (
         <FactCheckResult fc={fc} />
       ) : (

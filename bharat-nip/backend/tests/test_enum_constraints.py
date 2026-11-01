@@ -12,18 +12,18 @@ from app.db.base import Base
 VALUE_RE = re.compile(r"'([^']*)'::")
 
 
-def _db_enum_values(session, table: str, column: str) -> set[str] | None:
-    rows = session.execute(
+def _db_enum_values(session, table: str, column: str, name: str) -> set[str] | None:
+    """Values of the enum CHECK constraint, found by its conventional name."""
+    definition = session.scalar(
         text(
             "SELECT pg_get_constraintdef(oid) FROM pg_constraint "
-            "WHERE conrelid = CAST(:t AS regclass) AND contype = 'c'"
+            "WHERE conrelid = CAST(:t AS regclass) AND contype = 'c' AND conname = :n"
         ),
-        {"t": table},
-    ).scalars()
-    for definition in rows:
-        if f"({column})::text" in definition and "ANY" in definition:
-            return set(VALUE_RE.findall(definition))
-    return None
+        {"t": table, "n": f"ck_{table}_{name}"},
+    )
+    if definition is None or f"({column})::text" not in definition:
+        return None
+    return set(VALUE_RE.findall(definition))
 
 
 def test_every_enum_check_constraint_matches_python(db_session):
@@ -33,7 +33,7 @@ def test_every_enum_check_constraint_matches_python(db_session):
             if not isinstance(column.type, Enum) or column.type.native_enum:
                 continue
             expected = set(column.type.enums)
-            actual = _db_enum_values(db_session, table.name, column.name)
+            actual = _db_enum_values(db_session, table.name, column.name, column.type.name)
             assert actual is not None, f"no CHECK constraint for {table.name}.{column.name}"
             assert actual == expected, f"{table.name}.{column.name}: db={actual} py={expected}"
             checked += 1

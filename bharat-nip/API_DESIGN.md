@@ -95,6 +95,27 @@ Video is never downloaded: metadata plus a submitter-supplied transcript only.
 | GET | `/audit-events/verify` | ADMIN | Recompute the hash chain: `{ok, checked, first_broken_seq}` |
 | GET | `/ai-runs/{id}` | ANALYST+ | Full agent run: messages, parameters, output, hashes |
 
+### Narrative intelligence (Phase 2; ANALYST+)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/narratives` | Dashboard: narratives with latest metrics, sorted by recommendation priority then momentum; counts by status and recommendation; emerging topics. Filters `status`, `recommendation`, `topic_id`, `include_archived` |
+| GET | `/narratives/{id}` | Detail: metrics with rule trace, harm assessment, allowed status transitions, related narratives, observations, responses |
+| GET | `/narratives/{id}/claims` | Claim history: member claims in time order with burst numbers, origins and approved classifications (no speakers) |
+| GET | `/narratives/{id}/evidence-timeline` | Evidence by publication date (deduplicated per quote, listing supported claims) plus review decisions |
+| GET | `/narratives/{id}/metrics` | Metric snapshot history (for charts) |
+| GET | `/narratives/graph` | Nodes and edges of the relationship graph (`?topic_id=`) |
+| GET | `/topics` | Topics with emerging flags |
+| GET | `/claims/{id}/history` | Historical claim matching: earlier similar claims and their approved classifications |
+| POST | `/narratives/analyze` | Run the engine now (`202`) |
+| POST | `/narratives` | Create a narrative from claim IDs (`409` if a claim already belongs to one) |
+| PATCH | `/narratives/{id}` | Title / summary |
+| POST | `/narratives/{id}/status` | `{status, note}`; human-only transition table, `409` otherwise |
+| PUT | `/narratives/{id}/harm` | `{category, severity, rationale}`; rationale required for LOW+ |
+| POST | `/narratives/{id}/claims` | Add a claim (or move one an analyst excluded elsewhere) |
+| POST | `/narratives/{id}/claims/{claim_id}/remove` | `{note}`; excludes the claim permanently from engine re-assignment |
+| POST | `/narratives/{id}/observations` | Aggregate public count `{observed_at, channel, metric, value, source_url, note}` |
+| POST | `/narratives/{id}/responses` | Existing response `{response_type, title, url, channel, published_at}` |
+
 ## 3. Structured fact-check result
 
 `GET /claims/{id}/fact-check`:

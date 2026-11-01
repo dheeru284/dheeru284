@@ -89,6 +89,18 @@ add them must be rejected.
    no political field. `POLITICAL_PARTY` is only a *category* (what kind of origin it is) and gets no
    automatic penalty or bonus.
 
+### 5.1 Narrative intelligence (Phase 2)
+- Only aggregate and public information is used. There is no table, field or endpoint for
+  individual members of the public, accounts, handles, demographics or political preference
+  (enforced by a schema guard test).
+- No voter psychological profiles and no persuasion scores. The recommendation uses exactly six
+  inputs: evidence status, public relevance, momentum, potential harm, uncertainty and existing
+  coverage.
+- Harm is assessed by analysts as a real-world consequence (health, safety, voting mechanics,
+  communal violence, fraud), never as political effect.
+- Narrative status changes are human-only, require a note, and are audited. RESPOND and CORRECT
+  mean that people should prepare a response; nothing is generated or published.
+
 ## 6. Data protection
 
 - Personal data is limited to platform users (name, email, role) and

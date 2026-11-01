@@ -21,7 +21,8 @@ def process_submission_task(submission_id: str) -> list[str]:
         ctx = build_context(session, get_settings())
         claim_ids = orchestrator.process_submission(ctx, uuid.UUID(submission_id))
         session.commit()
-        return [str(c) for c in claim_ids]
+    analyze_narratives_task.delay()
+    return [str(c) for c in claim_ids]
 
 
 @celery_app.task(name="pipeline.process_claim")
@@ -30,3 +31,15 @@ def process_claim_task(claim_id: str) -> None:
         ctx = build_context(session, get_settings())
         orchestrator.process_claim(ctx, uuid.UUID(claim_id))
         session.commit()
+    analyze_narratives_task.delay()
+
+
+@celery_app.task(name="narratives.analyze")
+def analyze_narratives_task() -> dict:
+    """Run the narrative engine (also scheduled by Celery beat)."""
+    from app.narratives.engine import run_engine
+
+    with get_sessionmaker()() as session:
+        report = run_engine(session)
+        session.commit()
+        return report.as_dict()

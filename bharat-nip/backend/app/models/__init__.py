@@ -5,6 +5,16 @@ from app.models.assessments import Assessment, AssessmentCitation, Critique
 from app.models.audit import AuditEvent
 from app.models.claims import Claim, Entity, StoredFile, Submission
 from app.models.evidence import Evidence, EvidenceRanking
+from app.models.narratives import (
+    Narrative,
+    NarrativeClaim,
+    NarrativeMetric,
+    NarrativeObservation,
+    NarrativeRelation,
+    NarrativeResponse,
+    Topic,
+    TopicClaim,
+)
 from app.models.review import ReviewDecision, ReviewTask
 from app.models.sources import (
     RegistrySource,
@@ -25,6 +35,12 @@ __all__ = [
     "Entity",
     "Evidence",
     "EvidenceRanking",
+    "Narrative",
+    "NarrativeClaim",
+    "NarrativeMetric",
+    "NarrativeObservation",
+    "NarrativeRelation",
+    "NarrativeResponse",
     "PipelineJob",
     "RegistrySource",
     "ReviewDecision",
@@ -35,5 +51,7 @@ __all__ = [
     "SourceChunk",
     "StoredFile",
     "Submission",
+    "Topic",
+    "TopicClaim",
     "User",
 ]

@@ -8,7 +8,12 @@ The system can conclude `TRUE`, `MOSTLY_TRUE`, `MISLEADING`, `OUT_OF_CONTEXT`,
 `FALSE`, `UNVERIFIED`, `INSUFFICIENT_EVIDENCE`, `OPINION`, `PREDICTION` or
 `SATIRE`. It says so explicitly when evidence is insufficient.
 
-**Status: Phase 1 (evidence pipeline) complete.** Submit text, URLs, articles, images, PDFs or
+**Status: Phase 2 (narrative intelligence) complete.** On top of the Phase 1 evidence pipeline,
+the narrative engine groups recurring claims into narratives, tracks topics, velocity, evidence
+strength and aggregate public interest, maps relationships, and recommends a response posture for
+human decision ([NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md)).
+
+Phase 1: Submit text, URLs, articles, images, PDFs or
 video metadata. The system extracts structured claims, searches for evidence, ranks it, proposes
 a classification, has an independent critic try to disprove it, and sends every claim to a human
 reviewer. Every step is audited. Social-media publishing is deliberately not built (see
@@ -25,6 +30,7 @@ reviewer. Every step is audited. Social-media publishing is deliberately not bui
 | [API_DESIGN.md](API_DESIGN.md) | REST conventions and the Milestone 1 endpoint contract |
 | [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Test layers and the principle-to-test map |
 | [SECURITY.md](SECURITY.md) | Threat model, AI controls, audit integrity, prohibited capabilities |
+| [NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md) | Narrative engine: definitions, formulas, recommendation table, neutrality constraints |
 | [ROADMAP.md](ROADMAP.md) | Phases and exit criteria |
 
 ## Quick start
@@ -43,6 +49,7 @@ make migrate
 make dev-api      # terminal 1: http://localhost:8000/api/v1/docs
 make dev-worker   # terminal 2: Celery worker
 make dev-web      # terminal 3: http://localhost:3000
+make dev-beat     # optional: periodic narrative engine runs
 
 make check        # everything CI runs
 ```

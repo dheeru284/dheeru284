@@ -126,12 +126,24 @@ written in the same transaction as the change. Admins can verify the chain.
 **FR-11 Provenance view.** For any result, the claim → evidence → source snapshot chain and every
 agent run (provider, model, prompt ID, version and hash) are visible.
 
+## 5a. Phase 2: Narrative intelligence (implemented)
+
+Specified in [NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md):
+- narrative detection, topic clustering, emerging-topic and recurring-claim detection;
+- claim velocity, evidence strength (approved fact-checks only) and public-interest indicators;
+- the relationship graph and historical claim matching;
+- a response recommendation for every narrative.
+
+Statuses: EMERGING, MONITOR, INVESTIGATE, RESPOND, CORRECT, RESOLVED, ARCHIVED. Recommendations:
+RESPOND, MONITOR, INVESTIGATE, CORRECT, IGNORE, ESCALATE. These are computed from evidence status,
+public relevance, momentum, potential harm, uncertainty and existing response coverage. There is
+no inference of individual political preference, no voter psychological profiling, aggregate and
+public information only, and no persuasion scores.
+
 ## 6. Later capabilities (not in Milestone 1)
 
 Order and gating are in [ROADMAP](ROADMAP.md).
 
-- **Narrative intelligence:** cluster related claims into narratives and track
-  their volume and spread over time across *public* sources, in aggregate only.
 - **Communications support:** draft explainers or corrections that use only
   approved assessments and cite their evidence. Drafts are clearly labeled as
   AI-assisted, and a human must approve them.

@@ -4,7 +4,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import install_error_handlers
-from app.api.routes import audit, auth, claims, registry, review, submissions, system
+from app.api.routes import (
+    audit,
+    auth,
+    claims,
+    narratives,
+    registry,
+    review,
+    submissions,
+    system,
+)
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 
@@ -28,7 +37,7 @@ def create_app() -> FastAPI:
         allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
     )
     install_error_handlers(app)
-    for module in (system, auth, submissions, claims, registry, review, audit):
+    for module in (system, auth, submissions, claims, registry, review, audit, narratives):
         app.include_router(module.router, prefix=API_PREFIX)
     return app
 

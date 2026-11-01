@@ -54,6 +54,9 @@ isn't tested isn't enforced.
 | Migrations | Round trip, no model drift, and **every enum CHECK matches its Python enum** (`test_enum_constraints.py`). |
 | Mock safety | Mocks and fixtures refused in production and without the explicit flag in development; unscripted mock calls raise. |
 
+| **Narrative intelligence** | `test_narrative_units.py` (similarity, velocity, bursts, observation growth, evidence status/strength, interest, coverage and staleness, harm signals, emerging rule, **every rule of the recommendation table**, every recommendation reachable, status transitions), `test_narrative_engine.py` (detection, idempotency, assignment, evidence-driven recommendation changes, contested/escalation, emerging topics, relations, manual operations and exclusions, reactivation, history matching, claim history, timeline, graph, audit), `test_api_narratives.py` (end-to-end over HTTP on top of the real pipeline, membership operations, RBAC). |
+| **Narrative neutrality and privacy** | Swapping every claim's speaker and party changes **no** metric snapshot; recommendation inputs are exactly the six required ones; the narrative package never references speaker attribution or persuasion; narrative tables have no person-, account- or politics-shaped columns; observations accept only aggregate fields; graph entity edges exclude speakers. |
+
 All test data is fictional (`tests/scenario.py`: "Riverland" and its statistics office). The
 tests never assert facts about real places, people or statistics.
 

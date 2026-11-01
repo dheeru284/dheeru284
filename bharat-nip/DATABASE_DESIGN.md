@@ -6,6 +6,7 @@ Alembic (`backend/alembic/versions`):
 | Revision | Content |
 |---|---|
 | `0001` | Phase 0 baseline: users, entities, submissions, claims, sources, chunks, evidence, assessments, critiques, review, ai_runs, pipeline_jobs, audit_events (append-only triggers). |
+| `0003` | Phase 2: narrative intelligence tables (§3.18). New tables only. |
 | `0002` | Phase 1: submission types and files, structured claims, **source registry** (replaces `publishers`), **search queries/results** (replace `retrieval_results`), evidence relevance and directness, structured fact-check results, critic findings, and the new review model. Hand-written, with explicit enum CHECK changes. |
 
 The SQLAlchemy models in `backend/app/models` mirror this document.
@@ -189,6 +190,27 @@ Actions recorded in Phase 1: `user.created`, `user.updated`, `entity.created`, `
 `source.created`, `evidence.created`, `evidence.rejected`, `evidence.ranked`, `ai_run.recorded`,
 `assessment.created`, `assessment.revised`, `critique.created`, `review_task.created`,
 `review.decided`, `registry.created`, `registry.updated`, `registry.verification_set`.
+
+### 3.18 Narrative intelligence (Phase 2)
+Full semantics are in [NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md). None of these tables
+holds data about individual members of the public. `tests/test_narrative_engine.py` fails if a
+person-, account- or politics-shaped column is added.
+
+| Table | Purpose and key columns |
+|---|---|
+| `topics` | Coarse claim clusters: `label`, `keywords`, `claim_count`, `recent_count`, `baseline_weekly`, `is_emerging`, `emerging_since`. |
+| `topic_claims` | Derived claim → topic map (PK `claim_id`), rebuilt by every engine run. |
+| `narratives` | `title` (speaker-free), `summary`, `status` (`EMERGING`, `MONITOR`, `INVESTIGATE`, `RESPOND`, `CORRECT`, `RESOLVED`, `ARCHIVED`), `origin` (`DETECTED`/`MANUAL`), `topic_id`, `first_seen_at`, `last_seen_at`, analyst harm assessment (`harm_category`, `harm_severity`, `harm_rationale` — CHECK: rationale required for LOW+), status note/actor/time. |
+| `narrative_claims` | Membership (unique per claim): `similarity`, `added_by` (`ENGINE`/`USER`), `excluded` (an analyst removed it; the engine never re-adds it). |
+| `narrative_relations` | Derived undirected edges (`source_id < target_id` CHECK): `relation_type` (`SIMILAR`, `SAME_TOPIC`, `SHARES_ENTITY`, `SHARES_EVIDENCE`, `CONTRADICTS`), `weight`, `details`. |
+| `narrative_metrics` | Snapshots, written only when something changed: `version` (monotonic per narrative), `computed_at`, `engine_version`, claim count, `rate_7d`, `acceleration`, `recurring`, `evidence_status`, `evidence_strength`, `public_interest`, `momentum`, `harm_score`, `uncertainty`, `coverage` (CHECK 0..1), `recommendation`, `suggested_status`, `details` (indicators, harm signals, rule trace). |
+| `narrative_observations` | Aggregate public counts: `observed_at`, `channel`, `metric` (`MENTIONS`, `SHARES`, `VIEWS`, `ARTICLES`, `SEARCH_INTEREST`), `value` ≥ 0, `source_url`. No person, account or handle fields. |
+| `narrative_responses` | Existing response coverage: `response_type` (`FACT_CHECK`, `CORRECTION`, `CLARIFICATION`, `CONTEXT_NOTE`, `EXTERNAL_FACT_CHECK`), `title`, `url`, `channel`, `published_at`. |
+
+Narrative audit actions: `narrative.created`, `narrative.claim_added`, `narrative.claim_removed`,
+`narrative.status_changed`, `narrative.harm_assessed`, `narrative.updated`,
+`narrative.observation_added`, `narrative.response_recorded`, `narrative.recommendation_changed`,
+`topic.created`, `narrative_engine.run`.
 
 ## 4. Claim status machine (`app/domain/state.py`)
 

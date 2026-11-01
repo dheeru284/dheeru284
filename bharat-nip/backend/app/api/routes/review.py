@@ -8,9 +8,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.auth import Reviewer
-from app.api.deps import get_db
+from app.api.deps import get_db, get_dispatcher
 from app.domain.enums import ReviewReason, ReviewTaskStatus
 from app.models import Assessment, Claim, ReviewTask, Submission
+from app.pipeline.dispatch import PipelineDispatcher
 from app.schemas.api import DecisionIn, DecisionOut, ReviewTaskOut
 from app.services import review as review_service
 from app.services.errors import NotFound
@@ -57,9 +58,18 @@ def get_task(task_id: uuid.UUID, user: Reviewer, db: DB):
 
 
 @router.post("/review-tasks/{task_id}/decision", response_model=DecisionOut, status_code=201)
-def decide(task_id: uuid.UUID, body: DecisionIn, user: Reviewer, db: DB):
+def decide(
+    task_id: uuid.UUID,
+    body: DecisionIn,
+    user: Reviewer,
+    db: DB,
+    dispatcher: Annotated[PipelineDispatcher, Depends(get_dispatcher)],
+):
     decision = review_service.decide(
         db, task_id, user, body.decision, body.final_classification, body.notes
     )
     db.commit()
+    db.refresh(decision)
+    # Approved fact-checks change narrative evidence status; refresh the narrative layer.
+    dispatcher.analyze_narratives()
     return decision

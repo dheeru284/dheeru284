@@ -5,7 +5,7 @@ BACKEND := backend
 FRONTEND := frontend
 
 .PHONY: help infra-up infra-down ollama-up ollama-pull backend-install migrate \
-        dev-api dev-worker frontend-install dev-web lint-backend test-backend \
+        dev-api dev-worker dev-beat frontend-install dev-web lint-backend test-backend \
         test-frontend build-frontend test check
 
 help:
@@ -34,6 +34,9 @@ dev-api: ## Run the FastAPI server on :8000 (reload)
 
 dev-worker: ## Run a Celery worker
 	cd $(BACKEND) && uv run celery -A app.workers.celery_app worker --loglevel=INFO
+
+dev-beat: ## Run Celery beat (periodic narrative engine runs)
+	cd $(BACKEND) && uv run celery -A app.workers.celery_app beat --loglevel=INFO
 
 frontend-install: ## Install frontend dependencies
 	cd $(FRONTEND) && npm ci

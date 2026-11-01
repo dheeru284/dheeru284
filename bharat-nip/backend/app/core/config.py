@@ -83,6 +83,9 @@ class Settings(BaseSettings):
     # --- pipeline ---
     pipeline_execution: PipelineExecution = "celery"
 
+    # --- narrative engine ---
+    narrative_interval_minutes: int = Field(default=15, ge=1, le=24 * 60)
+
     @property
     def uses_mock(self) -> bool:
         return (
