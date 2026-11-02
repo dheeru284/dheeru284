@@ -46,3 +46,19 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-02 — no applications submitted
+
+Blockers: no browser/form-submission path in this session, salary not published on most postings, and many hosts blocked (jointaro.com unresolvable; boards-api/lever API/remoteok/remotive unreachable). Search snippets only, plus one board page fetch. Nothing applied, per the "never guess salary/eligibility" rules.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer - Global Team (India Remote) | job-boards.greenhouse.io/yipitdata/jobs/7140674 (board lists it under "India (Remote)") | REVIEW | India-remote confirmed on employer board. Salary not shown; check posting and stack fit (Databricks/Spark?) before applying. |
+| phData | Senior Data Engineer (India, IST hours) | employbl.com/jobs/senior-data-engineer-phdata-1800820 | REVIEW (unverified) | India remote; salary unknown; find phData's own careers page. |
+| Nearform | Senior Data Engineer, remote India (FT + contract) | jointaro.com listing | REVIEW (unverified) | Host blocked; salary unknown. |
+| Forbes | Senior Data Engineer, India Remote (Greenhouse) | search snippet, posted 28 Mar 2026 | REVIEW (likely stale) | |
+| Billigence | Senior Data Engineer – Azure Databricks, India remote | builtinpune.in / remotive | REVIEW | Still listed; salary unseen. Strong stack match. |
+| Jobgether | Databricks Engineer Senior/Lead, India | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REVIEW | Intermediary; real employer hidden. |
+| CazVid listing | Sr DE Snowflake & Databricks | cazvid.com | REJECT | $2.3–3k/mo ≈ ₹2.0–2.7 lakh/mo, below ₹3.5 lakh. |
+| DailyRemote | Sr DE Azure Databricks | dailyremote.com | REJECT | Posted ~3 months ago, likely stale. |
+| Karat | Senior Data Engineer | greenhouse | REJECT | Bangalore-only (onsite-ish) per snippet. |
