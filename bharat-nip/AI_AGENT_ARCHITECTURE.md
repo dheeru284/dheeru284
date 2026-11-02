@@ -127,3 +127,12 @@ or `AgentFailed`. Provider failures are recorded as `FAILED` runs and are never 
 A golden set of claims with human-agreed classifications is planned for Phase 2. It will be run
 against real providers per prompt version, and a prompt version is promoted only if it doesn't
 regress agreement or invariance.
+
+## 10. Organization layer (Phase 3)
+
+The agents above are the **claim pipeline**. Phase 3 adds an organization of fourteen agents that
+reuses this same runner, prompt registry, ai_run provenance and guardrail approach, inside
+explicit, bounded workflows with human approval of public-facing work. See
+[AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md). The pipeline agents are attributed to their
+organizational owners: `claim_extractor` → Claim Extraction Agent, `evidence_analyst` → Research
+Agent, `assessor` → Fact Check Agent, `fact_check_critic` → Critic Agent.

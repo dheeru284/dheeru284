@@ -15,6 +15,7 @@ from app.models.narratives import (
     Topic,
     TopicClaim,
 )
+from app.models.org import OrgApproval, OrgExecution, OrgTask, OrgTaskStep
 from app.models.review import ReviewDecision, ReviewTask
 from app.models.sources import (
     RegistrySource,
@@ -41,6 +42,10 @@ __all__ = [
     "NarrativeObservation",
     "NarrativeRelation",
     "NarrativeResponse",
+    "OrgApproval",
+    "OrgExecution",
+    "OrgTask",
+    "OrgTaskStep",
     "PipelineJob",
     "RegistrySource",
     "ReviewDecision",

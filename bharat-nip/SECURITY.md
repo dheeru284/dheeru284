@@ -101,6 +101,16 @@ add them must be rejected.
 - Narrative status changes are human-only, require a note, and are audited. RESPOND and CORRECT
   mean that people should prepare a response; nothing is generated or published.
 
+### 5.2 Agent organization (Phase 3)
+- Agents act only through permissioned tools on an allowlist. There is no tool or permission to
+  publish, send, post, schedule or contact anyone (a test enforces this).
+- Workflows are fixed templates with hard bounds, so agents cannot start loops, spawn work or talk
+  to each other.
+- Public-facing output needs a human REVIEWER+ who did not create the task. A deterministic
+  compliance gate blocks uncited sentences, invented numbers, personal data, targeting language,
+  impersonation, calls to vote and publish instructions.
+- The Media Forensics Agent states that it performs no manipulation or deepfake detection.
+
 ## 6. Data protection
 
 - Personal data is limited to platform users (name, email, role) and

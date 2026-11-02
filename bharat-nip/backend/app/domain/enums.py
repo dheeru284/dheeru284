@@ -415,3 +415,76 @@ class ResponseType(StrEnum):
     CLARIFICATION = "CLARIFICATION"
     CONTEXT_NOTE = "CONTEXT_NOTE"
     EXTERNAL_FACT_CHECK = "EXTERNAL_FACT_CHECK"
+
+
+# --- Agent organization (AGENT_ORGANIZATION.md) ------------------------------------------
+
+
+class WorkflowType(StrEnum):
+    SUBMISSION_FACT_CHECK = "SUBMISSION_FACT_CHECK"
+    CLAIM_INVESTIGATION = "CLAIM_INVESTIGATION"
+    MEDIA_CHECK = "MEDIA_CHECK"
+    NARRATIVE_RESPONSE = "NARRATIVE_RESPONSE"
+    ANALYTICS_REPORT = "ANALYTICS_REPORT"
+
+
+class OrgTaskStatus(StrEnum):
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    AWAITING_APPROVAL = "AWAITING_APPROVAL"
+    ESCALATED = "ESCALATED"
+    COMPLETED = "COMPLETED"
+    REJECTED = "REJECTED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class StepStatus(StrEnum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    IN_REVIEW = "IN_REVIEW"
+    DONE = "DONE"
+    SKIPPED = "SKIPPED"
+    ESCALATED = "ESCALATED"
+    FAILED = "FAILED"
+
+
+class ReviewerType(StrEnum):
+    CRITIC = "CRITIC"
+    MANAGER = "MANAGER"
+    NONE = "NONE"
+
+
+class ApprovalLevel(StrEnum):
+    MANAGER = "MANAGER"  # internal work: approved by the Chief Intelligence Agent
+    HUMAN = "HUMAN"  # anything meant for the public: approved by a person
+
+
+class ExecutionKind(StrEnum):
+    DELEGATION = "DELEGATION"
+    EXECUTION = "EXECUTION"
+    REVIEW = "REVIEW"
+    REVISION = "REVISION"
+    ESCALATION = "ESCALATION"
+    APPROVAL = "APPROVAL"
+    COMPLETION = "COMPLETION"
+
+
+class ExecutionStatus(StrEnum):
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    PASS = "PASS"
+    REVISE = "REVISE"
+    ESCALATE = "ESCALATE"
+    SKIPPED = "SKIPPED"
+
+
+class ApproverType(StrEnum):
+    HUMAN = "HUMAN"
+    AGENT = "AGENT"
+
+
+class ApprovalDecision(StrEnum):
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    REVISION_REQUESTED = "REVISION_REQUESTED"

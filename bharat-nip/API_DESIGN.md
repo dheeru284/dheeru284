@@ -116,6 +116,21 @@ Video is never downloaded: metadata plus a submitter-supplied transcript only.
 | POST | `/narratives/{id}/observations` | Aggregate public count `{observed_at, channel, metric, value, source_url, note}` |
 | POST | `/narratives/{id}/responses` | Existing response `{response_type, title, url, channel, published_at}` |
 
+### Agent organization (Phase 3; ANALYST+ unless noted)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/org/agents` | All 14 agents: role, responsibilities, input/output JSON Schemas, permissions, tools, model, token and iteration limits, escalation rules, manager, direct reports, live status, current task, performance, recent activity |
+| GET | `/org/agents/{key}` | One agent |
+| GET | `/org/chart` | Nodes (human oversight + agents) and hierarchy edges with live status, plus global bounds |
+| GET | `/org/workflows` | Workflow templates (steps, reviewers, revisable steps) and supported languages |
+| POST | `/org/tasks` | `{workflow, input}`; validated; the Chief delegates and the task runs on a worker (inline in tests) |
+| GET | `/org/tasks` · `/org/tasks/{id}` | Task list / detail: steps, full execution log, approvals |
+| POST | `/org/tasks/{id}/approve` | REVIEWER+, not the creator; `AWAITING_APPROVAL` only; compliance violations block it |
+| POST | `/org/tasks/{id}/reject` | REVIEWER+, not the creator; `{notes}` |
+| POST | `/org/tasks/{id}/request-revision` | REVIEWER+, not the creator; `{step_key, notes}` for revisable (LLM) steps; max 2 per task |
+| POST | `/org/tasks/{id}/retry` | Retry the escalated step once |
+| POST | `/org/tasks/{id}/cancel` | `{notes}` |
+
 ## 3. Structured fact-check result
 
 `GET /claims/{id}/fact-check`:

@@ -27,6 +27,8 @@ class PipelineDispatcher(Protocol):
 
     def analyze_narratives(self) -> None: ...
 
+    def run_org_task(self, task_id: uuid.UUID) -> None: ...
+
 
 def build_context(session: Session, settings: Settings) -> PipelineContext:
     return PipelineContext(
@@ -56,6 +58,11 @@ class CeleryDispatcher:
 
         analyze_narratives_task.delay()
 
+    def run_org_task(self, task_id: uuid.UUID) -> None:
+        from app.workers.tasks import run_org_task_task
+
+        run_org_task_task.delay(str(task_id))
+
 
 class InlineDispatcher:
     """Runs the pipeline synchronously with the given context (and its session)."""
@@ -78,4 +85,11 @@ class InlineDispatcher:
 
         self.ctx.session.commit()
         run_engine(self.ctx.session)
+        self.ctx.session.commit()
+
+    def run_org_task(self, task_id: uuid.UUID) -> None:
+        from app.org.engine import run_task
+
+        self.ctx.session.commit()
+        run_task(self.ctx, task_id)
         self.ctx.session.commit()

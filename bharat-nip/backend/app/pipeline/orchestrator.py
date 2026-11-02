@@ -130,6 +130,14 @@ def _record_failed_job(ctx, stage, submission_id, claim_id, attempt, error) -> N
 
 
 def process_submission(ctx: PipelineContext, submission_id: uuid.UUID) -> list[uuid.UUID]:
+    claim_ids = extract_submission(ctx, submission_id)
+    for claim_id in claim_ids:
+        process_claim(ctx, claim_id)
+    return claim_ids
+
+
+def extract_submission(ctx: PipelineContext, submission_id: uuid.UUID) -> list[uuid.UUID]:
+    """CONTENT and EXTRACTION stages only. Returns the extracted claim IDs."""
     session = ctx.session
     sub = session.get(Submission, submission_id)
     if sub is None:
@@ -171,10 +179,7 @@ def process_submission(ctx: PipelineContext, submission_id: uuid.UUID) -> list[u
         session.commit()
         return []
 
-    claim_ids = [c.id for c in claims]
-    for claim_id in claim_ids:
-        process_claim(ctx, claim_id)
-    return claim_ids
+    return [c.id for c in claims]
 
 
 # --- claim ---------------------------------------------------------------------------------

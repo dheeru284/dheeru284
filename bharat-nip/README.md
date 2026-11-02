@@ -8,7 +8,11 @@ The system can conclude `TRUE`, `MOSTLY_TRUE`, `MISLEADING`, `OUT_OF_CONTEXT`,
 `FALSE`, `UNVERIFIED`, `INSUFFICIENT_EVIDENCE`, `OPINION`, `PREDICTION` or
 `SATIRE`. It says so explicitly when evidence is insufficient.
 
-**Status: Phase 2 (narrative intelligence) complete.** On top of the Phase 1 evidence pipeline,
+**Status: Phase 3 (multi-agent organization) complete.** Fourteen agents under a Chief
+Intelligence Agent work through explicit, bounded workflows, with every execution logged and
+public-facing drafts approved by people ([AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md)).
+
+Phase 2: On top of the Phase 1 evidence pipeline,
 the narrative engine groups recurring claims into narratives, tracks topics, velocity, evidence
 strength and aggregate public interest, maps relationships, and recommends a response posture for
 human decision ([NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md)).
@@ -31,6 +35,7 @@ reviewer. Every step is audited. Social-media publishing is deliberately not bui
 | [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Test layers and the principle-to-test map |
 | [SECURITY.md](SECURITY.md) | Threat model, AI controls, audit integrity, prohibited capabilities |
 | [NARRATIVE_INTELLIGENCE.md](NARRATIVE_INTELLIGENCE.md) | Narrative engine: definitions, formulas, recommendation table, neutrality constraints |
+| [AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md) | Agents, hierarchy, workflows, bounds, approvals, content guardrails |
 | [ROADMAP.md](ROADMAP.md) | Phases and exit criteria |
 
 ## Quick start

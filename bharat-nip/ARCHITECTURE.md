@@ -1,6 +1,6 @@
 # Architecture — Bharat Narrative Intelligence Platform (BNIP)
 
-Status: Phase 2 (narrative intelligence) complete. This document is the source of truth for system
+Status: Phase 3 (multi-agent organization) complete. This document is the source of truth for system
 structure. If code and this document disagree, fix one of them in the same change.
 
 Related documents: [PRODUCT_REQUIREMENTS](PRODUCT_REQUIREMENTS.md) ·
@@ -119,6 +119,14 @@ lock and is idempotent. `service.py` holds analyst operations; `queries.py` hold
 (claim history, evidence timeline, graph, historical matching). The engine never reads speaker
 identity and never changes a narrative's status.
 
+### 4.6c Agent organization (`backend/app/org`)
+Fourteen agents under a Chief Intelligence Agent ([AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md)).
+`agents.py` holds the definitions, `tools.py` permissioned tools, `handlers.py` agent
+implementations (deterministic or via the shared agent runner), `workflows.py` explicit templates,
+`engine.py` the bounded lifecycle engine, `compliance.py` deterministic rules, and `queries.py` the
+org chart, status and performance. Agents never call each other. The Phase 1 pipeline remains the
+claim workflow, and its agents are attributed to their organizational owners.
+
 ### 4.7 Audit (`backend/app/audit`)
 `AuditService.record(...)` appends a hash-chained event inside the caller's
 transaction, so the domain change and its audit event commit or roll back
@@ -193,11 +201,12 @@ bharat-nip/
 │   │   ├── providers/        llm / embeddings / search / fixtures / registry
 │   │   ├── ingest/           SafeFetcher, HTML/PDF/OCR extraction
 │   │   ├── narratives/       narrative engine, metrics, recommendation, queries
+│   │   ├── org/              agent organization: agents, tools, workflows, engine, compliance
 │   │   ├── audit/            hash-chained audit service
 │   │   └── workers/          Celery app and tasks
 │   └── tests/
 └── frontend/                 Next.js: login, submit, submissions, claims, claim detail, review,
-                              narratives dashboard/detail/graph
+                              narratives dashboard/detail/graph, organization chart, tasks
 ```
 
 ## 7. Key technology decisions

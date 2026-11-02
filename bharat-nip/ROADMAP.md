@@ -81,27 +81,49 @@ Phase 2 notes:
 - Thresholds were checked on fictional test data only. Calibrate them on real, approved data
   before relying on them.
 
-## Phase 3 — Retrieval quality, evaluation and UI depth
+## Phase 3 — Multi-agent organization ✅
+Design in [AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md).
+- Fourteen agents (Chief Intelligence, Research, Claim Extraction, Source Verification, Fact
+  Check, Context, Media Forensics, Narrative Intelligence, Analytics, Response Strategist, Content,
+  Localization, Critic, Compliance). Each has a role, responsibilities, input/output schemas,
+  permissions, tools, model, token limits, an iteration limit and escalation rules.
+- Explicit workflows only (claim investigation, submission fact-check, media check, narrative
+  response, analytics report). The lifecycle runs task → delegation → execution → review →
+  revision → approval → completion.
+- Hard bounds: per-agent iterations, a 40-execution budget per task, 2 human revision requests,
+  and 1 retry per escalated step. Every bound escalates; nothing loops.
+- Permissioned tools. No permission or tool exists to publish, send or contact anyone.
+- No self-review: the manager or the independent Critic reviews; the Chief approves internal work;
+  humans (REVIEWER+, never the creator) approve anything meant for the public.
+- Content guardrails: approved fact-checks only, every sentence cited, no invented numbers,
+  translations that preserve citations and numbers, and a deterministic compliance gate.
+- Every execution logged (`org_executions`) and audited.
+- UI: React Flow organization chart (hierarchy, status, current task, manager, reports,
+  performance, recent activity) and task pages with the lifecycle, steps, execution log and
+  approval actions.
+- Tests: 209 backend and 13 frontend.
+
+Phase 3 notes:
+- Evidence-grounded **drafting** (formerly planned for Phase 5) now exists, but only as drafts
+  that a human approves and nobody publishes.
+- The Media Forensics Agent deliberately reports file facts and reuse only. Real manipulation
+  detection needs a vetted external tool, and none is integrated.
+- Localization output is machine translation and is labelled as needing a fluent human reviewer.
+
+## Phase 4 — Retrieval quality, evaluation and UI depth
 Embeddings and hybrid retrieval (claims and evidence), a golden-set evaluation harness with live
-Ollama runs (including narrative clustering quality), a React Flow pipeline graph per claim,
+Ollama runs (verdicts, narrative clustering, agent outputs), a React Flow pipeline graph per claim,
 registry/source management screens, an audit viewer, and Playwright E2E in CI.
 
-## Phase 4 — Hardening
+## Phase 5 — Hardening
 OIDC SSO, rate limiting, DB role separation for audit, structured logging and
 metrics (OpenTelemetry), dependency auditing, backup and restore runbook,
 external anchoring of the audit chain head.
 
-## Phase 5 — Communications support
-Evidence-grounded drafts (explainers, corrections, briefs) generated **only**
-from approved assessments. Every sentence must map to a citation, verified by
-the same guardrails. Drafts are labeled AI-assisted and need human approval.
-A separate critic checks accuracy and tone.
-
 ## Phase 6 — Publishing integrations (gated)
-Only after Phases 1–5 are proven in production. Publishing to the
-organization's own, clearly-identified official accounts, with human approval
-per post, a full audit trail, and none of the prohibited capabilities in
-[SECURITY](SECURITY.md) §5.
+Only after Phases 1–5 are proven in production. Publishing approved response packages to the
+organization's own, clearly identified official accounts, with human approval per post, a full
+audit trail, and none of the prohibited capabilities in [SECURITY](SECURITY.md) §5.
 
 ## Later / under consideration
 - Indic-language support (Hindi first) for extraction, retrieval and assessment.

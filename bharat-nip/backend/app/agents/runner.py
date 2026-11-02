@@ -36,6 +36,15 @@ class AgentFailed(Exception):
         self.last_run_id = last_run_id
 
 
+class InputTooLarge(Exception):
+    """The rendered prompt exceeds the caller's input token limit (checked before any call)."""
+
+    def __init__(self, agent: str, estimated: int, limit: int) -> None:
+        super().__init__(f"{agent}: input ~{estimated} tokens exceeds limit {limit}")
+        self.estimated = estimated
+        self.limit = limit
+
+
 class InvalidAgentOutput(ValueError):
     """Raised by semantic validators; triggers a bounded retry."""
 
@@ -80,11 +89,17 @@ def run_agent[T: BaseModel](
     pipeline_job_id: uuid.UUID | None = None,
     max_attempts: int = 2,
     registry: PromptRegistry | None = None,
+    max_input_tokens: int | None = None,
+    max_output_tokens: int | None = None,
 ) -> AgentResult[T]:
     prompt: PromptTemplate = (registry or default_prompt_registry()).get(
         spec.prompt_id, spec.prompt_version
     )
     system, user = prompt.render_messages(**variables)
+    if max_input_tokens:
+        estimated = (len(system) + len(user)) // 4
+        if estimated > max_input_tokens:
+            raise InputTooLarge(spec.name, estimated, max_input_tokens)
     messages = [ChatMessage(role="system", content=system), ChatMessage(role="user", content=user)]
     recorder = AIRunRecorder(session)
     last_run: AIRun | None = None
@@ -93,7 +108,7 @@ def run_agent[T: BaseModel](
         request = LLMRequest(
             prompt_id=spec.prompt_id,
             messages=messages,
-            max_tokens=spec.max_tokens,
+            max_tokens=min(spec.max_tokens, max_output_tokens or spec.max_tokens),
             response_schema=spec.output_model.model_json_schema(),
         )
         common = {
@@ -146,6 +161,7 @@ def run_agent[T: BaseModel](
 
     raise AgentFailed(
         spec.name,
-        f"no valid output after {max_attempts} attempts",
+        f"no valid output after {max_attempts} attempts; last error: "
+        f"{(last_run.error or '')[:500] if last_run else ''}",
         last_run.id if last_run else None,
     )

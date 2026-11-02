@@ -9,6 +9,7 @@ from app.api.routes import (
     auth,
     claims,
     narratives,
+    org,
     registry,
     review,
     submissions,
@@ -37,7 +38,7 @@ def create_app() -> FastAPI:
         allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
     )
     install_error_handlers(app)
-    for module in (system, auth, submissions, claims, registry, review, audit, narratives):
+    for module in (system, auth, submissions, claims, registry, review, audit, narratives, org):
         app.include_router(module.router, prefix=API_PREFIX)
     return app
 

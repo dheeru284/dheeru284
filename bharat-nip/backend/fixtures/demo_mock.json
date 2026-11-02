@@ -18,8 +18,16 @@
             "claim_date": null,
             "location": "Riverland",
             "entities": [
-              {"name": "Asha Verma", "type": "PERSON", "role": "SPEAKER"},
-              {"name": "Riverland", "type": "PLACE", "role": "SUBJECT"}
+              {
+                "name": "Asha Verma",
+                "type": "PERSON",
+                "role": "SPEAKER"
+              },
+              {
+                "name": "Riverland",
+                "type": "PLACE",
+                "role": "SUBJECT"
+              }
             ]
           },
           {
@@ -33,7 +41,13 @@
             "time_reference": null,
             "claim_date": null,
             "location": "Riverland",
-            "entities": [{"name": "Asha Verma", "type": "PERSON", "role": "SPEAKER"}]
+            "entities": [
+              {
+                "name": "Asha Verma",
+                "type": "PERSON",
+                "role": "SPEAKER"
+              }
+            ]
           }
         ]
       }
@@ -60,8 +74,12 @@
         "confidence": 0.9,
         "summary": "The official bulletin puts Riverland's 2023 literacy rate at 81.2 percent, up from 78.4 percent in 2021.",
         "reasoning": "E1, from the Riverland Statistics Office, reports 81.2 percent in 2023 and 78.4 percent in 2021. The claim's 81 percent is a fair rounding and the rate did rise.",
-        "cited_evidence": ["E1"],
-        "missing_information": ["An independent survey corroborating the official estimate"],
+        "cited_evidence": [
+          "E1"
+        ],
+        "missing_information": [
+          "An independent survey corroborating the official estimate"
+        ],
         "recommended_action": "CONFIRM_IN_REVIEW"
       }
     },
@@ -70,18 +88,154 @@
       "response": {
         "outcome": "PASS",
         "checks": [
-          {"check": "source_quality", "passed": true, "detail": "Official statistics office, primary data.", "evidence": ["E1"]},
-          {"check": "outdated_evidence", "passed": true, "detail": "Bulletin covers 2023.", "evidence": []},
-          {"check": "cherry_picking", "passed": true, "detail": "Only one item retrieved; nothing ignored.", "evidence": []},
-          {"check": "missing_context", "passed": true, "detail": "Rounding is noted.", "evidence": []},
-          {"check": "incorrect_interpretation", "passed": true, "detail": "Quote read correctly.", "evidence": []},
-          {"check": "contradictory_evidence", "passed": true, "detail": "No contradicting evidence retrieved.", "evidence": []},
-          {"check": "unsupported_conclusions", "passed": true, "detail": "Conclusions follow from E1.", "evidence": []},
-          {"check": "attribution_leakage", "passed": true, "detail": "Reasoning does not refer to the speaker.", "evidence": []}
+          {
+            "check": "source_quality",
+            "passed": true,
+            "detail": "Official statistics office, primary data.",
+            "evidence": [
+              "E1"
+            ]
+          },
+          {
+            "check": "outdated_evidence",
+            "passed": true,
+            "detail": "Bulletin covers 2023.",
+            "evidence": []
+          },
+          {
+            "check": "cherry_picking",
+            "passed": true,
+            "detail": "Only one item retrieved; nothing ignored.",
+            "evidence": []
+          },
+          {
+            "check": "missing_context",
+            "passed": true,
+            "detail": "Rounding is noted.",
+            "evidence": []
+          },
+          {
+            "check": "incorrect_interpretation",
+            "passed": true,
+            "detail": "Quote read correctly.",
+            "evidence": []
+          },
+          {
+            "check": "contradictory_evidence",
+            "passed": true,
+            "detail": "No contradicting evidence retrieved.",
+            "evidence": []
+          },
+          {
+            "check": "unsupported_conclusions",
+            "passed": true,
+            "detail": "Conclusions follow from E1.",
+            "evidence": []
+          },
+          {
+            "check": "attribution_leakage",
+            "passed": true,
+            "detail": "Reasoning does not refer to the speaker.",
+            "evidence": []
+          }
         ],
         "counter_argument": "The determination rests on a single official source; without independent corroboration a reader must trust one estimate.",
         "suggested_classification": null,
         "summary": "Holds up, but rests on a single source."
+      }
+    },
+    {
+      "prompt_id": "context_agent",
+      "response": {
+        "context_points": [
+          {
+            "text": "The official bulletin reports the 2023 rate from a household survey of 42,000 households.",
+            "citations": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_context": [
+          "District-level figures",
+          "An independent estimate"
+        ]
+      }
+    },
+    {
+      "prompt_id": "org_critic",
+      "response": {
+        "verdict": "PASS",
+        "issues": [],
+        "summary": "Statements match the source materials; no invented figures."
+      }
+    },
+    {
+      "prompt_id": "response_strategist",
+      "response": {
+        "posture": "CORRECT",
+        "objectives": [
+          "Give people the official 2023 figure"
+        ],
+        "key_messages": [
+          {
+            "text": "The official 2023 literacy figure is 81.2 percent.",
+            "citations": [
+              "F1"
+            ]
+          }
+        ],
+        "channels": [
+          "OFFICIAL_WEBSITE",
+          "FACT_CHECK_PAGE"
+        ],
+        "format": "CORRECTION",
+        "do_not": [
+          "Do not repeat the inaccurate wording in the headline",
+          "Do not attack the speaker"
+        ]
+      }
+    },
+    {
+      "prompt_id": "content_agent",
+      "response": {
+        "format": "CORRECTION",
+        "headline": "What the official literacy data shows",
+        "sentences": [
+          {
+            "text": "Official statistics put the state literacy rate at 81.2 percent in 2023.",
+            "citations": [
+              "F1"
+            ]
+          },
+          {
+            "text": "The same bulletin reports 78.4 percent for 2021.",
+            "citations": [
+              "F1"
+            ]
+          }
+        ],
+        "ai_assisted_label": "AI-assisted draft. Reviewed by people before any use."
+      }
+    },
+    {
+      "prompt_id": "localization_agent",
+      "response": {
+        "language": "hi",
+        "headline": "[hi, mock translation] What the official literacy data shows",
+        "sentences": [
+          {
+            "text": "[hi, mock translation] 81.2 percent in 2023.",
+            "citations": [
+              "F1"
+            ]
+          },
+          {
+            "text": "[hi, mock translation] 78.4 percent for 2021.",
+            "citations": [
+              "F1"
+            ]
+          }
+        ]
       }
     }
   ],

@@ -140,6 +140,15 @@ public relevance, momentum, potential harm, uncertainty and existing response co
 no inference of individual political preference, no voter psychological profiling, aggregate and
 public information only, and no persuasion scores.
 
+## 5b. Phase 3: Multi-agent organization (implemented)
+
+Fourteen agents with roles, responsibilities, schemas, permissions, tools, models, token limits,
+iteration limits and escalation rules. They work through explicit, bounded workflows
+(task → delegation → execution → review → revision → approval → completion), and every execution
+is logged. A React Flow organization view shows the hierarchy, status, current task, manager,
+direct reports, performance and recent activity. Specified in
+[AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md).
+
 ## 6. Later capabilities (not in Milestone 1)
 
 Order and gating are in [ROADMAP](ROADMAP.md).

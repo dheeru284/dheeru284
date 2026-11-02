@@ -9,8 +9,8 @@ communications platform. Read [README.md](README.md), then the design docs it li
 **The design docs are the source of truth.** If code and docs disagree, fix one of
 them in the same change.
 
-Current phase: **Phase 2 complete** (narrative intelligence). Next: Phase 3 in [ROADMAP.md](ROADMAP.md).
-Do not start content generation (Phase 5) or publishing (Phase 6) until the roadmap says so and all tests pass.
+Current phase: **Phase 3 complete** (multi-agent organization). Next: Phase 4 in [ROADMAP.md](ROADMAP.md).
+Do not build publishing (Phase 6) until the roadmap says so and all tests pass.
 
 ## Non-negotiable rules
 
@@ -36,6 +36,7 @@ Do not start content generation (Phase 5) or publishing (Phase 6) until the road
 - DB: PostgreSQL 16 + pgvector (768-dim embeddings).
 - AI: `LLMProvider` / `EmbeddingProvider` / `SearchProvider` protocols. Ollama, SearXNG, local corpus, and scripted mocks.
 - Narratives: `app/narratives/` (engine, metrics, `rec-v1` recommendation). Never use speaker identity, per-person data or persuasion measures there (tests enforce it).
+- Organization: `app/org/` (AGENT_ORGANIZATION.md). Agents never call each other; add work only as workflow template steps. Never add a tool or permission that publishes, sends or contacts anyone. Keep every bound.
 - Pipeline: `app/pipeline/orchestrator.py` (deterministic). Agents are in `app/agents/definitions.py`, prompts in `app/prompts/`.
 - Frontend: Next.js 16 (App Router, `cacheComponents` on), React 19, TypeScript, Tailwind v4, shadcn/ui conventions. React Flow (narrative graph) and Recharts (metrics chart).
 - **Next.js 16 differs from older versions.** Read `frontend/AGENTS.md` and the docs in `frontend/node_modules/next/dist/docs/` before writing frontend code.

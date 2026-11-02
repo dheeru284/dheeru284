@@ -43,3 +43,15 @@ def analyze_narratives_task() -> dict:
         report = run_engine(session)
         session.commit()
         return report.as_dict()
+
+
+@celery_app.task(name="org.run_task")
+def run_org_task_task(task_id: str) -> str:
+    """Run an organization task through its workflow (bounded; see AGENT_ORGANIZATION.md)."""
+    from app.org.engine import run_task
+
+    with get_sessionmaker()() as session:
+        ctx = build_context(session, get_settings())
+        task = run_task(ctx, uuid.UUID(task_id))
+        session.commit()
+        return task.status.value

@@ -6,6 +6,7 @@ Alembic (`backend/alembic/versions`):
 | Revision | Content |
 |---|---|
 | `0001` | Phase 0 baseline: users, entities, submissions, claims, sources, chunks, evidence, assessments, critiques, review, ai_runs, pipeline_jobs, audit_events (append-only triggers). |
+| `0004` | Phase 3: agent organization (§3.19). New tables only. |
 | `0003` | Phase 2: narrative intelligence tables (§3.18). New tables only. |
 | `0002` | Phase 1: submission types and files, structured claims, **source registry** (replaces `publishers`), **search queries/results** (replace `retrieval_results`), evidence relevance and directness, structured fact-check results, critic findings, and the new review model. Hand-written, with explicit enum CHECK changes. |
 
@@ -211,6 +212,19 @@ Narrative audit actions: `narrative.created`, `narrative.claim_added`, `narrativ
 `narrative.status_changed`, `narrative.harm_assessed`, `narrative.updated`,
 `narrative.observation_added`, `narrative.response_recorded`, `narrative.recommendation_changed`,
 `topic.created`, `narrative_engine.run`.
+
+### 3.19 Agent organization (Phase 3)
+Agent definitions are code (`app/org/agents.py`); see [AGENT_ORGANIZATION.md](AGENT_ORGANIZATION.md).
+
+| Table | Purpose and key columns |
+|---|---|
+| `org_tasks` | `workflow`, `title`, `input`, `status` (`PENDING`, `IN_PROGRESS`, `AWAITING_APPROVAL`, `ESCALATED`, `COMPLETED`, `REJECTED`, `FAILED`, `CANCELLED`), `approval_level` (`MANAGER`/`HUMAN`), `output` (delegation plan and result), `escalation_reason`, `executions_used`, `human_revisions`, `created_by_id`. |
+| `org_task_steps` | One per template step (unique `task_id, step_key`): `agent_key`, `delegated_by`, `depends_on`, `reviewer` (`CRITIC`/`MANAGER`/`NONE`), `status`, `iterations`, `retries`, `output`, `feedback`, `escalation`. |
+| `org_executions` | The execution log, ordered by `seq` (identity): `kind` (`DELEGATION`, `EXECUTION`, `REVIEW`, `REVISION`, `ESCALATION`, `APPROVAL`, `COMPLETION`), `status`, `agent_key` (`human_reviewer` for human decisions), `iteration`, `input`, `output`, `tool_calls`, `ai_run_id`, `model`, token counts, `latency_ms`, `error`. |
+| `org_approvals` | `approver_type` (`HUMAN`/`AGENT`; CHECK identity present), `decision` (`APPROVED`, `REJECTED`, `REVISION_REQUESTED`; CHECK notes required unless approved), `target_step`. |
+
+Every execution is also an `org.<kind>` audit event; task lifecycle events are `org.task_created`,
+`org.task_retried` and `org.task_cancelled`.
 
 ## 4. Claim status machine (`app/domain/state.py`)
 
