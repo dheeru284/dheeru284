@@ -46,3 +46,10 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-03 — no applications submitted
+
+Blocker: greenhouse/lever APIs, remoteok etc. are 403 via the proxy; search only returns snippets. No application could be verified or submitted.
+- Jobgether (Lever) Senior Data Engineer 0f35f05e… and c6108318… -> 404, likely closed -> REJECT (expired).
+- Unverified leads (aggregators, salary/India eligibility unknown): Codvo Senior Data Engineer (Databricks) remote India (remowork.life); Hirist Senior Data Engineer #1626264 (Databricks/MLflow); Infosys Data Architect via Weekday (8+ yrs) — REVIEW.
+- Other Jobgether Lever postings (Staff Data Engineer 7ac53bdb…, Senior DE Full Stack 4d426592…, Data Engineer Global Team 26017845…, Databricks Engineer Sr/Lead) not verified; Jobgether is an intermediary, salary not shown.
