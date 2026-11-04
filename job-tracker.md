@@ -46,3 +46,18 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-04 — no applications submitted
+
+Blocker: same as before. boards-api.greenhouse.io, api.lever.co and remoteok.com don't resolve or connect from this session. One Lever posting I tried (jobgether/7ac53bdb…, Staff Data Engineer) returned 404. Only web-search snippets were available, so nothing was verified and nothing was applied to.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| Jobgether (intermediary) | Databricks Engineer (Senior/Lead), Remote Worldwide | jobgether.com listing | REVIEW (unverified) | Worldwide remote per snippet. Find the real employer, salary and India eligibility. |
+| (unnamed) | Senior Data Engineer – Snowflake & Databricks | cazvid.com/en/job/data-engineer-snowflake-databricks-aws-gcp-azure-microsoft-fabrick-158716 | REVIEW (unverified) | Open to India, Pakistan and Nigeria. Pay is $2.3–3k, period unstated; if monthly, about ₹2–2.7 lakh, which is below target. Page was last verified 7 months ago. |
+| Ness Digital Engineering | Senior Data Engineer (Databricks), Bangalore – Remote | search snippet | REVIEW (unverified) | Salary unknown, posting date unclear. |
+| Billigence | Senior Data Engineer (Azure Databricks), India | jobs.y-axis.com / jobgether | REJECT (probably) | Listing shows expiry 11 Jun 2026, so likely closed. |
+| Gainwell Technologies | Senior Data Engineer (SQL, Spark/PySpark, Databricks), Bangalore | gainwelltechnologies.com | REJECT | Posted 28 Jan 2026 and listed as on-site Bangalore. |
+
+Totals this run: found 5, qualifying 0 verified, applied 0, review 3, rejected 2. Highest compensation seen: none verified.
+To unblock, allow job-board hosts (boards-api.greenhouse.io, api.lever.co, ashbyhq.com, and Naukri, Indeed and GulfTalent if wanted) in the session's network settings.
