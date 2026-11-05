@@ -46,3 +46,17 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-05 — no applications submitted
+
+Blocker: boards-api.greenhouse.io / api.lever.co / remote boards unreachable from this session; individual posting pages mostly unreadable (JS-rendered or blocked). Salaries and India eligibility unverified, so nothing was applied to. Search snippets only.
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer (India Remote) | job-boards.greenhouse.io/yipitdata/jobs/7140674 | REVIEW | Board lists "India Remote" roles; posting body and salary not readable. Verify stack/pay. |
+| Jobgether (employer unnamed) | Databricks Engineer – Senior/Lead | jobs.lever.co/jobgether/039b20f4-e9e7-40b3-9467-415424191ea0 | REJECT | Page now 404 (closed). |
+| BrightClaim | Senior Data Engineer (ADF, Databricks, Data Lake), India remote | remotive.com/remote/jobs/data/senior-data-engineer-5223168 | REVIEW | Posted ~1 day ago per snippet; salary unknown. |
+| Billigence | Senior Data Engineer – Azure Databricks, India remote | remotive.com/remote/jobs/software-development/senior-data-engineer-4005395 | REVIEW | Reposted ~14 days ago; salary unknown. |
+| Insight Global | INTL India Remote Senior Data Engineer (Azure & Snowflake) | jobs.insightglobal.com/find_a_job/arizona/job-433472 | REVIEW | Staffing firm; salary unknown, likely contract. |
+| Smart Working Solutions | Senior Data Engineer (Remote, Contractual) | jobs.lever.co/smart-working-solutions/f3b3e018-a08f-476d-8904-779586270588 | REVIEW | Contract; India eligibility unconfirmed. |
+| Weekday clients / indigoChart / Eazyml | Senior DE / Databricks roles, India | weekday.works, remotive | REJECT (likely) | India-only contract/local-market pay, typically below ₹42 lakh; not verified. |
