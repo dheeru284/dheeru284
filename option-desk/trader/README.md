@@ -57,8 +57,7 @@ cd option-desk && npm install
 ## 3. Configure and test
 
 ```bash
-cp trader/.env.example trader/.env && nano trader/.env      # fill it in; keep MODE=paper
-chmod 600 trader/.env
+node trader/setup.mjs                 # asks for the API key, client ID, PIN, TOTP secret (hidden), tests login, saves trader/.env
 node trader/test-scenarios.mjs        # offline logic tests (sim market)
 node trader/trader.mjs --check        # logs in to Angel, prints funds and NIFTY spot
 node trader/trader.mjs --once         # one cycle; then look at the Auto-trader tab
