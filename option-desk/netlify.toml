@@ -1,0 +1,18 @@
+# Netlify: static site in site/, serverless data proxies in netlify/functions (free tier).
+[build]
+  publish = "site"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/results.json"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

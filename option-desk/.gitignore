@@ -1,0 +1,4 @@
+research/data/
+.netlify/
+node_modules/
+__pycache__/

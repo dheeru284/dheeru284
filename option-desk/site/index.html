@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NIFTY Option Desk</title>
+<meta name="description" content="Daily NIFTY option-trading desk: overnight macro cues, backtested trade gate, strike planner, option-chain reader, news and a forward-test journal.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f766e'/><path d='M6 22 L12 14 L17 18 L26 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/chart-4.4.1.umd.js" defer></script>
+<script src="lib.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo" aria-hidden="true"></span><div><h1>NIFTY Option Desk</h1><p id="stamp" class="muted">Loading…</p></div></div>
+  <div class="top-actions">
+    <button id="refresh" class="btn ghost" title="Reload live data">↻ Refresh</button>
+    <button id="theme" class="btn ghost" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+<nav class="tabs" role="tablist">
+  <button data-tab="today" class="active">Today</button>
+  <button data-tab="chain">Option chain</button>
+  <button data-tab="lab">Strategy lab</button>
+  <button data-tab="backtest">Backtest</button>
+  <button data-tab="macro">Macro &amp; trends</button>
+  <button data-tab="news">News</button>
+  <button data-tab="journal">Journal</button>
+  <button data-tab="about">Risk &amp; method</button>
+</nav>
+<div class="warn-banner">Research tool, not investment advice. SEBI: ~91% of individual F&amp;O traders lost money in FY25. Every number here is history or a model, not a promise.</div>
+<main>
+  <!-- TODAY -->
+  <section id="tab-today" class="tab active">
+    <div class="grid cards" id="snapshot"></div>
+    <div class="grid two">
+      <div class="panel">
+        <h2>Trade gate <span class="muted small">(rules that survived the 2011–2026 backtest)</span></h2>
+        <div id="verdict" class="verdict">…</div>
+        <ul id="checks" class="checks"></ul>
+        <div class="row">
+          <label>Actual ATM straddle premium (₹, next expiry)
+            <input id="straddle" type="number" step="0.05" placeholder="e.g. 310 — from your broker or the Option chain tab"></label>
+        </div>
+        <p class="muted small" id="vrpnote"></p>
+      </div>
+      <div class="panel">
+        <h2>Opening gap model</h2>
+        <div id="gap"></div>
+        <h2 class="mt">Expected move</h2>
+        <div id="move"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>This week's plan <span class="muted small">(backtested structure, strikes from India VIX)</span></h2>
+      <div class="row wrap">
+        <label>Structure
+          <select id="structure">
+            <option value="ic">Iron condor 1σ / 1.75σ (best risk-adjusted in test)</option>
+            <option value="wide">Wide iron condor 1.25σ / 2σ (higher win rate)</option>
+            <option value="trend">Trend credit spread 0.8σ / 1.5σ</option>
+          </select></label>
+        <label>Expiry <select id="expiry"></select></label>
+        <label>Capital (₹) <input id="capital" type="number" value="300000" step="10000"></label>
+        <label>Risk per trade (%) <input id="riskpct" type="number" value="2" step="0.5" min="0.25" max="10"></label>
+      </div>
+      <div id="plan"></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>Regime</h2><div id="regime"></div></div>
+      <div class="panel"><h2>Event calendar</h2><div id="events"></div></div>
+    </div>
+  </section>
+
+  <!-- CHAIN -->
+  <section id="tab-chain" class="tab">
+    <div class="panel">
+      <h2>Option chain reader</h2>
+      <div class="row wrap">
+        <button id="loadnse" class="btn">Try live NSE chain</button>
+        <label class="btn ghost file">Upload NSE / broker CSV <input id="chainfile" type="file" accept=".csv,text/csv" hidden></label>
+        <label>Spot <input id="chainspot" type="number" step="0.05"></label>
+      </div>
+      <p class="muted small">On nseindia.com → Option Chain → NIFTY → “Download (.csv)”. NSE often blocks cloud servers, so upload is the reliable route. Simple CSV also accepted: strike, call_oi, put_oi, call_chg_oi, put_chg_oi, call_ltp, put_ltp, call_iv, put_iv.</p>
+      <div id="chainout"></div>
+      <div class="chart-box tall"><canvas id="oichart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- LAB -->
+  <section id="tab-lab" class="tab">
+    <div class="panel">
+      <h2>Strategy lab</h2>
+      <div class="row wrap">
+        <label>Spot <input id="labspot" type="number" step="0.05"></label>
+        <label>IV % <input id="labiv" type="number" step="0.1"></label>
+        <label>Expiry <select id="labexp"></select></label>
+        <label>Lot <input id="lablot" type="number" value="65"></label>
+        <button id="labprice" class="btn ghost" title="Fill premiums from Black-Scholes">Model-price legs</button>
+        <button id="labadd" class="btn ghost">+ Leg</button>
+      </div>
+      <table class="tbl" id="legs"><thead><tr><th>Side</th><th>Type</th><th>Strike</th><th>Premium</th><th>Lots</th><th></th></tr></thead><tbody></tbody></table>
+      <div id="labstats"></div>
+      <div class="chart-box tall"><canvas id="payoff"></canvas></div>
+    </div>
+  </section>
+
+  <!-- BACKTEST -->
+  <section id="tab-backtest" class="tab">
+    <div class="panel">
+      <h2>Weekly NIFTY option strategies, 2011 – 2026</h2>
+      <p class="muted small" id="btmeta"></p>
+      <div class="scroll"><table class="tbl" id="bttable"></table></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>Equity curve <select id="btpick"></select></h2><div class="chart-box"><canvas id="eqchart"></canvas></div></div>
+      <div class="panel"><h2>Profit by year</h2><div class="chart-box"><canvas id="yrchart"></canvas></div></div>
+    </div>
+    <div class="panel"><h2>How fragile is the edge?</h2><div id="sens"></div></div>
+  </section>
+
+  <!-- MACRO -->
+  <section id="tab-macro" class="tab">
+    <div class="panel"><h2>Hidden and new trends</h2><div id="trends" class="grid cards"></div></div>
+    <div class="grid two">
+      <div class="panel"><h2>What moves NIFTY's open <span class="muted small">(overnight change vs gap)</span></h2><div class="scroll" id="factors"></div></div>
+      <div class="panel"><h2>Rolling 1-year correlation <select id="corrpick"></select></h2><div class="chart-box"><canvas id="corrchart"></canvas></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>Macro shocks → next month</h2><select id="macropick"></select><div id="macro" class="scroll"></div></div>
+      <div class="panel"><h2>Rates and policy cycles</h2><div id="cycles"></div><h3>Event days</h3><div id="eventstudy"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>India VIX regimes</h2><div id="vixreg" class="scroll"></div></div>
+      <div class="panel"><h2>Option-seller edge by year <span class="muted small">(VIX − realised vol)</span></h2><div class="chart-box"><canvas id="vrpchart"></canvas></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>Overnight vs intraday returns</h2><div class="chart-box"><canvas id="onchart"></canvas></div></div>
+      <div class="panel"><h2>Day of week (since weekly expiries)</h2><div id="dow" class="scroll"></div></div>
+    </div>
+  </section>
+
+  <!-- NEWS -->
+  <section id="tab-news" class="tab">
+    <div class="panel">
+      <h2>News pulse <span class="muted small">(last 48 h, keyword sentiment)</span></h2>
+      <div id="newsagg"></div>
+      <div class="row wrap"><input id="newsfilter" placeholder="Filter headlines…"><select id="newstag"><option value="">All factors</option></select></div>
+      <ul id="newslist" class="news"></ul>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section id="tab-journal" class="tab">
+    <div class="panel">
+      <h2>Forward test journal</h2>
+      <p class="muted small">The honest way to “backtest in the live market”: log every plan the gate gives (including stand-aside weeks), settle at expiry, and compare to the backtest before risking real money. Stored only in this browser.</p>
+      <div class="row wrap">
+        <button id="logplan" class="btn">Log this week's plan</button>
+        <button id="exportj" class="btn ghost">Export CSV</button>
+        <label class="btn ghost file">Import CSV <input id="importj" type="file" accept=".csv" hidden></label>
+      </div>
+      <div id="jstats"></div>
+      <div class="scroll"><table class="tbl" id="jtable"></table></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="tab-about" class="tab">
+    <div class="panel prose" id="about"></div>
+  </section>
+</main>
+<footer class="muted small">Data: Yahoo Finance (delayed), public RSS news, NSE when reachable. Backtest data through <span id="btdate"></span>. Not affiliated with NSE, BSE or SEBI.</footer>
+</body>
+</html>
