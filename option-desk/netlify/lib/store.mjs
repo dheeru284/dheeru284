@@ -7,13 +7,15 @@ import path from 'node:path';
 let blobs = null;
 async function store() {
   if (blobs !== null) return blobs;
+  const { getStore } = await import('@netlify/blobs');
   try {
-    const { getStore } = await import('@netlify/blobs');
     const s = getStore({ name: 'option-desk', consistency: 'strong' });
     await s.get('__probe');          // throws outside a Netlify runtime
     blobs = s;
   } catch {
-    blobs = false;
+    // Outside Netlify (the auto-trader on your server): use the Blobs API with a personal token.
+    const siteID = process.env.NETLIFY_SITE_ID, token = process.env.NETLIFY_AUTH_TOKEN;
+    blobs = siteID && token ? getStore({ name: 'option-desk', siteID, token }) : false;
   }
   return blobs;
 }

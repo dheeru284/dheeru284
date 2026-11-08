@@ -21,6 +21,7 @@
 </header>
 <nav class="tabs" role="tablist">
   <button data-tab="today" class="active">Today</button>
+  <button data-tab="auto">Auto-trader</button>
   <button data-tab="chain">Option chain</button>
   <button data-tab="lab">Strategy lab</button>
   <button data-tab="backtest">Backtest</button>
@@ -75,6 +76,26 @@
       <div class="panel"><h2>Regime</h2><div id="regime"></div></div>
       <div class="panel"><h2>Event calendar</h2><div id="events"></div></div>
     </div>
+  </section>
+
+  <!-- AUTO -->
+  <section id="tab-auto" class="tab">
+    <div class="panel">
+      <h2>Auto-trader <span id="automode" class="chip"></span> <span id="autoonline" class="chip"></span></h2>
+      <div id="autostatus"></div>
+      <div class="row wrap">
+        <button class="btn" id="autoenable">Enable auto-trading</button>
+        <button class="btn ghost" id="autopause">Pause (no new trades)</button>
+        <button class="btn ghost" id="autoflatten" style="color:var(--bad);border-color:var(--bad)">Exit everything now</button>
+      </div>
+      <div id="autosummary"></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><h2>Open position</h2><div id="autopos"></div></div>
+      <div class="panel"><h2>Cumulative P&amp;L</h2><div class="chart-box"><canvas id="autoeq"></canvas></div></div>
+    </div>
+    <div class="panel"><h2>Closed trades</h2><div class="scroll" id="autotrades"></div></div>
+    <div class="panel"><h2>Activity</h2><ul class="checks" id="autolog"></ul></div>
   </section>
 
   <!-- CHAIN -->

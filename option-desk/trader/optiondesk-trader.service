@@ -1,0 +1,18 @@
+# systemd unit: sudo cp trader/optiondesk-trader.service /etc/systemd/system/
+#               sudo systemctl daemon-reload && sudo systemctl enable --now optiondesk-trader
+[Unit]
+Description=NIFTY Option Desk auto-trader
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/dheeru284/option-desk
+ExecStart=/usr/bin/node trader/trader.mjs
+Restart=always
+RestartSec=20
+Environment=TZ=Asia/Kolkata
+
+[Install]
+WantedBy=multi-user.target

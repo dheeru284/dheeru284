@@ -51,8 +51,16 @@ export async function runMonitor({ force = false, now = Date.now(), siteUrl = ''
     } catch (e) { out.push({ ts: new Date(now).toISOString(), level: 'INFO', key: 'data', title: 'Price feed error', body: e.message, silent: true }); }
   }
 
-  // ---- position checks
-  if (pos && nifty && vix && pos.expiry >= t.date) {
+  // ---- auto-trader watchdog: the trader manages its own exits; alert if it goes silent
+  if (pos?.managedBy === 'auto' && open) {
+    const st = await getJSON('auto-status', null);
+    const age = st?.beat ? (now - Date.parse(st.beat)) / 60e3 : Infinity;
+    if (age > 5) add('EXIT', 'trader-offline', `Auto-trader offline for ${isFinite(age) ? Math.round(age) + ' min' : 'unknown time'} with an open position`,
+      `Nobody is managing the ${pos.expiry} position. Check the server, or close it in Angel One. Stop ${rs(-pos.stopMult * pos.credit)}.`, 20);
+  }
+
+  // ---- position checks (manual trades only; the auto-trader handles its own)
+  if (pos && pos.managedBy !== 'auto' && nifty && vix && pos.expiry >= t.date) {
     const m = markPosition(pos, nifty.price, vix.price, now);
     const stop = pos.stopMult * pos.credit;
     const loss = -m.pnl;

@@ -17,13 +17,8 @@
   const S = { results: null, market: null, live: null, news: null, chain: null, charts: {} };
 
   // Upcoming scheduled events. RBI/Budget/elections were filtered in the backtest; FOMC is shown as caution.
-  const DEFAULT_EVENTS = [
-    { date: '2026-12-04', name: 'RBI MPC decision', kind: 'RBI' },
-    { date: '2026-12-10', name: 'US FOMC decision (Dec 9 US time)', kind: 'FOMC' },
-    { date: '2027-01-28', name: 'US FOMC decision (verify date)', kind: 'FOMC' },
-    { date: '2027-02-01', name: 'Union Budget FY28', kind: 'Budget' },
-    { date: '2027-02-05', name: 'RBI MPC decision', kind: 'RBI' },
-  ];
+  // Scheduled events live in events.json (shared with the auto-trader). RBI/Budget/elections were filtered in the backtest; FOMC is shown as caution.
+  let DEFAULT_EVENTS = [];
   const events = () => [...DEFAULT_EVENTS, ...store.get('events', [])].sort((a, b) => a.date.localeCompare(b.date));
 
   // ------------------------------------------------------------------ tabs & theme
@@ -32,6 +27,7 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + b.dataset.tab));
     store.set('tab', b.dataset.tab);
     if (b.dataset.tab === 'news' && !S.news) loadNews();
+    if (b.dataset.tab === 'auto') refreshAuto();
     redrawCharts();
   }));
   const savedTheme = store.get('theme', null);
@@ -66,7 +62,7 @@
   async function getJSON(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(`${url} → ${r.status}`); return r.json(); }
 
   async function boot() {
-    S.results = await getJSON('results.json');
+    [S.results, DEFAULT_EVENTS] = await Promise.all([getJSON('results.json'), getJSON('events.json').catch(() => [])]);
     $('#btdate').textContent = S.results.data_through;
     renderBacktest(); renderMacro(); renderAbout(); renderJournal(); initLab();
     try {
@@ -403,6 +399,58 @@
     if (alerts[0]) { lastAlertTs = alerts[0].ts; store.set('lastAlertTs', lastAlertTs); }
   }
   setInterval(() => { if (!document.hidden) refreshLive(); }, 60000);
+
+  // ---- Auto-trader tab (reads what trader/trader.mjs on your server publishes)
+  const AUTO_CLS = { TRADE: 'good', TARGET: 'good', EXIT: 'bad', ERROR: 'bad', STOP: 'bad', WARN: 'warn', INFO: 'na' };
+  const istTime = iso => new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, dateStyle: 'medium', timeStyle: 'short' });
+  async function refreshAuto() {
+    let d;
+    try { d = await api('/api/auto'); }
+    catch (e) { $('#autostatus').innerHTML = `<p class="down">${e.message === 'wrong or missing desk key' ? 'Enter your desk key on the Today tab (Live exit alerts) first.' : e.message}</p>`; return; }
+    const st = d.status, c = d.control, sm = d.summary;
+    const mode = (st?.mode || 'not connected').toUpperCase();
+    $('#automode').textContent = mode; $('#automode').style.background = mode === 'LIVE' ? 'var(--bad-bg)' : 'var(--chip)';
+    $('#autoonline').textContent = d.online ? 'online' : st ? 'offline' : 'waiting for server';
+    $('#autoonline').className = 'chip ' + (d.online ? 'up' : 'down');
+    const nx = st?.nextEntry, ld = st?.lastDecision;
+    $('#autostatus').innerHTML = `<table class="tbl info"><tbody>
+      <tr><td>Auto-trading</td><td><b class="${c.enabled ? 'up' : 'down'}">${c.enabled ? 'ENABLED' : 'PAUSED'}</b>${c.disabledReason ? ` · ${c.disabledReason}` : ''}${c.flatten ? ' · exit requested, executing on next cycle' : ''}</td></tr>
+      <tr><td>Server heartbeat</td><td>${st?.beat ? istTime(st.beat) + ' IST' : 'never: the trader is not running yet (see trader/README.md)'}</td></tr>
+      <tr><td>Next entry</td><td>${nx ? `${nx.entryDay} 15:10–15:24 IST for the ${nx.expiry} expiry` : '—'}</td></tr>
+      <tr><td>Last decision</td><td>${ld ? `${ld.date}: gate <b>${ld.verdict}</b> · ${ld.checks.filter(x => x.st !== 'good').map(x => x.title).join('; ') || 'all green'}` : '—'}</td></tr>
+      <tr><td>Limits</td><td>${st?.limits ? `max ${st.limits.lotsMax} lot(s) · risk ${st.limits.riskPct}% of ₹${fmt(st.limits.capital)} · stop ${st.limits.stopMult}× credit at close · hard exit ${st.limits.hardMult}× · monthly loss limit ₹${fmt(st.limits.maxMonthlyLoss)}${st.limits.target ? ` · target ${st.limits.target * 100}% of credit` : ' · target: hold to expiry'}` : '—'}</td></tr>
+      </tbody></table>`;
+    $('#autosummary').innerHTML = `<div class="kv">
+      <div><span>Total P&L</span><b class="${cls(sm.total)}">${rs(sm.total)}</b></div>
+      <div><span>This month</span><b class="${cls(sm.month)}">${rs(sm.month)}</b></div>
+      <div><span>Last 7 days</span><b class="${cls(sm.week)}">${rs(sm.week)}</b></div>
+      <div><span>Open position</span><b class="${cls(sm.open)}">${d.position ? rs(sm.open) : '—'}</b></div>
+      <div><span>Trades / wins</span><b>${sm.trades} / ${sm.wins}</b><span>${sm.trades ? fmt(sm.wins / sm.trades * 100, 0) + '% win rate' : ''}</span></div>
+      <div><span>Best / worst</span><b>${rs(sm.best)} / ${rs(sm.worst)}</b></div></div>`;
+    const p = d.position;
+    $('#autopos').innerHTML = p ? `<table class="tbl"><thead><tr><th>Leg</th><th>Qty</th><th>Entry</th><th>Now</th><th>P&L</th></tr></thead><tbody>
+      ${p.legs.map(l => { const pl = l.mark != null ? (l.side === 'SELL' ? l.premium - l.mark : l.mark - l.premium) * l.qty : null;
+        return `<tr><td>${l.side} ${l.strike} ${l.type === 'C' ? 'CE' : 'PE'}</td><td>${l.qty}</td><td>₹${fmt(l.premium, 2)}</td><td>${l.mark != null ? '₹' + fmt(l.mark, 2) : '—'}</td><td class="${cls(pl)}">${pl != null ? rs(pl) : '—'}</td></tr>`; }).join('')}
+      </tbody></table><div class="kv">
+      <div><span>Expiry</span><b>${p.expiry}</b><span>${p.structure === 'ic' ? 'iron condor' : 'wide condor'} · ${p.lots} lot(s)</span></div>
+      <div><span>Credit</span><b>${rs(p.credit)}</b></div>
+      <div><span>P&L now</span><b class="${cls(p.last?.pnl)}">${p.last ? rs(p.last.pnl) : '—'}</b><span>${p.last ? `NIFTY ${fmt(p.last.spot)} · ${istTime(p.last.ts)}` : ''}</span></div>
+      <div><span>Stop at close / hard exit</span><b class="down">${rs(-p.stopMult * p.credit)} / ${rs(-p.hardMult * p.stopMult * p.credit)}</b></div></div>
+      ${p.exitError ? `<p class="verdict bad">Exit failed: ${p.exitError}. Close the position in Angel One.</p>` : ''}` : '<p class="muted">No open position.</p>';
+    const tr = [...d.trades].reverse(); let cum = 0;
+    const eq = tr.map(t => [istDate(t.closed), cum += t.pnl]);
+    chart('autoeq', () => ({ type: 'line', data: { labels: eq.map(e => e[0]), datasets: [{ data: eq.map(e => e[1]), borderColor: css('--c1'), pointRadius: 2, borderWidth: 1.6 }] },
+      options: { scales: { y: { title: { display: true, text: '₹' } } } } }));
+    $('#autotrades').innerHTML = d.trades.length ? `<table class="tbl"><thead><tr><th>Closed</th><th>Mode</th><th>Expiry</th><th>Legs (entry → exit)</th><th>Lots</th><th>Credit</th><th>Reason</th><th>Charges</th><th>Net P&L</th></tr></thead><tbody>
+      ${d.trades.map(t => `<tr><td>${istTime(t.closed)}</td><td>${(t.mode || '').toUpperCase()}</td><td>${t.expiry}</td><td>${(t.legs || []).map(l => `${l.leg} ${l.entry}→${l.exit}`).join('<br>')}</td><td>${t.lots}</td><td>${rs(t.credit)}</td><td>${t.reason}</td><td>${rs(t.charges)}</td><td class="${cls(t.pnl)}"><b>${rs(t.pnl)}</b></td></tr>`).join('')}</tbody></table>` : '<p class="muted">No closed trades yet.</p>';
+    $('#autolog').innerHTML = d.log.map(e => `<li><span class="dot ${AUTO_CLS[e.level] || 'na'}"></span><div><b>${e.level}</b> · ${e.title.replace(/</g, '&lt;')}<div class="why">${istTime(e.ts)} · ${(e.body || '').replace(/</g, '&lt;')}</div></div></li>`).join('') || '<li class="muted">No activity yet.</li>';
+  }
+  const istDate = iso => new Date(Date.parse(iso) + 5.5 * 3600e3).toISOString().slice(0, 10);
+  const autoAction = async (action, ask) => { if (ask && !confirm(ask)) return; try { await api('/api/auto', { method: 'POST', body: JSON.stringify({ action }) }); refreshAuto(); } catch (e) { alert(e.message); } };
+  $('#autoenable').onclick = () => autoAction('enable', 'Enable automatic trading? In LIVE mode the server will place real orders in your Angel One account on the next entry day.');
+  $('#autopause').onclick = () => autoAction('pause');
+  $('#autoflatten').onclick = () => autoAction('flatten', 'Close the open position at market prices and pause auto-trading?');
+  setInterval(() => { if (!document.hidden && $('#tab-auto').classList.contains('active')) refreshAuto(); }, 30000);
 
   const BT_NAME = { ic: 'Iron condor + macro guard', wide: 'Wide iron condor 1.25σ/2σ + macro guard', trend: 'Trend credit spread + macro guard' };
   function renderPlan() {

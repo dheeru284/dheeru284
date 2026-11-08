@@ -2,3 +2,4 @@ research/data/
 .netlify/
 node_modules/
 __pycache__/
+trader/.env

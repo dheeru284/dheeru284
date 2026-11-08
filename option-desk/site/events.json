@@ -1,0 +1,7 @@
+[
+  { "date": "2026-12-04", "name": "RBI MPC decision", "kind": "RBI" },
+  { "date": "2026-12-10", "name": "US FOMC decision (Dec 9 US time)", "kind": "FOMC" },
+  { "date": "2027-01-28", "name": "US FOMC decision (verify date)", "kind": "FOMC" },
+  { "date": "2027-02-01", "name": "Union Budget FY28", "kind": "Budget" },
+  { "date": "2027-02-05", "name": "RBI MPC decision", "kind": "RBI" }
+]
