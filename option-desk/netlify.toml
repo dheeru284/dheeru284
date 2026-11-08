@@ -16,3 +16,19 @@
   for = "/results.json"
   [headers.values]
     Cache-Control = "public, max-age=3600"
+
+# Explicit routes to the functions (they also declare config.path; this is a fallback).
+[[redirects]]
+  from = "/api/market"
+  to = "/.netlify/functions/market"
+  status = 200
+
+[[redirects]]
+  from = "/api/news"
+  to = "/.netlify/functions/news"
+  status = 200
+
+[[redirects]]
+  from = "/api/chain"
+  to = "/.netlify/functions/chain"
+  status = 200
