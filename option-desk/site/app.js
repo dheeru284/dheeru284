@@ -96,7 +96,8 @@
     const lastBar = nifty[nifty.length - 1];
     const nowMin = (() => { const n = new Date(Date.now() + 5.5 * 3600e3); return n.getUTCHours() * 60 + n.getUTCMinutes(); })();
     const todayTrading = L.isTradingDay(new Date(today + 'T00:00:00Z'));
-    const inSession = lastBar[0] === today && nowMin < 15 * 60 + 30;
+    // Yahoo sometimes appends a bar dated today on weekends/holidays; only a trading day can be "in session"
+    const inSession = todayTrading && lastBar[0] === today && nowMin >= 9 * 60 + 15 && nowMin < 15 * 60 + 30;
     // last completed session and the session being forecast
     const completed = inSession ? nifty.slice(0, -1) : nifty;
     const lastSession = completed[completed.length - 1][0];
@@ -413,7 +414,17 @@
     $('#autoonline').textContent = d.online ? 'online' : st ? 'offline' : 'waiting for server';
     $('#autoonline').className = 'chip ' + (d.online ? 'up' : 'down');
     const nx = st?.nextEntry, ld = st?.lastDecision;
-    $('#autostatus').innerHTML = `<table class="tbl info"><tbody>
+    if (!st) {
+      $('#autostatus').innerHTML = `<div class="note"><b>Why “not connected”?</b> The auto-trader is a separate program that must run on a server with a fixed (static) IP address — SEBI requires API orders to come from an IP registered with Angel One, and this website has no fixed IP. Until that program is running, nothing can be traded and this tab stays empty.
+        <ol style="margin:8px 0 0 18px;padding:0">
+          <li>Create a free server with a static IP (Oracle Cloud Always Free, Mumbai) or a ₹400/month AWS Lightsail one.</li>
+          <li>Create a SmartAPI app at smartapi.angelbroking.com, get the API key, register the server’s IP.</li>
+          <li>Enable TOTP on your Angel login and keep the text secret.</li>
+          <li>Install the trader on the server, fill in <code>trader/.env</code> on the server (MODE=paper), run <code>node trader/trader.mjs --check</code>.</li>
+          <li>Start it as a service. This tab turns <b>online</b> within a minute.</li>
+        </ol>Full steps: <code>option-desk/trader/README.md</code>.</div>`;
+    }
+    if (st) $('#autostatus').innerHTML = `<table class="tbl info"><tbody>
       <tr><td>Auto-trading</td><td><b class="${c.enabled ? 'up' : 'down'}">${c.enabled ? 'ENABLED' : 'PAUSED'}</b>${c.disabledReason ? ` · ${c.disabledReason}` : ''}${c.flatten ? ' · exit requested, executing on next cycle' : ''}</td></tr>
       <tr><td>Server heartbeat</td><td>${st?.beat ? istTime(st.beat) + ' IST' : 'never: the trader is not running yet (see trader/README.md)'}</td></tr>
       <tr><td>Next entry</td><td>${nx ? `${nx.entryDay} 15:10–15:24 IST for the ${nx.expiry} expiry` : '—'}</td></tr>
