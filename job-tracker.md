@@ -46,3 +46,15 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-08 — no applications submitted
+Searches done via web-search snippets plus Greenhouse fetch; remotive.com is not resolvable from this session. No posting could be verified for salary, so nothing met the "verified APPLY" bar. Resume used: resume/Dheeraj_Azure_Data_Engineer.pdf (Azure stack; no Kafka/Airflow/Terraform/AWS depth).
+
+| Company | Role | Source | Status | Notes |
+|---|---|---|---|---|
+| YipitData | Senior Data Engineer, Global Team (India) | job-boards.greenhouse.io/yipitdata (board listing; "India Remote") | REVIEW | India remote explicit. Salary not shown, likely India-band (may be under ₹42L); stack unverified. Check posting and pay before applying. |
+| Aryng | Senior Data Engineer, Remote (India) | jobera.com/?p=78915 | REVIEW | Deadline 2026-11-04 (likely expired); no salary. |
+| RemoteStar | Senior Data Engineer, remote pan-India, fixed evening shift | jobera.com | REVIEW | No salary; shift constraint. |
+| Codvo | Senior Data Engineer (Databricks), remote India | aijobs.net | REVIEW | Est. ₹15–20.4L/yr per aggregator, below threshold -> likely REJECT. |
+| Gainwell | Senior Data Engineer (SQL/PySpark/Databricks), Bangalore | jobs.gainwelltechnologies.com | REJECT | Dated Jan 2026, probably closed; salary unknown. |
+| Jobgether (Lever) | Senior/Staff Data Engineer postings | jobs.lever.co/jobgether | REVIEW | Intermediary; real employer, pay and eligibility unknown. |
