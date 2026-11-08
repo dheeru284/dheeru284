@@ -512,6 +512,90 @@ for m in (1.5, 3.0):
     sens.append(dict(slippage_pts_per_leg=m, avg_pnl_rs=s["avg_pnl_rs"], win_rate=s["win_rate"], max_dd_rs=s["max_dd_rs"],
                      profit_factor=s["profit_factor"]))
 
+# ----------------------------------------------------------------------------- 5b. exits
+def run_exits(legs_fn, flt, target=None, sl_mult=None, strike_stop=False, hold=4, atm_mult=0.95, slip_pts=0.75):
+    """Same entries as run_strategy, but marks the position to model at every daily close
+    and exits on profit target (fraction of credit), stop (loss as multiple of credit) or a
+    close beyond a short strike. Exits happen at that day's close (no intraday data)."""
+    out = []
+    for e in EXP:
+        i = P.index.get_loc(e)
+        if i - hold < 200:
+            continue
+        t0 = P.index[i - hold]
+        row = P.loc[t0]
+        if np.isnan(row.vix) or (flt is not None and not flt(row, t0, e)):
+            continue
+        S = row.close
+        T = max((e - t0).days, 1) / 365 + 0.25 / 365
+        atm = row.vix / 100 * atm_mult
+        step = S * 0.002
+        legs = []
+        for q, typ, K in legs_fn(S, atm * SQ(T), row):
+            K = round(K / step) * step
+            legs.append((q, typ, K, bs(S, K, T, iv_at(K, S, atm, T), typ)))
+        if not legs:
+            continue
+        credit = sum(-q * p for q, _, _, p in legs)
+        sold = sum(p for q, _, _, p in legs if q < 0); bought = sum(p for q, _, _, p in legs if q > 0)
+        entry_cost = slip_pts * S / SCALE_SPOT * len(legs) + 0.0015 * sold + (sold + bought) * 0.000355 * 1.18 \
+            + 0.00003 * bought + 20 * len(legs) * 1.18 / LOT * S / SCALE_SPOT
+        shorts = [(typ, K) for q, typ, K, _ in legs if q < 0]
+        reason, pnl, exit_cost, days = "expiry", None, 0.0, hold
+        for k in range(1, hold + 1):
+            d = P.index[i - hold + k]
+            Sd, vd = P.close.iloc[i - hold + k], P.vix.iloc[i - hold + k]
+            if d == e:
+                pay = sum(q * ((max(0.0, Sd - K) if typ == "C" else max(0.0, K - Sd)) - p) for q, typ, K, p in legs)
+                itm_long = sum((max(0.0, Sd - K) if typ == "C" else max(0.0, K - Sd)) for q, typ, K, _ in legs if q > 0)
+                pnl, exit_cost, days = pay, 0.0015 * itm_long, k
+                break
+            Td = max((e - d).days, 0.5) / 365 + 0.25 / 365
+            ad = vd / 100 * atm_mult
+            vals = [bs(Sd, K, Td, iv_at(K, Sd, ad, Td), typ) for _, typ, K, _ in legs]
+            cur = sum(q * (v - p) for (q, _, _, p), v in zip(legs, vals))
+            breach = strike_stop and any((typ == "P" and Sd < K) or (typ == "C" and Sd > K) for typ, K in shorts)
+            hit_sl = sl_mult is not None and cur <= -sl_mult * credit
+            hit_tg = target is not None and cur >= target * credit
+            if breach or hit_sl or hit_tg:
+                long_val = sum(v for (q, _, _, _), v in zip(legs, vals) if q > 0)
+                short_val = sum(v for (q, _, _, _), v in zip(legs, vals) if q < 0)
+                exit_cost = slip_pts * Sd / SCALE_SPOT * len(legs) + 0.0015 * long_val + (long_val + short_val) * 0.000355 * 1.18 \
+                    + 0.00003 * short_val + 20 * len(legs) * 1.18 / LOT * Sd / SCALE_SPOT
+                pnl, days = cur, k
+                reason = "stop" if (breach or hit_sl) else "target"
+                break
+        net = (pnl - entry_cost - exit_cost) * SCALE_SPOT / S
+        widths = [abs(a[2] - b[2]) for a in legs for b in legs if a[1] == b[1] and a[0] != b[0]]
+        risk = (max(widths) - credit) * SCALE_SPOT / S * LOT if widths else np.nan
+        out.append(dict(entry=str(t0.date()), expiry=str(e.date()), pnl_rs=net * LOT, risk_rs=risk, reason=reason, days=days,
+                        credit=credit * SCALE_SPOT / S, spot=S, settle=float(P.close.iloc[i]), vix=float(row.vix), pnl_pts=net))
+    return pd.DataFrame(out)
+
+
+exit_rows = []
+for sname, fn in [("ic", ic()), ("wide", ic(1.25, 2.0))]:
+    for tg in (None, 0.5, 0.65, 0.8):
+        for sl in (None, 1.0, 1.5, 2.0, 3.0, "strike"):
+            df = run_exits(fn, macro_ok, target=tg, sl_mult=None if sl in (None, "strike") else sl, strike_stop=(sl == "strike"))
+            ins, oos = df[df.entry < "2019"], df[df.entry >= "2019"]
+            sh = lambda x: float(x.pnl_rs.mean() / x.pnl_rs.std() * SQ(52)) if len(x) > 5 and x.pnl_rs.std() else 0.0
+            eq = df.pnl_rs.cumsum()
+            exit_rows.append(dict(structure=sname, target=tg, stop=sl, trades=int(len(df)), win_rate=float((df.pnl_rs > 0).mean()),
+                                  avg_rs=float(df.pnl_rs.mean()), worst_rs=float(df.pnl_rs.min()), max_dd_rs=float((eq - eq.cummax()).min()),
+                                  sharpe=sh(df), sharpe_2011_18=sh(ins), sharpe_2019_26=sh(oos), avg_2019_26=float(oos.pnl_rs.mean()),
+                                  pct_target=float((df.reason == "target").mean()), pct_stop=float((df.reason == "stop").mean()),
+                                  avg_days=float(df.days.mean())))
+EX = pd.DataFrame(exit_rows)
+best_exit = {}
+for sname in ("ic", "wide"):
+    sub = EX[EX.structure == sname]
+    pick = sub.sort_values("sharpe_2011_18", ascending=False).iloc[0]     # chosen on 2011-18 only
+    base = sub[(sub.target.isna()) & (sub.stop.isna())].iloc[0]
+    best_exit[sname] = dict(chosen={k: (None if (isinstance(v, float) and np.isnan(v)) else v) for k, v in pick.to_dict().items()},
+                            hold_to_expiry={k: (None if (isinstance(v, float) and np.isnan(v)) else v) for k, v in base.to_dict().items()})
+exit_study = [{k: (None if (isinstance(v, float) and np.isnan(v)) else v) for k, v in r.items()} for r in EX.to_dict("records")]
+
 # ----------------------------------------------------------------------------- 6. trends
 R = pd.DataFrame({"nifty": P.cc})
 for k in ["S&P 500", "Nasdaq", "USD/INR", "Brent crude", "Gold", "US 10Y yield", "Dollar index (DXY)", "US VIX", "Bitcoin", "Copper"]:
@@ -564,7 +648,7 @@ out = dict(generated=str(date.today()), data_through=state["date"], lot=LOT, sca
            factors_all=fac_all.round(4).to_dict("records"), factors_recent=fac_recent.round(4).to_dict("records"),
            concurrent_asia=conc, gap_model=gap_model, gap_follow=gap_follow, vix_regimes=vix_reg, trend=trend,
            macro=macro, cycles=cycles, day_of_week=dow, events=events, events_normal=events_normal,
-           backtests=bt, sensitivity=sens, rolling_corr=roll, overnight_intraday=on_intr, vrp=vrp, state=state,
+           backtests=bt, sensitivity=sens, exit_study=exit_study, best_exit=best_exit, rolling_corr=roll, overnight_intraday=on_intr, vrp=vrp, state=state,
            rbi_history=RBI)
 
 

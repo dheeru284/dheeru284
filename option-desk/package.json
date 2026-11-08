@@ -1,0 +1,9 @@
+{
+  "name": "nifty-option-desk",
+  "private": true,
+  "type": "module",
+  "description": "Daily NIFTY option desk: backtested trade gate, live exit alerts, Netlify functions",
+  "dependencies": {
+    "@netlify/blobs": "8.1.0"
+  }
+}

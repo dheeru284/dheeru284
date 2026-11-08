@@ -21,6 +21,32 @@ you get:
 **This is a research tool, not investment advice.** SEBI found about 91% of individual F&O
 traders lost money in FY25. Read the *Risk & method* tab before trading real money.
 
+## Trade card and live exit alerts
+
+Each weekly plan comes with a trade card:
+
+- **Entry:** sell the basket near the close 4 sessions before expiry, only if the real net
+  credit is at least the minimum shown (the model credit at IV = 0.90 × India VIX).
+- **Target:** hold to expiry. Early profit-taking at 50 / 65 / 80% of the credit lowered
+  returns in every test.
+- **Stop-loss:** exit when the loss equals the credit (buy-back cost = 2× credit) at the
+  close. This was chosen on 2011–18 and confirmed on 2019–26. As an untested safety rule,
+  exit immediately if the loss reaches 1.5× the stop.
+
+Press **“I took this trade”** to hand the position to the server-side monitor
+(`netlify/functions/monitor.mjs`, every 2 minutes). It pushes alerts to your phone for:
+
+| Alert | When |
+|---|---|
+| EXIT | stop met at the close, a short strike breached into the close, or loss ≥ 1.5× stop at any time |
+| WARN | stop touched intraday, NIFTY ≥ 70% of the way to a short strike, a ±1.2% day, a 0.6% move in 15 min, India VIX +10% |
+| WARN / INFO | high-impact headline (war, RBI, Fed, tariffs, crashes …); WARN when NIFTY or VIX is reacting in the same 15 minutes |
+| TARGET | expiry afternoon with the position in profit |
+
+Push channels (Netlify environment variables): `NTFY_TOPIC` (free ntfy app) and/or
+`TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`. `ALERT_KEY` protects the position and alert
+endpoints; enter it once in the app. State is kept in Netlify Blobs.
+
 ## Layout
 
 ```
@@ -32,7 +58,11 @@ option-desk/
 ├── netlify/functions/        serverless data proxies (free tier)
 │   ├── market.mjs            /api/market  Yahoo Finance, 1 year daily, 20 series
 │   ├── news.mjs              /api/news    ET, Moneycontrol, Mint, BS, Google News RSS
-│   └── chain.mjs             /api/chain   NSE option chain, best effort
+│   ├── chain.mjs             /api/chain   NSE option chain, best effort
+│   ├── position.mjs          /api/position  position being monitored
+│   ├── alerts.mjs            /api/alerts    alert log, test push, run check now
+│   └── monitor.mjs           scheduled every 2 min: exit / news / shock checks
+├── netlify/lib/              shared: pricing, news scoring, storage, push, monitor
 ├── research/
 │   ├── fetch_data.py         download history (Yahoo + FRED)
 │   ├── analyze.py            factor study, gap model, regimes, events, option backtest, trends

@@ -163,7 +163,7 @@
         snap.append(el('div', { className: 'card' }, `<div class="k">${label}</div><div class="v">${fmt(q.price, q.price < 200 ? 2 : 0)}</div><div class="d ${cls(isY || k.includes('VIX') || k === 'USD/INR' ? -q.chg : q.chg)}">${ch}</div>`));
       }
     }
-    renderGate(); renderGap(); renderMove(); renderPlan(); renderRegime(); renderEvents();
+    renderGate(); renderGap(); renderMove(); renderPlan(); renderRegime(); renderEvents(); refreshLive();
   }
 
   function nextExpiries() { return L.niftyExpiries(L.istToday(), 6); }
@@ -294,6 +294,116 @@
     return legs.map(([side, type, strike]) => ({ side, type, strike, lots: 1, premium: +L.bs(Sx, strike, T, L.skewIV(strike, Sx, atm, T), type).toFixed(2) }));
   }
 
+  // ---- trade card: entry, target, stop-loss (exit rules chosen by the 2011-18 backtest, checked on 2019-26)
+  function exitRule(structure) {
+    const be = S.results.best_exit?.[structure === 'wide' ? 'wide' : 'ic'];
+    return be ? { stop: typeof be.chosen.stop === 'number' ? be.chosen.stop : 1, chosen: be.chosen, hold: be.hold_to_expiry } : { stop: 1 };
+  }
+  function lossAt(legs, Sx, T, atm) {
+    return -legs.reduce((a, l) => a + (l.side === 'BUY' ? 1 : -1) * (L.bs(Sx, l.strike, T, L.skewIV(l.strike, Sx, atm, T), l.type) - l.premium), 0) * LOT;
+  }
+  function stopSpot(legs, S0, T, atm, lossRs, dir) {
+    let lo = S0, hi = S0 * (1 + dir * 0.15);
+    if (lossAt(legs, hi, T, atm) < lossRs) return NaN;
+    for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; lossAt(legs, m, T, atm) >= lossRs ? hi = m : lo = m; }
+    return (lo + hi) / 2;
+  }
+  function tradeCard(structure, legs, v, atm, T, ex, st, ch) {
+    const rule = exitRule(structure);
+    const creditU = st.credit / LOT;
+    const minLegs = buildLegs(structure, v.nifty, atm * 0.90 / 0.95, T);
+    const minCredit = minLegs.reduce((a, l) => a + (l.side === 'SELL' ? 1 : -1) * l.premium, 0);
+    const stopRs = rule.stop * st.credit;
+    const buyBack = creditU * (1 + rule.stop);
+    const Tmid = Math.max(T - 2 / 365, T / 2);
+    const dn = stopSpot(legs, v.nifty, Tmid, atm, stopRs, -1), up = stopSpot(legs, v.nifty, Tmid, atm, stopRs, 1);
+    const shorts = legs.filter(l => l.side === 'SELL');
+    const c = rule.chosen, h = rule.hold;
+    S.card = { stopMult: rule.stop, minCredit };
+    return `<h3>Trade card</h3><table class="tbl info"><tbody>
+      <tr><td>Entry</td><td>Sell the ${structure === 'trend' ? 'spread' : 'condor'} as one basket (buy wings first) around the close of ${L.iso(L.nthSessionBefore(new Date(ex + 'T00:00:00Z'), 4))}.
+        Net credit ≥ <b>₹${fmt(minCredit, 1)}</b> per unit (model ₹${fmt(creditU, 1)}). Below that, options are too cheap: skip the week.</td></tr>
+      <tr><td>Target</td><td><b>Hold to expiry</b> and keep up to ${rs(st.credit - ch.total)} per lot if NIFTY settles between ${shorts.map(l => fmt(l.strike)).join(' and ')}.
+        Booking early at 50% of the credit cut the backtest's average profit by about 40%, so no early target.</td></tr>
+      <tr><td>Stop-loss</td><td>Exit all legs when buying the position back costs <b>₹${fmt(buyBack, 1)}</b> per unit (${fmt(1 + rule.stop, 1)}× the credit), a loss of <b>${rs(stopRs)}</b> per lot.
+        At current VIX that is around NIFTY <b>${isFinite(dn) ? fmt(dn) : '—'}</b> / <b>${isFinite(up) ? fmt(up) : '—'}</b>. The backtested rule acts at the close (3:10–3:25 PM); the live monitor tells you to exit at once if the loss reaches 1.5× the stop.</td></tr>
+      ${c ? `<tr><td>Why these exits</td><td>Chosen on 2011–18 data only, then checked on 2019–26: stop at ${fmt(rule.stop, 1)}× credit averaged ${rs(c.avg_rs)}/week (2019–26: ${rs(c.avg_2019_26)}), worst run ${rs(c.max_dd_rs)}, vs holding with no stop ${rs(h.avg_rs)} and ${rs(h.max_dd_rs)}. Stops triggered in ${fmt(c.pct_stop * 100, 0)}% of weeks.</td></tr>` : ''}
+      ${structure === 'trend' ? '<tr><td>Note</td><td>Exit rules were tested on iron condors; for the trend spread they are applied by analogy.</td></tr>' : ''}
+      </tbody></table>`;
+  }
+
+  // ---- live alerts (server-side monitor via /api/position and /api/alerts)
+  const deskKey = () => store.get('deskkey', '');
+  async function api(path, opts = {}) {
+    const r = await fetch(path, { ...opts, headers: { 'content-type': 'application/json', 'x-desk-key': deskKey(), ...(opts.headers || {}) } });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `${path} → ${r.status}`);
+    return j;
+  }
+  async function activateTrade() {
+    const p = S.plan; if (!p) return;
+    const modelU = p.credit / LOT;
+    const got = prompt(`Net credit you actually received per unit (sells − buys).\nModel: ₹${modelU.toFixed(2)}. Minimum acceptable: ₹${S.card.minCredit.toFixed(2)}`, modelU.toFixed(2));
+    if (got == null) return;
+    const actual = parseFloat(got); if (!(actual > 0)) return alert('Enter the credit as a number.');
+    if (actual < S.card.minCredit && !confirm(`₹${actual} is below the minimum credit ₹${S.card.minCredit.toFixed(2)}. The backtest edge mostly disappears. Monitor it anyway?`)) return;
+    const lots = parseInt(prompt('Lots traded', Math.max(1, p.lots || 1)), 10) || 1;
+    const scale = actual / modelU;      // spread the real credit across legs in proportion to the model
+    const legs = p.legs.map(l => ({ ...l, lots, premium: +(l.premium * scale).toFixed(2) }));
+    try {
+      await api('/api/position', { method: 'POST', body: JSON.stringify({ legs, expiry: p.expiry, structure: p.structure, credit: actual * LOT * lots, lots,
+        stopMult: S.card.stopMult, spotAtEntry: p.spot, vixAtEntry: p.vix }) });
+      const j = J(); j.unshift({ id: Date.now(), logged: new Date().toISOString().slice(0, 10), expiry: p.expiry, structure: p.structure, verdict: S.verdict?.k, taken: true,
+        spot: Math.round(p.spot), vix: +p.vix.toFixed(2), legs, credit: Math.round(actual * LOT), settle: null, pnl: null });
+      store.set('journal', j); renderJournal();
+      refreshLive();
+    } catch (e) { alert('Could not start monitoring: ' + e.message); }
+  }
+  const LEVEL_CLS = { EXIT: 'bad', STOP: 'bad', WARN: 'warn', TARGET: 'good', INFO: 'na', TEST: 'na' };
+  let lastAlertTs = store.get('lastAlertTs', '');
+  async function refreshLive() {
+    const box = $('#live');
+    let pos = null, al = null, err = '';
+    try { [{ position: pos }, al] = await Promise.all([api('/api/position'), api('/api/alerts')]); } catch (e) { err = e.message; }
+    const ch = al?.channels || {};
+    let posHtml = '<p class="muted">No position being monitored. After you place a trade, press <b>“I took this trade”</b> in the plan above.</p>';
+    if (pos) {
+      const stopRs = pos.stopMult * pos.credit;
+      posHtml = `<div class="kv">
+        <div><span>Position (${pos.expiry})</span><b style="font-size:13px">${pos.legs.map(l => `${l.side === 'SELL' ? 'S' : 'B'} ${l.strike}${l.type === 'C' ? 'CE' : 'PE'}`).join(' · ')}</b><span>${pos.lots} lot(s)</span></div>
+        <div><span>Credit received</span><b>${rs(pos.credit)}</b></div>
+        <div><span>Stop (loss)</span><b class="down">${rs(-stopRs)}</b><span>hard exit at ${rs(-1.5 * stopRs)}</span></div>
+        <div><span>Last check</span><b class="${cls(pos.last?.pnl)}">${pos.last ? rs(pos.last.pnl) : '—'}</b><span>${pos.last ? `NIFTY ${fmt(pos.last.spot)} · ${new Date(pos.last.ts).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false })}` : 'waiting for market hours'}</span></div>
+        </div><button class="btn ghost" id="closepos">I closed this trade: stop alerts</button>`;
+    }
+    const alerts = al?.alerts || [];
+    box.innerHTML = `
+      ${err ? `<p class="down">${err === 'wrong or missing desk key' ? 'Enter your desk key to connect.' : 'Live monitor unavailable: ' + err}</p>` : ''}
+      <div class="row wrap">
+        <label>Desk key <input id="deskkey" type="password" value="${deskKey()}" placeholder="from your setup message"></label>
+        <button class="btn ghost" id="testpush">Send test alert</button>
+        <button class="btn ghost" id="runnow">Run check now</button>
+        <button class="btn ghost" id="browsernotif">${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Browser alerts on ✓' : 'Enable browser alerts'}</button>
+      </div>
+      <p class="muted small">Phone push: ntfy ${ch.ntfy ? '✓' : '✗'} · Telegram ${ch.telegram ? '✓' : '✗'} · last server check ${al?.lastRun ? new Date(al.lastRun).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, dateStyle: 'medium', timeStyle: 'short' }) + ' IST' : '—'}.
+        Prices come from Yahoo and can lag the exchange by a few minutes; for true tick data connect a broker API.</p>
+      ${posHtml}
+      <h3>Alerts</h3>
+      <ul class="checks">${alerts.slice(0, 25).map(a => `<li><span class="dot ${LEVEL_CLS[a.level] || 'na'}"></span><div><b>${a.level}</b> · ${a.title.replace(/</g, '&lt;')}
+        <div class="why">${new Date(a.ts).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, dateStyle: 'medium', timeStyle: 'short' })} · ${(a.body || '').replace(/</g, '&lt;').replace(/\n(https?:\/\/\S+)/, ' · <a href="$1" target="_blank" rel="noopener">source</a>')}</div></div></li>`).join('') || '<li class="muted">No alerts yet.</li>'}</ul>`;
+    $('#deskkey').onchange = e => { store.set('deskkey', e.target.value.trim()); refreshLive(); };
+    $('#testpush').onclick = async () => { try { const r = await api('/api/alerts', { method: 'POST', body: '{"action":"test"}' }); alert(r.sent.length ? `Sent via ${r.sent.join(', ')}` : `Not sent: ${r.errors.join('; ')}`); } catch (e) { alert(e.message); } };
+    $('#runnow').onclick = async () => { try { const r = await api('/api/alerts', { method: 'POST', body: '{"action":"run"}' }); alert(`Checked. NIFTY ${fmt(r.nifty)}, ${r.alerts.length} new alert(s).`); refreshLive(); } catch (e) { alert(e.message); } };
+    $('#browsernotif').onclick = async () => { if (typeof Notification !== 'undefined') { await Notification.requestPermission(); refreshLive(); } };
+    if ($('#closepos')) $('#closepos').onclick = async () => { if (confirm('Stop monitoring this position?')) { await api('/api/position', { method: 'DELETE' }); refreshLive(); } };
+    // browser notification for new urgent alerts while the page is open
+    const fresh = alerts.filter(a => a.ts > lastAlertTs && ['EXIT', 'WARN', 'TARGET'].includes(a.level));
+    if (lastAlertTs && fresh.length && typeof Notification !== 'undefined' && Notification.permission === 'granted')
+      fresh.slice(0, 3).forEach(a => new Notification(`${a.level}: ${a.title}`, { body: a.body || '', tag: a.key }));
+    if (alerts[0]) { lastAlertTs = alerts[0].ts; store.set('lastAlertTs', lastAlertTs); }
+  }
+  setInterval(() => { if (!document.hidden) refreshLive(); }, 60000);
+
   const BT_NAME = { ic: 'Iron condor + macro guard', wide: 'Wide iron condor 1.25σ/2σ + macro guard', trend: 'Trend credit spread + macro guard' };
   function renderPlan() {
     if (!S.live) return;
@@ -321,9 +431,11 @@
         <div><span>Lots at ${fmt(rp * 100, 1)}% risk</span><b>${lots > 0 ? lots : 0}</b><span>1 lot needs ₹${fmt(maxLoss / rp)} capital at this risk</span></div>
         <div><span>Charges / lot</span><b>${rs(ch.total)}</b></div>
       </div>
+      ${tradeCard(structure, legs, v, atm, T, ex, st, ch)}
       ${bt ? `<p class="note">Backtest of this structure (with macro guard, ${bt.trades} weeks): win rate ${fmt(bt.win_rate * 100, 0)}%, average ${rs(bt.avg_pnl_rs)}/lot/week, average loss ${rs(bt.avg_loss_rs)}, worst week ${rs(bt.worst_rs)}, max drawdown ${rs(bt.max_dd_rs)}. Last 52 trades: average ${rs(bt.last_52_trades.avg)}.</p>` : ''}
       <p class="muted small">Premiums are Black-Scholes estimates (${isFinite(ivS) ? 'from your straddle' : 'India VIX × 0.95'}, backtest skew). Use real bid/ask from your broker; if the real credit is much lower than the model, the edge is gone. Place as a basket (buy wings first) for the hedge margin benefit. Exit early on a close beyond a short strike or at 2× the credit lost.</p>
-      <button class="btn ghost" id="tolab">Open in Strategy lab →</button>`;
+      <div class="row wrap"><button class="btn" id="activate">I took this trade: start live alerts</button><button class="btn ghost" id="tolab">Open in Strategy lab →</button></div>`;
+    $('#activate').onclick = () => activateTrade();
     $('#tolab').onclick = () => { setLab(legs, v.nifty, atm * 100, ex); document.querySelector('.tabs button[data-tab="lab"]').click(); };
   }
   ['#structure', '#capital', '#riskpct'].forEach(s => $(s).addEventListener('input', () => { store.set(s, $(s).value); renderPlan(); }));
