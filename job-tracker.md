@@ -46,3 +46,20 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-10 — no applications submitted
+
+Blocker (same as before): Greenhouse/Lever APIs, remoteok, remotive, naukri unreachable from this container; Ashby pages are JS-rendered. No salary or India-eligibility could be verified, so nothing was applied to (rule: never apply unverified). Resume: resume/Dheeraj_Azure_Data_Engineer.pdf.
+
+New unverified leads from search snippets (all REVIEW; salary not shown, none meets the "verified >= Rs 42 lakh" bar):
+| Company | Role | Source | Notes |
+|---|---|---|---|
+| Jobgether | Databricks Engineer, Senior/Lead (worldwide remote) | whynotremote.com/jobs/databricks-engineer-senior-lead-36dfee56 | Intermediary; find real employer + salary |
+| EazyML | Senior Databricks Engineer, remote India, full-time | jobs.weekday.works/senior-databricks-engineer-at-eazyml-4409097168 | Weekday listings often < Rs 42L; check range |
+| Ottomate | Senior AWS Data Engineer (Databricks/Snowflake/streaming) | jobs.weekday.works/...ottomate-wkdymrfl0h | US-hours overlap; AWS/streaming gap vs resume |
+| Billigence | Senior Data Engineer | remotive.com/remote/jobs/software-development/senior-data-engineer-4005395 | Carried over; salary unknown |
+| Databricks | Sr. Big Data Engineer, remote India | hw.glich.co (posted 2026-01-12) | Likely stale; wants 10+ yrs |
+| K2 Partnering | Senior Databricks data platform | jobs.weekday.works/senior-data-engineer-at-k2-partnering-solutions-4403606500 | REJECT-leaning: 6-month contract |
+| Ness Digital | Senior DE Databricks, Bangalore | careerbuilder.com | Salary unknown; likely below threshold |
+| Cognida.ai | Sr Data & AI Engineer, Hyderabad | cognida.keka.com | REJECT: onsite |
+| Climb AI | Senior Data Engineer | Ashby | Still unreadable |
