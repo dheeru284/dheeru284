@@ -46,3 +46,34 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-11 — no applications submitted
+
+Why none were submitted: every role I confirmed as open and remote-from-India had no posted salary, so the ₹42 lakh/yr floor couldn't be checked. Under the routine's rules that makes them REVIEW, not APPLY. The open forms also ask for a minimum salary expectation and a notice period, and neither is in the resume.
+FX assumption: about ₹95 per USD (mid-2026 sources; no dated November rate found). Floor ≈ $44k/yr.
+Access this run: greenhouse.io and lever.co reachable. crossover.com, remotive, remoteok, himalayas, indeed and the Greenhouse/Lever JSON APIs blocked by the session network policy.
+
+### REVIEW (verified open on the employer's ATS, India-remote, salary not stated)
+| Company | Role | Remote eligibility | Salary | Match | Job URL | Date found | Notes |
+|---|---|---|---|---|---|---|---|
+| Resilinc | Senior Data Engineer | India, full-time remote | Not stated | ~85% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | 2026-11-11 | Databricks, Spark, Delta Lake, Azure (preferred), Python/SQL, 5+ yrs: strong fit. ClickHouse and customer-facing/FDE work are gaps. Best fit found. |
+| OpenTable (Booking Holdings) | Senior Data Engineer (AI/ML) | "100% remote across India" | Not stated (form asks for minimum base expectation) | ~65% | https://job-boards.greenhouse.io/opentable/jobs/8817801002 | 2026-11-11 | Databricks/Spark/Snowflake match, but LLM/RAG/vector DB experience is *required* and isn't in the resume. Form also asks notice period (wants ≤30 days). |
+| IDT Corporation | Senior Data Engineer (with AI/ML experience) | Remote, "only accepting applicants from India" | Not stated; B2B ($, gross) or FTE | ~60% | https://jobs.lever.co/idt/5156a826-424f-46da-aa38-e86aec3b36aa | 2026-11-11 | Snowflake/Redshift, Spark, Python fit. Requires 1–2 yrs hands-on AI/ML/RAG and Kafka, neither in the resume. Pay in USD may clear the floor. |
+| Canonical | Python & Kubernetes Software Engineer – Data, Workflows, AI/ML & Analytics | Home based – Worldwide | Not stated (location-based) | ~55% | https://job-boards.greenhouse.io/canonical/jobs/5703396 | 2026-11-11 | Software-engineering role (Kubernetes, Kubeflow, Airflow, dbt). Kubernetes not in resume. Canonical has a long application questionnaire. |
+
+### Leads that could not be verified this run
+- Crossover / IgniteTech — Lead Data Engineer, listed at **$60k/yr (~₹57 lakh/yr, ~₹4.75 lakh/mo)**, any country, full-time remote. crossover.com is blocked here. This is the only lead with a stated salary above the floor. Worth checking manually: https://www.crossover.com/job-roles/finance/t-a0sIj000001G9h0IAC/ignitetech-lead-data-engineer
+- Billigence — Senior Data Engineer (Azure Databricks), India remote contract (Built In listing ~23 days old). Still REVIEW from the last run; employer page not reached.
+- Dynatron Software — Sr. Analytics Engineer, Remote India (dbt + Snowflake/Databricks), posted Jul 2026. Not verified.
+- Outreach — Senior Analytics Engineer, remote within India (Snowflake, dbt, Airflow). Techstars board blocked.
+
+### REJECT
+- Nearform Senior Data Engineer, India (both permanent and contract) — postings closed.
+- Oportun R14287, Level Access, XO Health, Proton.ai (now LATAM/Europe only) — postings closed or India removed.
+- Jobgether India DE postings (4) and the earlier Resilinc Staff DE – AI Solutions — 404, closed.
+- G-P Staff Data Engineer — closed.
+- YipitData Senior Data Engineer (India) — no longer on their board.
+- HackerRank Lead Data Engineer — hybrid, Bangalore office 3 days/week.
+- OKX Data Engineering Director, APAC — Hong Kong work-right priority; director level.
+- Weekday, Pitchnhire, EazyML, Opvia India roles — posted ranges ₹15–40 lakh, below the floor.
+- GitLab Intermediate Data Engineer (Bangalore) — mid-level, office location.
