@@ -46,3 +46,25 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-13 — 0 applications submitted, 1 to review
+
+Access: direct HTTP (curl/Playwright) to every job board is blocked by the egress proxy. The WebFetch tool could reach jobs.lever.co and job-boards.greenhouse.io. remotive.com, LLR portfolio boards and boards-api.greenhouse.io did not resolve. Application forms can't be submitted from this session, and no role found today publishes a salary at or above ₹42L/yr.
+
+| Company | Role | Remote eligibility | Salary | Match | URL | Status | Notes |
+|---|---|---|---|---|---|---|---|
+| Resilinc | Senior Data Engineer | India, Remote (fully remote co.) | Not stated | ~85% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW | Open 2026-11-13. 5+ yrs; Databricks/Spark/Delta, Python/SQL, Azure preferred, CI/CD. Gaps: ClickHouse, Terraform (nice-to-have). Salary unknown, so ₹42L can't be verified. Ask the recruiter for the band before applying. |
+| Onehouse | Senior Software Engineer, Distributed Data Systems (IN) | India-Remote | Not visible (equity eligible) | ~50% | https://jobs.lever.co/Onehouse/3531e786-ad84-4d0d-a0bd-113415bd328f | REJECT | Core requirement is Java/C++ systems coding; resume doesn't support that. |
+| YipitData | Sr. Backend Engineer (Infra / Data Feeds) | India, fully remote | Not stated (asks min INR) | ~45% | https://job-boards.greenhouse.io/yipitdata/jobs/7791555 | REJECT | Backend SWE, 10+ yrs, Kafka/Go/K8s. Skill mismatch. |
+| YipitData | Senior Data Engineer / Pipeline / Platform (India Remote) | India | — | — | greenhouse 7179707, 7064588, 6703545 | REJECT | Expired (redirects to board) |
+| Resilinc | Staff Data Engineer – AI Solutions; Senior DE db05e6d3 | India | — | — | lever | REJECT | Expired (404) |
+| Jobgether | Senior Data Engineer (Team Lead), Senior DE 0f35f05e | India | — | — | lever | REJECT | Expired (404) |
+| Jobgether (partner) | Senior Data Engineer, 6+ yrs | India remote | ₹1–2L/month | — | lever (search snippet) | REJECT | Below ₹3.5L/month |
+| Globalization Partners | Sr. Data Engineer / Staff DE (India Remote-First) | India | — | — | greenhouse 6330426003, 7491812003, 7692014003 | REJECT | Expired (redirect to board) |
+| dbt Labs | India data roles | — | — | — | greenhouse 4661362005 | REJECT | Expired (404) |
+| Acryl Data | Data Platform Engineer | Bengaluru | — | — | greenhouse 5057616007 | REJECT | Expired; board has only DevOps role |
+| Karat | Senior Data Engineer (India) | Remote, Bangalore only | — | — | aggregator | REVIEW (unverified) | Couldn't open employer page |
+| MediaRadar, Billigence, BrightClaim, Dynatron (Sr Analytics Eng), Opvia, Tala, phData, Level Access | Senior DE / Analytics Eng (India remote) | India (per snippets) | Not stated | — | remotive / builtin / aggregators | REVIEW (unverified) | Hosts blocked; no salary published |
+| CyberCoders, Livefront | Senior DE (Databricks) | US only | $142–190k / $150–180k | — | aggregators | REJECT | India not eligible |
+
+Benchmarks seen: senior DE roles for foreign employers hiring in India typically quote ₹30–50L CTC. Many India-remote listings won't clear ₹42L unless they're paid in USD.
