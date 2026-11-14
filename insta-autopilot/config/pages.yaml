@@ -1,0 +1,112 @@
+# One entry per Instagram account. `id` is used for secrets:
+#   IG_<ID>_USER_ID and IG_<ID>_TOKEN  (ID upper-cased, e.g. IG_FUNFACTS_TOKEN)
+# A page with no secrets is skipped automatically, so you can add accounts one at a time.
+
+settings:
+  # Until this date every day's posts arrive as a Pull Request; merging it = approval.
+  # After this date posts go straight to main and publish automatically.
+  approval_until: "2026-11-29"
+  timezone_offset_minutes: 330        # IST
+  graph_api_version: "v23.0"
+  model: "claude-opus-5-5"
+
+pages:
+  - id: funfacts
+    handle: "@set_in_config"
+    enabled: true
+    language: English
+    niche: "Mind-blowing fun facts: science, space, animals, the human body, everyday things"
+    voice: "en-IN-NeerjaNeural"
+    style: "Curious, punchy, one surprising fact per slide, 'Did you know?' energy"
+    formats: { reel: 1, carousel: 1 }   # posts per day
+    post_times: ["12:30", "19:30"]      # IST
+    monetization:
+      - "Amazon affiliate: science kits, books, gadgets related to the fact"
+      - "Brand sponsorships once the page passes 10K followers"
+    affiliate_tag: ""                   # e.g. yourtag-21 (Amazon Associates India)
+
+  - id: econstories
+    handle: "@set_in_config"
+    enabled: true
+    language: English
+    niche: "Animated economy & business stories: how companies won or collapsed, scams, money psychology, Indian & global markets (Wolf-of-Wall-Street style storytelling, original content only)"
+    voice: "en-IN-PrabhatNeural"
+    style: "Cinematic storytelling, cliffhanger hook in first 2 seconds, numbers made simple. Educational only, never investment advice."
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["13:00", "20:30"]
+    monetization:
+      - "Affiliate: finance books, courses (only SEBI-compliant, no stock tips)"
+      - "Own digital product: 'Money Stories' e-book / Notion templates"
+    affiliate_tag: ""
+
+  - id: itihaas
+    handle: "@set_in_config"
+    enabled: true
+    language: Hindi
+    niche: "Indian history and mythology stories (Ramayana, Mahabharata, Puranas, forts, kings, freedom fighters)"
+    voice: "hi-IN-MadhurNeural"
+    style: "Respectful, story-driven, Devanagari script. Clearly separate mythology from historical fact. Never mock any religion, caste or community."
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["08:00", "21:00"]
+    monetization:
+      - "Amazon affiliate: Hindi books, Gita Press editions, history books"
+      - "Spiritual/travel brand sponsorships"
+    affiliate_tag: ""
+
+  - id: techai
+    handle: "@set_in_config"
+    enabled: true
+    language: English
+    niche: "Practical tech & AI tips: AI tools, phone tricks, productivity, coding shortcuts"
+    voice: "en-IN-PrabhatNeural"
+    style: "Fast, actionable, 'save this post' value. Step-by-step slides."
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["10:00", "18:30"]
+    monetization:
+      - "Affiliate: SaaS/AI tool referral programs, gadgets on Amazon"
+      - "Sponsored tool reviews (always labelled Paid partnership)"
+    affiliate_tag: ""
+
+  - id: telugutravel
+    handle: "@set_in_config"
+    enabled: true
+    language: Telugu
+    niche: "Travel in Andhra Pradesh, Telangana, South India and budget travel tips"
+    voice: "te-IN-ShrutiNeural"
+    style: "Warm, Telugu script, budget breakdowns, hidden gems, best time to visit"
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["09:00", "19:00"]
+    monetization:
+      - "Affiliate: hotel/booking and travel gear"
+      - "Homestay / tourism board sponsorships"
+    affiliate_tag: ""
+
+  - id: telugucooking
+    handle: "@set_in_config"
+    enabled: true
+    language: Telugu
+    niche: "Telugu home cooking: Andhra & Telangana recipes, quick tiffins, pickles, festival sweets"
+    voice: "te-IN-MohanNeural"
+    style: "Telugu script, ingredients slide then numbered steps, tips from amma's kitchen"
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["11:30", "18:00"]
+    monetization:
+      - "Amazon affiliate: cookware, spices, kitchen gadgets"
+      - "Food brand sponsorships"
+    affiliate_tag: ""
+
+  - id: aiinfluencer
+    handle: "@set_in_config"
+    enabled: true
+    language: English
+    niche: "Virtual AI influencer 'Myra': a Bengaluru tech-and-lifestyle creator sharing daily life, gadgets, AI tools, cafes"
+    voice: "en-IN-NeerjaNeural"
+    style: "First-person, friendly, aspirational but relatable. Always disclosed as an AI-generated virtual creator in bio and with the AI label."
+    # Consistent character images must be supplied in pages/aiinfluencer/assets/ (generate them with Higgsfield AI Influencer).
+    character_assets_dir: "pages/aiinfluencer/assets"
+    formats: { reel: 1, carousel: 1 }
+    post_times: ["12:00", "20:00"]
+    monetization:
+      - "Brand sponsorships (AI influencers command premium deals)"
+      - "Affiliate gadgets & fashion"
+    affiliate_tag: ""

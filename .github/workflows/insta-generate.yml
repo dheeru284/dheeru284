@@ -1,0 +1,50 @@
+name: Insta Autopilot - generate daily content
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # 08:47 IST, creates tomorrow's posts
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: { group: insta-autopilot-write, cancel-in-progress: false }
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults: { run: { working-directory: insta-autopilot } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-core
+      - run: pip install -q -r requirements.txt
+      - name: Generate + compliance-check + render
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: python -m autopilot.main generate
+      - name: Commit (PR for approval during the review period, direct to main after)
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          git config user.name "insta-autopilot"
+          git config user.email "insta-autopilot@users.noreply.github.com"
+          git add -A queue state
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          UNTIL=$(python -c "import yaml;print(yaml.safe_load(open('config/pages.yaml'))['settings']['approval_until'])")
+          if [[ "$(date -u +%F)" < "$UNTIL" || "$(date -u +%F)" == "$UNTIL" ]]; then
+            BR="content/$(date -u +%F)"
+            git checkout -b "$BR"
+            git commit -q -m "Content for review: $(date -u -d tomorrow +%F)"
+            git push -q -f origin "$BR"
+            gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BR" \
+              --title "📸 Review tomorrow's Instagram posts ($(date -u -d tomorrow +%F))" \
+              --body "Open **Files changed** to view every slide and reel. **Merge = approve and schedule.** Close = reject all. Delete a folder on this branch to drop one post." || true
+          else
+            git commit -q -m "Auto-approved content: $(date -u -d tomorrow +%F)"
+            git push -q
+          fi
