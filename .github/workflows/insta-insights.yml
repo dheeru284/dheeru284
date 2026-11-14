@@ -1,0 +1,26 @@
+name: Insta Autopilot - weekly insights
+
+on:
+  schedule:
+    - cron: "41 4 * * 1"   # Mondays 10:11 IST
+  workflow_dispatch:
+
+permissions: { contents: write }
+concurrency: { group: insta-autopilot-write, cancel-in-progress: false }
+
+jobs:
+  insights:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: insta-autopilot } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q -r requirements.txt
+      - env: { SECRETS_JSON: "${{ toJSON(secrets) }}" }
+        run: python -m autopilot.main insights
+      - run: |
+          git config user.name "insta-autopilot"
+          git config user.email "insta-autopilot@users.noreply.github.com"
+          git add -A state
+          git diff --cached --quiet || { git commit -q -m "Weekly insights"; git pull -q --rebase; git push -q; }
