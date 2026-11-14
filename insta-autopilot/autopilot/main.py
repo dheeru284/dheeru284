@@ -59,7 +59,8 @@ def cmd_generate(cfg, args):
         if not (uid and tok) and not args.dry_run:
             print(f"[skip] {page['id']}: no IG credentials yet")
             continue
-        if page["id"] == "aiinfluencer" and not any(Path(ROOT, page["character_assets_dir"]).glob("*.*")):
+        if page["id"] == "aiinfluencer" and not any(f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp")
+                                                  for f in Path(ROOT, page["character_assets_dir"]).iterdir()):
             print("[skip] aiinfluencer: add character images to", page["character_assets_dir"])
             continue
         page = {**page, "character_assets_dir": str(ROOT / page["character_assets_dir"])
