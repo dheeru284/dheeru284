@@ -46,3 +46,36 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-14 — 0 applications submitted, 9 for review
+
+**Why nothing was submitted:** I can't log in to LinkedIn (no account in this session). Greenhouse forms that do load ask for things I can't fill in for you: a minimum salary, your notice period (your resume shows Akamai ended Jan '26, but your current status isn't stated), and a privacy-policy acknowledgement, which counts as agreeing to legal terms for you. Blocked hosts: remoterocketship, arc.dev, and the Greenhouse/Lever/Ashby JSON APIs. Reachable: LinkedIn public pages and Greenhouse/Lever/Ashby HTML pages.
+**Coverage:** 814 LinkedIn postings (last 14 days, remote filter; 10 title variations; India/Worldwide/Asia), 314 detail pages parsed, plus searches of Greenhouse/Lever/Ashby.
+**Salary filter:** ₹42 L/yr ≈ US$48k at about ₹88/USD (approximate rate, not live). Almost no India-remote posting states a salary, so only 2 could be tested against the threshold.
+
+### REVIEW — India-remote, needs your decision
+| # | Company | Role | Remote eligibility | Salary | INR/yr (min) | Match | Job URL | Notes |
+|---|---|---|---|---|---|---|---|---|
+| 1 | HSO India | Lead Data Engineer – Microsoft Fabric & Azure (LI 4486769329) | Remote / WFH, India | "Best in market" | unknown | 85% | https://www.linkedin.com/jobs/view/4486769329 | 10+ yrs; Fabric/ADF/Synapse/Databricks match your stack closely. Notice period immediate to 30 days. Posted ~Nov 10. |
+| 2 | EazyML (via Weekday YC W21) | Lead Data Architect (Fabric) (LI 4488932724; duplicate 4488941299; EazyML direct 4490334404) | Remote, anywhere in India | ₹20–60 L/yr | ₹20 L (min below) | 85% | https://www.linkedin.com/jobs/view/4488932724 | BORDERLINE: the range overlaps ₹42 L but the minimum is below it. 8+ yrs, 2+ yrs Fabric, US-ET overlap. Posted Nov 13. |
+| 3 | micro1 (posted as "Joblet-AI") | Staff Data Engineer (Remote) (LI 4489864062) | Remote, posted for India (and a UAE copy) | US$200–260k "national pay range" | ₹1.76 Cr if paid in USD | 62% | https://www.linkedin.com/jobs/view/4489864062 | The pay is probably the US range; India pay is unconfirmed. Wants greenfield platform builds and AI-agent tooling, which your resume doesn't show. Posted Nov 14. |
+| 4 | Jobgether partner (unnamed) | Lead Data Engineer 4C (LI 4489198338) | Fully remote within India | not stated | unknown | 75% | https://www.linkedin.com/jobs/view/4489198338 | Azure/Databricks/Snowflake; leads a team; Azure DE cert preferred. A partner company handles applications; the employer isn't named. |
+| 5 | Jobgether partner | Sr. Data Engineer 4B (LI 4489407254) | Fully remote, India | not stated | unknown | 72% | https://www.linkedin.com/jobs/view/4489407254 | Same partner; Databricks/Azure/Kafka. |
+| 6 | Kake | Senior Data Engineer (Analyst/Scientist) – Remote (LI 4487157827 / 4488939709) | Fully remote, India; paid in USD | "Competitive USD" | unknown | 70% | https://www.linkedin.com/jobs/view/4487157827 | Contractor community; 5–6 h daily overlap with US Pacific time required. |
+| 7 | OpenTable (Booking Holdings) | Senior Data Engineer (AI/ML) | 100% remote across India | not stated (form asks your minimum base) | unknown | 58% | https://job-boards.greenhouse.io/opentable/jobs/8817801002 | Open. Requires hands-on LLM/RAG/vector-DB experience, which your resume doesn't show. Strong employer. |
+| 8 | EazyML | Senior Data Engineer – Microsoft Fabric (LI 4486881585) | Remote, anywhere in India | not stated | unknown | 80% | https://www.linkedin.com/jobs/view/4486881585 | 5+ yrs (mid-senior), so pay is likely under ₹42 L. 200+ applicants. |
+| 9 | CloudLabs Inc | Sr. Data Engineer (India – Remote) (LI 4486026531) | Remote, India | not stated | unknown | 60% | https://www.linkedin.com/jobs/view/4486026531 | 10+ yrs; Snowflake/dbt/AWS Glue. Your AWS and Glue experience is thin. |
+
+### REJECTED (short reasons)
+- Juniper Square – Technical Lead (Data), India remote: React/TypeScript front-end experience mandatory.
+- Juniper Square – Sr Business Analytics Engineer, India remote: needs Salesforce/NetSuite ARR metrics plus a semantic layer; weak match.
+- Shuru – Lead Data Engineer, remote: needs Kafka/GCP/BigQuery/Terraform/K8s; stack mismatch.
+- NPAworldwide – Analytics Solution Architect, APAC remote: needs JLPT N1/N2 Japanese.
+- ClickHouse – Sr Cloud Data Infrastructure Eng (APJ): cloud infrastructure software role, not data engineering; Singapore-based.
+- Binance – Sr Data Engineer, Square (APAC remote): Japan-located ML feature engineering role.
+- Softview – AWS Data Engineer Lead ₹32–45 L: on-site in Chennai; minimum below threshold.
+- Blumetra – Senior DE ₹15–24 L: below threshold; hybrid.
+- Egen, XpertDox, Persistent, Marsh/Oliver Wyman, Fivetran, Commonwealth Bank, Atlassian, Novo Nordisk, etc.: India office/hybrid, not remote.
+- BairesDev Azure/Databricks/dbt roles: LATAM-only hiring.
+- Oportun Sr DE (R14287), Nearform Sr DE India, Level Access Sr DE, HighLevel Lead DE: closed (redirect or 404).
+- Many US/UK/EU/Canada/Singapore/Australia senior roles: local location or work authorization required.
