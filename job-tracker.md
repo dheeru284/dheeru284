@@ -46,3 +46,23 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-18 — no applications submitted
+
+Blocker: shell/browser egress to job sites is blocked again (Greenhouse/Lever/Ashby APIs, himalayas.app, phdata.io, api.ashbyhq.com all refused). Read-only page fetches worked for job-boards.greenhouse.io and jobs.lever.co, so the top roles below were checked on the employer page. Nothing could be submitted.
+FX used: about ₹94/USD (13 Nov 2026 quote). Your ₹42 lakh/yr floor is about $44.7k/yr.
+
+| Company | Role | Remote eligibility | Salary | Match | Job/Apply URL | Status | Notes |
+|---|---|---|---|---|---|---|---|
+| YipitData | Senior Data Engineer - Global Team (India) | India Remote (verified on Greenhouse) | Not listed; form asks "minimum required yearly salary (INR)" | ~85% | https://job-boards.greenhouse.io/yipitdata/jobs/7064418 | REVIEW — ready to apply | 6+ yrs; Spark/PySpark/SQL/Delta/Databricks required; Airflow/dbt/Snowflake nice-to-have. US overlap during onboarding, then IST except 1–2 days/week. No work-auth question. Need your salary floor (e.g. ₹42L+) and notice period. |
+| Resilinc | Senior Data Engineer | Remote (India) (verified on Lever) | Not listed | ~85% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW — ready to apply | 5+ yrs; Databricks, Spark, Delta Lake, Python, SQL, Azure preferred; ClickHouse and customer-facing work. Salary unknown, so ₹42L floor not confirmed. |
+| OpenTable (Booking Holdings) | Senior Data Engineer (AI/ML) | 100% remote across India (verified on Greenhouse) | Not listed; form asks minimum base salary | ~70% | https://job-boards.greenhouse.io/opentable/jobs/8817801002 | REVIEW | Databricks/Snowflake/Spark/Delta/Airflow fit. Also requires hands-on LLM/GenAI, RAG, vector DB work, which your resume does not show. Apply only if you have that experience. |
+| Solvd | Senior Data Engineer (Azure Databricks) | Built In says hiring remotely in India | Not seen | ~85% | https://builtin.com/job/senior-data-engineer-azure-databricks/8779960 | REVIEW (unverified) | Databricks/PySpark/Delta/Synapse, medallion, fintech client. Employer page not found. |
+| Billigence | Senior Data Engineer – Azure Databricks | India Remote (aggregators) | Unspecified; contract | ~85% | https://builtin.com/job/senior-data-engineer-azure-databricks/8738671 | REVIEW (unverified) | Carried over from the October run. Contract; Synapse → Databricks migration. |
+| phData | Lead / Senior Data Engineer | India Remote (aggregators) | Unspecified | ~75% | phdata.io/jobs (blocked) | REVIEW (unverified) | 8+ yrs plus team lead experience; Snowflake/Databricks. Careers site blocked. |
+| Foundever | Senior Data Engineer (Remote, Any Location, IN) | India (Himalayas listing, 2026-11-06) | Unknown | ? | himalayas.app (blocked) | REVIEW (unverified) | Databricks on Azure/AWS. Could not open it. |
+| Inficare Technologies | Senior Databricks Data Engineer | USA only | $62/hr | — | remotive.com | REJECT | India not eligible. |
+| Lumenalta | Databricks on Azure | US time zones only | CA$83–153k | — | — | REJECT | India not eligible. |
+| Insight Global | Data Engineer - INTL India | India | $12–23/hr est. | — | insightglobal.com | REJECT | About ₹23–43L/yr; minimum below the floor. |
+| Opvia / EazyML / Qureos roles | Senior DE / Analytics Engineer | India | ≤₹40L | — | — | REJECT | Below the salary floor. |
+| Alimentiv, Jobgether (several) | Senior Data Engineer | India | — | — | jobs.lever.co | REJECT | Posting returns 404 (closed). |
