@@ -46,3 +46,25 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-19 — 0 applications submitted
+
+Why none were submitted: this session can read Lever and Greenhouse pages but can't fill in or submit forms. The browser has no network access, and remotive, workable, indeed, crossover and greenhouse-api are blocked. Every verified role also needs your decision on salary or eligibility (see below). FX is an assumption, about ₹88/USD (no live rate reachable).
+
+| Company | Role | Remote eligibility | Salary | INR/yr (min) | Match | Job URL | Status | Notes |
+|---|---|---|---|---|---|---|---|---|
+| Partner co. via Jobgether | Lead Data Architect – Microsoft Fabric | Remote, anywhere in India, FT | INR 20–60 LPA | ₹20L (max ₹60L) | 88% | jobs.lever.co/jobgether/80b8d138-05ed-40d8-9feb-c48fbb0d5746 | REVIEW (borderline) | Best stack fit: Fabric, ADF, Synapse, Databricks, PySpark, Power BI. 8+ yrs required, you have 10+. Needs 2+ yrs of Fabric (resume shows Fabric at Akamai 2022–26). Range overlaps your floor; ask for ≥₹42L. Duplicate listing: 4062be4b-b8a4-4b74-b131-e5427a7c23da (same role, treat as ONE). |
+| Partner co. via Jobgether (likely Object Edge) | Senior Engineer – Data Engineering (Databricks), Contractor | Remote India, contract 6+ mo | not stated | – | 78% | jobs.lever.co/jobgether/1714445d-4a55-4b89-81c7-7bfc6726832f | REVIEW (salary unknown) | Databricks, Delta, Spark, dbt and Snowflake match. Airflow is coursework only. Unity Catalog/DLT and Terraform are not on the resume. Databricks cert "highly desirable" (you have none). |
+| Partner co. via Jobgether (likely Object Edge) | Senior Architect – Data Engineering (Databricks), Contractor | Remote India, contract 6+ mo, start Dec/Jan | not stated | – | 72% | jobs.lever.co/jobgether/7a48b211-3d20-47d4-8857-9253cf562708 | REVIEW (salary unknown) | Needs 10+ yrs and 6+ yrs hands-on Databricks. Your Databricks use dates from Apr 2020 (~6 yrs), which is borderline. |
+| Resilinc | Senior Data Engineer | Remote India, FT | not stated | – | 82% | jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW (salary unknown) | Databricks/Spark/Delta/Azure/Python/SQL/CI-CD match. ClickHouse not on resume. Indian payroll, so pay may be below ₹42L. Ask the recruiter for the range first. |
+| Canonical | Python & Kubernetes Software Engineer – Data, Workflows, AI/ML | Home based – Worldwide (India not named) | not stated | – | 55% | job-boards.greenhouse.io/canonical/jobs/5703396 | REJECT (skill fit) | Software engineering role built on K8s/LXD/Kubeflow, none of which are on the resume. |
+| Onehouse | Sr Software Engineer, Distributed Data Systems (IN) | India-Remote | not shown | – | 40% | jobs.lever.co/Onehouse/3531e786-ad84-4d0d-a0bd-113415bd328f | REJECT | Java/C++ systems engineering, a major mismatch. |
+| IgniteTech via Crossover | Lead Data Engineer | Any country (per search snippet) | USD 60k/yr | ≈₹52.8L (est.) | ? | crossover.com/job-roles/finance/t-a0sIj000001G9h0IAC/ignitetech-lead-data-engineer | REVIEW (unverified) | Crossover site is blocked, so stack and status are unchecked. Crossover uses heavy monitoring and testing. Above your floor if real. |
+| Excelon Solutions | Senior Azure Data Engineer | Remote India (Indeed snippet) | ₹40–45 LPA | ₹40L | ~85% | in.indeed.com/viewjob?jk=c154eb5c113ebbfe | REVIEW (borderline, unverified) | Min ₹40L is just under ₹42L. Indeed is blocked here. |
+| Resilinc | Senior Data Engineer (db05e6d3) | – | – | – | – | – | REJECT | 404, closed |
+| Resilinc | Staff Data Engineer – AI Solutions | – | – | – | – | – | REJECT | 404, closed |
+| Globalization Partners | Staff Data Engineer (India) | – | – | – | – | – | REJECT | No longer on board |
+| Smart Working Solutions | Senior Data Engineer (Contract) TH003 | – | – | – | – | – | REJECT | 404, closed |
+| Jobgether | Senior DE listings e535768e, c44864eb, 9cc456c5, 4d426592 | – | – | – | – | – | REJECT | 404, closed |
+
+Market note: most India-remote senior DE postings seen this run list ₹15–40 LPA. Roles at or above ₹42L were rare, and only Crossover-style "global pay" or upper bands reached it.
