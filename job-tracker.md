@@ -46,3 +46,24 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-20 — 0 applications submitted
+
+Network: the sandbox can read jobs.lever.co and job-boards.greenhouse.io through web fetch. remotive.com, builtin.com, boards-api.greenhouse.io, databricks.com, brenxor.com and remoterocketship.com do not resolve, and direct curl is blocked entirely. No posting found today had a published salary that confirms ₹42L/yr, so nothing passed the APPLY bar.
+
+| Company | Role | Location (verified) | Salary | INR/yr | Match | Job URL | Status | Notes |
+|---|---|---|---|---|---|---|---|---|
+| Resilinc | Senior Data Engineer | India, Remote (Lever, live 2026-11-20) | Not listed | ? | ~85% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW — salary unknown | Databricks/Spark/Delta, Azure preferred, Python/SQL, ETL, CI/CD, 5+ yrs. Gaps: ClickHouse; Terraform/streaming are nice-to-haves. Best stack fit found. Ask recruiter for band before applying. |
+| HighLevel (GoHighLevel) | Staff Engineer – Distributed Data Systems & Infrastructure | Remote — Employee India (Lever) | Not listed | ? | ~60% (est.) | https://jobs.lever.co/gohighlevel/30e5e3c1-c7e6-49fc-8598-2fd10b937ce0 | REVIEW — infra-heavy, JD not read | Platform/database infrastructure role; probably weaker fit than a pipeline role. |
+| Globalization Partners (G-P) | Staff Data Engineer | India (Remote-First) per search snippet | Not listed | ? | ~65% | https://job-boards.greenhouse.io/globalizationpartners/jobs/6330426003 | REVIEW — could not confirm still open | Snippet says 12+ yrs needed; resume shows ~10. |
+| Level Access | Senior Analytics Engineer | "Remote" (bands for US/CA; other countries "reviewed") | US$92–100k | ~₹78–85L (est. at ₹85/USD) | ~55% | https://job-boards.greenhouse.io/levelaccess/jobs/8859581002 | REVIEW (weak) | India eligibility not stated. Needs 3+ yrs dbt plus Salesforce/SaaS revenue-metrics domain, which the resume doesn't show. |
+| Level Access | Senior Data Engineer (Remote – India) | — | — | — | — | job-boards.greenhouse.io/levelaccess/jobs/8498093002 | REJECT — no longer on board | |
+| YipitData | Senior Data Engineer (Global Team – India) | — | — | — | — | job-boards.greenhouse.io/yipitdatajobs/jobs/7179707 | REJECT — closed (redirects to board) | Board still has India-remote Senior Software Engineer roles (not data). |
+| Resilinc | Staff Data Engineer – AI Solutions | — | — | — | — | jobs.lever.co/resilinc/1ebc862c-… | REJECT — 404, closed | |
+| Jobgether | Senior Data Engineer (several) | — | — | — | — | jobs.lever.co/jobgether/… | REJECT — 404, closed | |
+| Mutt Data | Data Engineer Senior – Databricks (various) | LatAm/Argentina/Mexico | — | — | — | jobs.lever.co/muttdata | REJECT — India not eligible | Re-checked: all LatAm. |
+| Jellyfish | Staff Data Engineer | Remote – US | — | — | — | — | REJECT — India not eligible | |
+| Weekday clients / Data Hatch / Shivaay / NewVison | Senior (Databricks) Data Engineer | Remote India | ₹12–40L | ≤₹40L | — | — | REJECT — below ₹42L | |
+| Databricks | Sr. Big Data Engineer (India remote) | — | aggregator *estimate* ₹25–35L | — | — | databricks.com (blocked) | REVIEW (unverified) | Careers site blocked; salary shown is an aggregator's estimate, not the employer's figure. |
+
+Market note: every India-remote senior DE posting with a published salary this run was ₹12–40L. Roles above ₹42L almost always leave salary undisclosed, so for each one the recruiter has to confirm the band first.
