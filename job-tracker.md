@@ -46,3 +46,25 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-22 — no applications submitted
+
+Blocker: this session's network still blocks direct access (curl to Greenhouse/Lever/Ashby APIs is refused by the proxy). The web-fetch tool can reach jobs.lever.co and job-boards.greenhouse.io but not remotive, builtin, icims, workingnomads or himalayas. No tool here can submit an application form, so everything below needs you to apply manually or approve more network access.
+
+| Company | Role | Location | Salary | Match | URL | Status | Notes |
+|---|---|---|---|---|---|---|---|
+| Resilinc | Senior Data Engineer | India, fully remote (verified on Lever) | Not listed | ~80% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW: salary unknown | Open. Needs Databricks/Spark/Delta, Azure, Python/SQL, CI/CD, all on your resume. ClickHouse is not on your resume. Ask for the pay band before investing time. |
+| Avalara | Staff Data Engineer (Req 16963) | IN-Remote | Not listed | ~70% | https://social.icims.com/job/Staff-Data-Engineer-Job-IN-Remote-48268279.html | REVIEW: unverified (icims blocked) | Snowflake, dbt, Python, SQL match. Airflow (coursework only), AWS (light), Snowflake Cortex/RAG are gaps. Staff level could pay ₹42L+; confirm. |
+| phData | Lead Data Engineer | Remote – India (per search snippets) | Not listed | ~70% | phdata.io careers / builtin listing 9334369 | REVIEW: unverified | 8+ yrs plus team-lead experience. Snowflake/dbt/Airflow consultancy. Listings conflict on location; check phData's careers page. |
+| Weekday (client) | Sr Data Engineer / Fabric Engineer | India remote | ₹11–50L/yr | — | apply.workable.com/weekday-1/jobs/view/2457CDA2A9 | REJECT | Range minimum is below ₹42L |
+| Jobgether listings (several) | Senior/Lead Data Engineer | — | — | — | jobs.lever.co/jobgether/... | REJECT | Expired (404) |
+| Resilinc (2nd posting db05e6d3) | Senior Data Engineer | — | — | — | — | REJECT | Expired (404) |
+| 3Pillar Global | Sr Data Engineer (Snowflake, Azure) | — | — | — | — | REJECT | Expired (404) |
+| Smart Working | Senior Data Engineer (contract) | — | — | — | — | REJECT | Expired (404) |
+| YipitData | (board checked) | India Remote | — | — | job-boards.greenhouse.io/yipitdatajobs | REJECT | No data engineer role open in India |
+| Globalization Partners | Staff Data Engineer | — | — | — | greenhouse 6330426003 | REJECT | No longer on the board; also needed 12+ yrs |
+| Intetics / Virtual Vocations | Senior Data Engineer – Databricks | "Remote" | — | — | workable / virtualvocations | REJECT for now | Country eligibility not shown; paywalled |
+
+Carried over from October, still unverified: Billigence (Senior Data Engineer, Azure Databricks, India remote) and EXL. The hosts for both are still blocked.
+
+To make this routine work: allow these hosts in the environment's network settings: boards-api.greenhouse.io, api.lever.co, api.ashbyhq.com, remotive.com, himalayas.app, builtin.com, social.icims.com, remoteok.com. Submitting applications also needs a logged-in browser, which this session doesn't have.
