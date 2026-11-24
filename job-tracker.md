@@ -46,3 +46,30 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-24 — 0 applied, 2 need your input
+
+Reachable this run: job-boards.greenhouse.io, jobs.lever.co. Still blocked: boards-api.greenhouse.io, api.lever.co, ashbyhq API, remotive, remoteok, workingnomads, wearedevelopers, linkedin (403).
+Rates assumed (not live): 1 USD ≈ ₹88. Floor ₹42 L/yr ≈ USD 47.7k.
+
+### REVIEW: open, India-remote, strong match, but needs your input before submitting
+
+| Company | Role | Remote eligibility | Salary | Match | Job URL | Status | Date found | Notes |
+|---|---|---|---|---|---|---|---|---|
+| YipitData | Senior Data Engineer - Global Team (India) | India Remote (explicit) | Not listed; form asks your minimum yearly salary in INR | 88% | https://job-boards.greenhouse.io/yipitdata/jobs/7064418 | REVIEW | 2026-11-24 | Stack is PySpark, Delta, Databricks, SQL; Airflow/dbt/Snowflake nice-to-have. 6+ yrs required (you have ~10). US-hours overlap during onboarding, then IST plus 1–2 US-overlap days a week. Required questions need you: (1) gap since Jan '26 at Akamai, (2) earliest start date, (3) LinkedIn URL (the resume's link text has no URL), (4) confirm ₹42,00,000 as your stated minimum, (5) people-management answer (resume only shows training recruits). Mandatory reference-call acknowledgment. |
+| Resilinc | Senior Data Engineer (India, Data Science) | India, Remote (team fully remote) | Not listed | 80% | https://jobs.lever.co/resilinc/98e013c3-84ff-4596-8712-6401c0fb3d55 | REVIEW | 2026-11-24 | Databricks, Spark, Delta, Python, SQL, Azure preferred; ClickHouse and Terraform are gaps. 5+ yrs. Pay unknown and could be below ₹42 L. Also a second Resilinc SDE posting: jobs.lever.co/resilinc/db05e6d3-6024-420d-a8da-da6edfe3e821 |
+
+### REJECT / closed
+- Remote.com — Senior Analytics Engineer (Greenhouse 5748624003): board says no current openings.
+- YipitData — Senior Data Platform Engineer (6703545): no longer listed.
+- G-P — Senior Software Engineer (Data Platform), India (7698156003): no longer on the board.
+- Jobgether (Lever 0f35f05e…): 404, closed; it was also an intermediary.
+- Proton.ai — Senior Data Engineer (LatAm or India): now LATAM/Europe only.
+- Karat — Senior Data Engineer (India): not on the current board.
+- Weekday clients / NewVison / Workable Weekday listings: INR 11–50 L or 20–40 L, so the minimum is below ₹42 L.
+- Mindera (Databricks+Snowflake): hybrid in Bengaluru.
+- Inflect: US-remote only.
+- HackerOne (Ashby): on-site in Pune.
+- Nearform (two India roles): posted over a year ago, probably stale.
+
+### Not verified (aggregator only, host blocked): phData Senior Data Engineer India-remote (posted 2026-05; Databricks/Snowflake/dbt; pay unknown), MediaRadar, CAI, Ness, Zensar, Billigence. Most India-market listings found show INR 15–36 L, below your floor.
