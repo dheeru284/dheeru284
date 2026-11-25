@@ -46,3 +46,27 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-25 — no applications submitted
+
+**Why nothing was submitted:** the session can't submit forms. Shell traffic (curl, Playwright) to job sites fails, and the web fetcher only resolves jobs.lever.co, job-boards.greenhouse.io and wellfound.com. remotive.com, builtin.com, boards-api.greenhouse.io and LLR portfolio pages don't resolve. Even with access, the best match needs answers that aren't in the resume (see below).
+
+FX used: about ₹96.5/USD (latest dated quote found, Jul 2026; no live rate reachable). Your ₹42 L/yr floor ≈ USD 43.5k/yr.
+
+| Company | Role | Remote eligibility | Salary | INR/yr | INR/mo | Match | Job URL | Source | Status | Date found | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| YipitData | Senior Data Engineer – Global Team (India) | India Remote (posting: "remote opportunity based in India") | Not on Greenhouse. Wellfound shows "$100k–$200k" | ~₹96 L–1.93 Cr if USD (unconfirmed) | ~₹8.0–16 L | 85% | https://job-boards.greenhouse.io/yipitdata/jobs/7064418 | Greenhouse (verified live), Wellfound 3338784 | REVIEW | 2026-11-25 | Stack fits closely: Spark/PySpark/SQL/Delta/Databricks, 6+ yrs, dbt/Snowflake nice-to-have. US overlap 1–2 days/wk. Required answers I can't give truthfully: min salary in INR, earliest start/notice, employment gap since Jan '26, people-management detail, LinkedIn URL, why looking. |
+| Hackett Group | Senior Data Engineer – Remote, India | India remote | not seen | – | – | ~80% (Azure Databricks/PySpark) | https://builtin.com/job/senior-data-engineer-remote-india/10867147 | BuiltIn (blocked) | REVIEW (unverified) | 2026-11-25 | ~86 days old; salary unknown, Indian consultancy, likely below floor. |
+| AgileEngine | Data Engineer (Python/PySpark/Databricks) | Remote India | not seen | – | – | ~70% (Airflow listed, not on resume) | freehire.me listing, posted 2026-11-11 | freehire.me | REVIEW (unverified) | 2026-11-25 | Salary unknown. |
+| Dynatron Software | Sr. Analytics Engineer – Remote India | India remote | not seen | – | – | ~70% (deep dbt needed) | https://portfoliojobs.llrpartners.com/companies/dynatron-software-2/jobs/85592600-sr-analytics-engineer-remote-india | LLR portfolio board (blocked) | REVIEW (unverified) | 2026-11-25 | Posted Jul 2026, may be stale. |
+| Remote.com | Senior Analytics Engineer (APAC priority) | Global/APAC | $42.75k–$102k | ₹41 L min | – | – | https://job-boards.greenhouse.io/remotecom/jobs/5748624003 | Greenhouse | REJECT | 2026-11-25 | Posting closed ("no current openings"); min was also just under floor. |
+| Allshore Talent | Senior Data Engineer (contract) | Employer page: LATAM only | $23.75–25/hr, 35–40 h/wk | ₹41.7–50 L (estimate) | – | – | https://allshoretalent.recruitee.com/o/senior-data-engineer-100-remote-latam-only | Recruitee | REJECT | 2026-11-25 | India listed only by an aggregator; employer page says LATAM. |
+| Opvia | Senior Analytics Engineer | India remote | ₹15–25 L | ₹15–25 L | – | – | https://wellfound.com/jobs/4521077-senior-analytics-engineer | Wellfound | REJECT | 2026-11-25 | Below salary floor. |
+| Weekday (client) | Senior Databricks Engineer | Remote India | ₹15–30 L | – | – | – | jobgether.com offer 69c2a0170cd461dff7f6942c | Jobgether | REJECT | 2026-11-25 | Below salary floor. |
+| GitLab | Intermediate Data Engineer | India | not seen | – | – | – | remotive listing 6539465 | Remotive (blocked) | REJECT | 2026-11-25 | Intermediate level, below your seniority. |
+| Massive Rocket | Lead Data Engineer (contract) | "Worldwide" but needs an existing work visa | not seen | – | – | – | remotive listing 6410581 | Remotive | REJECT | 2026-11-25 | Visa required, no sponsorship. |
+| Société Générale | Sr SE – Data Engineer (Databricks/PySpark) | Bangalore hybrid | – | – | – | – | careers.societegenerale.com 26000IB7 | Employer | REJECT | 2026-11-25 | Hybrid, not remote. |
+
+Earlier REVIEW items still open (not re-verified, hosts blocked): Billigence (India – Remote, salary unknown), Climb AI, EXL, UAE leads.
+
+**To unblock applications:** (1) allow these domains in the environment's network settings: job-boards.greenhouse.io, boards.greenhouse.io, jobs.lever.co, jobs.ashbyhq.com, remotive.com, builtin.com, wellfound.com, myworkdayjobs.com. Shell/Playwright access is needed for submitting, not just the web fetcher. (2) Add a short answers file to this repo with your LinkedIn URL, notice period/earliest start, minimum INR salary to quote (e.g. ₹42 L or higher), a one-line explanation of the gap since Jan 2026, people-management experience, and your reason for looking.
