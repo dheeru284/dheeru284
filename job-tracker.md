@@ -46,3 +46,32 @@ Some UAE Lead roles are hybrid 3 days office / 2 remote, which breaks the 4-days
 - Climb AI (Ashby): page is JavaScript-rendered, details not readable without a browser -> still REVIEW.
 - Billigence, EXL: remoterocketship.com and dreamworkhq.com still blocked by proxy -> still REVIEW.
 - Reachable now: lever.co, greenhouse.io, ashbyhq.com, linkedin.com. Still blocked/403: bayt.com, gulftalent.com, ae.indeed.com, naukri.com, remoterocketship.com, dreamworkhq.com.
+
+## Run 2026-11-27 — 0 applications submitted
+
+Access this run: LinkedIn guest search/detail pages, Greenhouse (job-boards.greenhouse.io), Lever (jobs.lever.co) and Ashby (GraphQL) boards worked. Blocked: Indeed, Remotive, Himalayas, WorkingNomads, Jobicy, Workable, eu.greenhouse.io. Coverage: ~500 LinkedIn listings (India remote, worldwide remote, APAC, posted in the last 14 days) and ~120 employer boards.
+
+Why nothing was submitted: no role passed all three checks (India explicitly allowed + stated pay of at least ₹42L/yr + match of 75% or more). Most India-remote postings state no salary, and the rules say not to invent one. Every LinkedIn application needs your login. FX assumed at about ₹88/USD (not a live rate).
+
+### Review: needs your call
+
+| Company | Role | Remote eligibility | Salary | INR/yr (est.) | Match | URL | Blocker |
+|---|---|---|---|---|---|---|---|
+| Joblet-AI (micro1) | Staff Data Engineer (Remote) | LinkedIn listing says India; also cross-posted for US/UAE | $200–260k "national pay range", 401(k) | ~₹1.76 Cr+ | 65% | linkedin.com/jobs/view/4495067367 | US-style pay and benefits, so India pay probably differs; greenfield Staff scope; recruiter-type poster. Verify before applying |
+| Atlassian | Principal Data Platform Engineer | India (Bengaluru / Kolkata listings, remote within India) | not stated | likely above threshold (unverified) | 60% | linkedin.com/jobs/view/4494122389 | Principal SWE bar (Scala/Java); salary not stated |
+| JumpCloud | Staff Data Engineer, India | "All roles Remote" (Bengaluru) | not stated | ? | 75% | linkedin.com/jobs/view/4492634135 | Salary unknown; needs streaming and event-architecture depth |
+| Smart Working Solutions | Senior Data Engineer / Developer [HR221] | Remote, India | not stated | probably below ₹42L | 75% | jobs.lever.co/smart-working-solutions/d3ffbb13-01ad-4a06-8029-db5d911e71c4 | Strong Azure SQL/ADF/Power BI fit; pay likely under target; 25% backend/REST |
+| Supabase | FinOps Data Engineer | Remote, Global ("we hire globally") | not stated | ? | 55% | jobs.ashbyhq.com/supabase/73ddf93b-fe0c-455d-ba27-cdde0d3fb94f | Needs AWS/GCP billing, BigQuery, Terraform, FinOps: weak fit |
+| BairesDev | Sr Data Engineer (Azure Databricks) | "100% remote from anywhere" (posted in LATAM) | USD, amount not stated | ? | 75% | linkedin.com/jobs/view/4487024306 | India eligibility not confirmed; contractor |
+| Billigence | Senior Data Engineer (Azure Databricks) | India remote (contract) | not stated | ? | 80% | builtin.com/job/senior-data-engineer-azure-databricks/8738671 | Carried over from October; still not verified on employer site |
+
+### Rejected this run
+- Opvia, Senior DE Tech Lead (India remote): ₹28–40 LPA, below threshold.
+- Weekday clients (several): ₹15–40 LPA, below threshold.
+- Shuru, Lead DE (India remote): requires Kafka/GCP/BigQuery/Terraform/K8s, major skill mismatch.
+- Phantom, Senior Backend (Data Platform): Go/TypeScript and Web3 stack, US benefits; mismatch.
+- Atain, Senior DE (India remote, SSIS/ADF/Databricks): good fit, but salary unstated and likely Indian-services pay. Moved down to watch.
+- Mutt Data (all Databricks roles): LATAM only.
+- ClickHouse, TRM Labs, Kraken, Temporal, Twilio, Canonical, OKX, Airwallex, Plaid, OpenAI and similar: US, EU, LATAM or SG-only, or on-site.
+- Jobgether "Remote — India" architect roles: intermediary; real employer and pay unknown.
+- Most LinkedIn India results (Walmart, EXL, UST, Persistent, etc.): hybrid or on-site, or no remote evidence.
